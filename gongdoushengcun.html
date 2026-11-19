@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>在宫斗里，你能活到第几集？</title>
+<style>
+  :root{
+    --red:#a6262c; --red-deep:#7d1c22; --red-soft:#f2d8d9;
+    --gold:#c9a15a; --gold-soft:#f6ecd8;
+    --cream:#fdf9f5; --paper:#fffdfa;
+    --ink:#2b2320; --ink-2:#6d5f58; --ink-3:#a2918a;
+    --line:#ecded8;
+    --shadow-sm:0 4px 18px rgba(166,38,44,.10);
+    --shadow:0 14px 44px rgba(166,38,44,.16);
+    --serif:"Songti SC","STSong","SimSun","NSimSun",serif;
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:
+      radial-gradient(1200px 500px at 50% -180px, #f7e6e2 0%, rgba(247,230,226,0) 70%),
+      linear-gradient(160deg,#fdf7f2,#f7f0ea 60%,#f2eae3);
+    color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;padding:26px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .55s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+  @keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+
+  /* ===== 口令门控 ===== */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(160deg,rgba(253,247,242,.97),rgba(242,234,227,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:var(--paper);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+    padding:36px 28px 28px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:44px;margin-bottom:6px;font-family:var(--emoji)}
+  .gate-card h2{font-family:var(--serif);font-size:22px;margin:0 0 8px;letter-spacing:1px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--red-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#fdf9f6;margin-top:18px}
+  #passInput:focus{border-color:var(--red);box-shadow:0 0 0 4px rgba(166,38,44,.10)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--red);margin:8px 0 10px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:16px 0 0;letter-spacing:.5px}
+
+  /* ===== 通用组件 ===== */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff8f2;background:linear-gradient(135deg,var(--red),var(--red-deep));
+    box-shadow:0 8px 22px rgba(166,38,44,.22);cursor:pointer;font-family:inherit;margin-top:12px;
+    letter-spacing:1px;transition:transform .18s,box-shadow .18s}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn.ghost{background:var(--paper);color:var(--red);border:1.5px solid var(--red-soft);box-shadow:none}
+  .btn.gold{background:linear-gradient(135deg,#d5b06d,#b8893f);box-shadow:0 8px 22px rgba(184,137,63,.25)}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:22px;margin-bottom:16px}
+  h1{font-family:var(--serif);font-size:30px;line-height:1.34;margin:12px 0 12px;letter-spacing:1px;font-weight:700}
+  h1 .hl{color:var(--red);position:relative}
+  h1 .hl:after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:6px;
+    background:linear-gradient(90deg,rgba(201,161,90,.55),rgba(201,161,90,0));border-radius:4px}
+  h2{font-family:var(--serif);letter-spacing:.5px}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--red);
+    background:var(--red-soft);padding:5px 12px;border-radius:999px;letter-spacing:1px}
+  .sub{font-size:13.5px;color:var(--ink-2);line-height:1.75;margin:0}
+  .hint{font-size:12px;color:var(--ink-3);letter-spacing:1px;text-align:center;margin-top:8px}
+  .progress-track{height:8px;background:var(--red-soft);border-radius:99px;overflow:hidden;margin:6px 0 10px}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,#c9a15a,var(--red));transition:width .5s ease}
+
+  .option{display:flex;align-items:flex-start;gap:13px;padding:15px 15px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:11px;cursor:pointer;background:var(--paper);transition:.18s;
+    box-shadow:0 2px 0 rgba(236,222,216,.5)}
+  .option:hover{transform:translateY(-2px);border-color:var(--red-soft);box-shadow:var(--shadow-sm)}
+  .option.on{border-color:var(--red);background:#fdf3f1;box-shadow:0 0 0 3px rgba(166,38,44,.07)}
+  .key{flex:0 0 30px;height:30px;border-radius:50%;background:var(--gold-soft);color:#8a6a34;
+    font-family:var(--serif);font-weight:700;font-size:15px;display:flex;align-items:center;
+    justify-content:center;border:1px solid #e7d3ae}
+  .option.on .key{background:var(--red);color:#fff6ee;border-color:var(--red)}
+  .txt{flex:1;font-size:15px;line-height:1.6;color:#3a302b;padding-top:4px}
+
+  /* ===== 结果页 ===== */
+  .ep-wrap{text-align:center;padding:10px 0 6px}
+  .ep-label{font-size:12.5px;letter-spacing:4px;color:var(--ink-3);margin-bottom:2px}
+  .ep-big{font-family:var(--serif);font-size:62px;line-height:1.06;color:var(--red);font-weight:700;
+    letter-spacing:2px;text-shadow:0 2px 0 rgba(201,161,90,.28);animation:pop .5s ease both}
+  .ep-sub{font-size:12px;color:var(--gold);letter-spacing:3px;margin-top:6px}
+  .type-emoji{font-size:52px;line-height:1;margin:6px 0 8px;font-family:var(--emoji)}
+  .r-name{font-family:var(--serif);font-size:24px;margin:0 0 6px;letter-spacing:1px;text-align:center}
+  .r-dim{font-size:11.5px;color:var(--ink-3);text-align:center;letter-spacing:2px;margin-bottom:12px}
+  .r-persona{font-size:14px;color:var(--ink-2);line-height:1.75;text-align:center;margin:0 0 10px}
+  .kw-row{text-align:center;margin-bottom:18px}
+  .kw{display:inline-block;font-size:12px;color:#8a6a34;background:var(--gold-soft);
+    border:1px solid #e9d6b4;padding:4px 12px;border-radius:999px;margin:0 4px 6px}
+  .insight{border-top:1px dashed var(--line);padding-top:16px}
+  .insight p{margin:0 0 15px;font-size:14.5px;line-height:1.95;color:#3a302b;text-align:justify}
+  .insight .seg{font-size:12px;color:var(--red);letter-spacing:2px;margin-bottom:4px;font-weight:700}
+  .quote{background:linear-gradient(120deg,#fff6e8,#fdf1ec);border-left:3px solid var(--gold);
+    padding:14px 16px;border-radius:12px;font-family:var(--serif);font-size:17px;line-height:1.7;
+    color:var(--red-deep);letter-spacing:.5px}
+  .match{margin-top:16px;font-size:13px;color:var(--ink-2);line-height:1.8;
+    background:#fbf4ee;border-radius:12px;padding:12px 14px}
+  .dims{margin-top:18px}
+  .dim-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .dim-name{flex:0 0 92px;font-size:11.5px;color:var(--ink-2);letter-spacing:.5px}
+  .dim-track{flex:1;height:9px;background:#f3e9e4;border-radius:99px;overflow:hidden}
+  .dim-fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--red))}
+  .dim-num{flex:0 0 18px;font-size:11px;color:var(--ink-3);text-align:right}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+
+  /* ===== 海报弹层 ===== */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(43,35,32,.72);
+    align-items:center;justify-content:center;padding:18px}
+  #posterModal.show{display:flex}
+  .poster-box{background:var(--paper);border-radius:20px;padding:14px;max-width:390px;width:100%;
+    text-align:center;max-height:94vh;overflow:auto}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  .poster-tip{font-size:11px;color:var(--ink-3);margin:8px 0 2px}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(43,35,32,.92);color:#fff8f2;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card" id="gateCard">
+    <div class="gate-lock">🏮</div>
+    <h2>输入口令开启宫门</h2>
+    <p class="sub" style="margin:6px 0 0">口令请向测试发起人索取～</p>
+    <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+           autocomplete="off" placeholder="请输入 4 位口令">
+    <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+    <button class="btn" id="verifyBtn">推开宫门 →</button>
+    <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">🏮 宫斗生存测试</span>
+    <h1>在宫斗里，<br>你能活到<span class="hl">第几集</span>？</h1>
+    <p class="sub">18 个宫里的小场面，每个都不用想太久——选你<b>真会做</b>的那个，别选最聪明的那个。答完直接告诉你：你能活到第几集。</p>
+    <div class="card" style="margin-top:18px">
+      <p class="sub" style="margin:0">
+        🕯️ 共 18 题，约 3 分钟<br>
+        🀄 每题 4 个选项，没有对错<br>
+        📜 结果分「能活到第几集」＋ 一张生存人格卡<br>
+        🖼️ 可生成结果海报，长按保存
+      </p>
+    </div>
+    <button class="btn" id="startBtn">进宫，开始第 1 集 →</button>
+    <p class="hint">建议凭第一反应作答，越诚实越好笑</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="hint" style="text-align:left;letter-spacing:1px">第 1 / 18 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin:0 0 18px;font-size:19px;line-height:1.55">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="view">
+    <div class="card">
+      <div class="ep-wrap">
+        <div class="ep-label">你 在 宫 里 活 到 了</div>
+        <div class="ep-big" id="rEp">第 18 集</div>
+        <div class="ep-sub" id="rEpSub">SURVIVED</div>
+      </div>
+      <div class="type-emoji" id="rEmoji" style="text-align:center">🎀</div>
+      <div class="r-name" id="rName">人格卡</div>
+      <div class="r-dim" id="rDim">段位</div>
+      <p class="r-persona" id="rPersona">一句话人设</p>
+      <div class="kw-row" id="rKeywords"></div>
+      <div class="insight" id="rInsight"></div>
+      <div class="match" id="rMatch"></div>
+      <div class="dims" id="rDims"></div>
+    </div>
+    <button class="btn gold" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <p class="poster-tip">手机端可长按图片保存；电脑端点下方按钮下载</p>
+    <a class="btn" id="posterDownload" href="#" download="我在宫斗里能活到第几集.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "8786"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+
+/* ============ 数据区 ============ */
+var DIMS = {
+  A:'天真出厂设置',
+  B:'边缘苟命',
+  C:'稳步求生',
+  D:'开始有人递茶',
+  E:'棋盘上有棋子',
+  F:'终局赢家'
+};
+
+var QUESTIONS = [
+  {title:'入宫第一天，嬷嬷让你跪下认错——可你根本没犯错。',options:[
+    {key:'A',code:'A1',text:'梗着脖子说「我没错」，声音还特别大'},
+    {key:'B',code:'B2',text:'赶紧跪下，认完就缩回最后一排'},
+    {key:'C',code:'D1',text:'先认错，再顺手给嬷嬷递一块点心'},
+    {key:'D',code:'E3',text:'不跪，先问一句「敢问嬷嬷，犯的是哪条宫规」'}]},
+  {title:'隔壁小主送了你一盒点心，闻着味道有点怪。',options:[
+    {key:'A',code:'A2',text:'不好意思拒绝，全吃了，还夸「真好吃」'},
+    {key:'B',code:'B3',text:'笑着收下，转身喂给了院子里的猫'},
+    {key:'C',code:'D2',text:'当着她的面吃一小口，然后夸上天'},
+    {key:'D',code:'F1',text:'收下，回赠一碟自己做的果脯，礼尚往来'}]},
+  {title:'你撞见两个小主在背后说你坏话。',options:[
+    {key:'A',code:'A3',text:'直接走出去，把话接下去：「说大声点」'},
+    {key:'B',code:'C1',text:'当没听见，回屋把该干的活干完'},
+    {key:'C',code:'D3',text:'走过去坐下：「也算我一个呗」'},
+    {key:'D',code:'F2',text:'记住她们鞋底的花纹，微笑离开'}]},
+  {title:'掌事姑姑派了个没人愿意接的苦差事给你。',options:[
+    {key:'A',code:'B1',text:'接下来，然后天天喊累，让全宫都知道你辛苦'},
+    {key:'B',code:'C2',text:'接，先问清楚：有没有例银、有没有加班饭'},
+    {key:'C',code:'E1',text:'接，因为这差事能天天进出内务府'},
+    {key:'D',code:'F3',text:'接，然后拆成四份，分给四个人'}]},
+  {title:'御花园里，皇上突然问你觉得哪位娘娘最美。',options:[
+    {key:'A',code:'B2',text:'低头说「臣妾不敢看」'},
+    {key:'B',code:'C3',text:'「后宫诸位于臣妾眼里，皆是月色」'},
+    {key:'C',code:'E2',text:'「臣妾眼拙，只看得见皇后娘娘的凤仪」'},
+    {key:'D',code:'A1',text:'认真想了想，然后报了个名字'}]},
+  {title:'你被诬陷弄丢了皇后的玉镯。',options:[
+    {key:'A',code:'B3',text:'一言不发，等她们自己吵到没词'},
+    {key:'B',code:'D1',text:'先哭，哭得比原告还惨'},
+    {key:'C',code:'E3',text:'当场要求搜所有人的柜子，包括自己的'},
+    {key:'D',code:'A2',text:'急了就哭，边哭边说「我真的没有」'}]},
+  {title:'有人夜里往你院里扔了封信：「明日酉时，御花园见。」',options:[
+    {key:'A',code:'C1',text:'去，但提前跟掌事姑姑禀一声'},
+    {key:'B',code:'D2',text:'去，先在远处看看是谁，再决定露不露面'},
+    {key:'C',code:'F1',text:'去，还带上两个交好的小主'},
+    {key:'D',code:'A3',text:'去，一个人，准时到'}]},
+  {title:'太后夸你「这孩子瞧着老实」。',options:[
+    {key:'A',code:'C2',text:'老实点头，心里已把这句话换算成月度赏银'},
+    {key:'B',code:'D3',text:'立刻顺着话头，把自己夸得更实在'},
+    {key:'C',code:'F2',text:'只是恭顺地笑了笑，一个字不多说'},
+    {key:'D',code:'B1',text:'跪下谢恩，声音大得全殿都听见'}]},
+  {title:'你发现贴身宫女偷偷跟别的宫来往。',options:[
+    {key:'A',code:'C3',text:'叫来问清楚，说完规矩就把人留下'},
+    {key:'B',code:'E1',text:'不动声色，先看她跟的是哪一方'},
+    {key:'C',code:'F3',text:'直接调去跑腿，让她替自己递话'},
+    {key:'D',code:'B2',text:'装作不知道，从此不敢让她端茶'}]},
+  {title:'大宴之上，有妃子当众说「有些人啊，不配坐这桌」。',options:[
+    {key:'A',code:'D1',text:'笑着接一句「那姐姐可得坐我旁边」'},
+    {key:'B',code:'E2',text:'继续夹菜，当作没听见'},
+    {key:'C',code:'A1',text:'小声问旁边人：「她说谁啊？」'},
+    {key:'D',code:'B3',text:'端着碗起身，退到最边上的位置'}]},
+  {title:'皇上赏了你一件东西，转头又赏了隔壁一模一样的。',options:[
+    {key:'A',code:'D2',text:'高高兴兴穿上，还特意去隔壁串门'},
+    {key:'B',code:'E3',text:'把赏物供起来，先查这料子经谁的手'},
+    {key:'C',code:'A2',text:'心里委屈，还是替隔壁高兴'},
+    {key:'D',code:'C1',text:'照样干活，赏物挂起来，谁问都说是天恩'}]},
+  {title:'有人想拉你一起「做件大事」，说事成保你升位分。',options:[
+    {key:'A',code:'D3',text:'先答应，看热闹不嫌事大'},
+    {key:'B',code:'F1',text:'「我考虑三天」，然后三天后再拖三天'},
+    {key:'C',code:'A3',text:'当场问：「这不就是谋反吗？」'},
+    {key:'D',code:'C2',text:'先问「保我升几级」，再算值不值'}]},
+  {title:'皇后与贵妃同时递话给你，让你「表个态」。',options:[
+    {key:'A',code:'E1',text:'两边都应下，再把两句话原封不动递回去'},
+    {key:'B',code:'F2',text:'称病闭门三天，谁也不见'},
+    {key:'C',code:'B1',text:'赶紧跪下：「奴婢什么都不懂」'},
+    {key:'D',code:'C3',text:'按品级先后回话，一句不多一句不少'}]},
+  {title:'你手里握着别人一个足以要命的把柄。',options:[
+    {key:'A',code:'E2',text:'不急着用，等最合适的人来求我'},
+    {key:'B',code:'F3',text:'留着，但先给对方递一个台阶'},
+    {key:'C',code:'B2',text:'烧了它，还连夜把灰埋了'},
+    {key:'D',code:'D1',text:'先去找那人，笑着说「我什么都不知道」'}]},
+  {title:'你忽然被破格升了位分，全宫侧目。',options:[
+    {key:'A',code:'E3',text:'照常受礼，第二天就把新院子的守门人换了'},
+    {key:'B',code:'A1',text:'高兴得逢人就请人吃点心'},
+    {key:'C',code:'B3',text:'把新衣服压箱底，照旧穿旧的'},
+    {key:'D',code:'D2',text:'先给每个人送一份礼，嘴上说全托大家福'}]},
+  {title:'你的位分被降了，旨意明日就到。',options:[
+    {key:'A',code:'F1',text:'当晚把该收的收好，明天照常行礼'},
+    {key:'B',code:'A2',text:'哭了一夜，第二天眼睛肿着去谢恩'},
+    {key:'C',code:'C1',text:'该干的活一样不落，只说自己换个院子住'},
+    {key:'D',code:'D3',text:'先把消息传出去：「我早就不想住那儿了」'}]},
+  {title:'最后一场较量，对手捧茶跪在你面前说「求你饶我」。',options:[
+    {key:'A',code:'F2',text:'接了茶，先放一边，说「凉了再喝」'},
+    {key:'B',code:'A3',text:'当场扶她起来：「咱俩谁跟谁」'},
+    {key:'C',code:'C2',text:'先算她害过我几次，再决定扶不扶'},
+    {key:'D',code:'E1',text:'扶她起来，然后把这件事讲给所有人听'}]},
+  {title:'大结局前一晚，有人告诉你：你可以不必再争了。',options:[
+    {key:'A',code:'F3',text:'笑着说「我知道」，第二天照常上朝'},
+    {key:'B',code:'B1',text:'连夜收拾包袱，准备去守皇陵'},
+    {key:'C',code:'C3',text:'把该交的账目交接清楚'},
+    {key:'D',code:'E2',text:'回一句「我从来没争过」'}]}
+];
+
+var RESULTS = {
+  A1:{emoji:'🍱',name:'昭 · 第一集就领盒饭',ep:'第 1 集',epSub:'全剧最短出场',
+    persona:'一出场就把「我很单纯」写在脸上，台词还没说完就被剧情写死了。',kw:['天真','嘴快','认死理'],
+    insight:[
+      '嬷嬷第一次点名训你话时，你明明什么都没做错，却梗着脖子把「我没错」说得整条长廊都听见；说完还站在原地不肯走，就等着谁给你一个说法，眼睛瞪得圆圆的，干净得像刚进宫那天，连手都攥成了小拳头。',
+      '你天生学不会拐弯，话从心里出来就直接到了嘴边，不加工也不打磨，连语气都懒得收一收。这份直白让你在需要看脸色的地方吃了亏，可也让你成了整座宫里唯一一个没人敢当面撒谎的人——谎话在你面前，自己就站不住脚；这一点比位分更让人记得住你，也比心机更难得。',
+      '你不是活不下来，你是不肯活得不像自己。'
+    ],
+    match:'和「韶」最搭：你负责把话说破，她负责替你收尾。'},
+  A2:{emoji:'😢',name:'蕊 · 第二集哭着离场',ep:'第 2 集',epSub:'哭戏比台词多',
+    persona:'心太软，谁哭你都心疼，最后替别人的眼泪背了锅。',kw:['心软','护短','容易共情'],
+    insight:[
+      '小厨房送来一碗已经凉透的汤，隔壁小主随口说了句「我今天好累」，你二话不说就把自己那碗换过去，还笑着说自己本来就不爱喝；走出门才想起来，那是你一天里唯一一顿热的，也没舍得再要一碗。',
+      '你身上最软的地方，是对别人的难处特别敏感：别人一句无心的话，你能在心里替对方演完一整出戏，连对方没说出口的委屈你都能接住。心软让你常常替人背锅，可也正是它，让很多人愿意在自己落难的时候第一个想起你——宫里最缺的从来不是聪明人，是肯替人疼的那一个。',
+      '你的眼泪不是软弱，是别人打分打不出来的温度。'
+    ],
+    match:'和「琅」最搭：她替你挡刀，你替她哭。'},
+  A3:{emoji:'💬',name:'穗 · 第三集被台词写死',ep:'第 3 集',epSub:'编剧省了三条线',
+    persona:'嘴比刀快，谁激你一句你就顶三句，编剧都省了写反派。',kw:['耿直','嘴硬','不转弯'],
+    insight:[
+      '有人当着一屋子人的面阴你一句「有些人就是不懂规矩」，你没等她说完后半句就顶了回去，三句话堵得她一个字也说不出；茶都凉透了，你还站在原地把道理从头讲完，讲得连旁边看热闹的人都替你捏了把汗。',
+      '你的嘴比脑子快半拍，谁激你一下，你就要回三下，回完还要补一句「我说完了」。这样的性子在宫里叫「活不长」，在现实里叫「不吃哑巴亏」；你从没学会把委屈咽下去，所以也从没让自己委屈太久——顶撞是真的，不好惹是真的，护着自己那点也是真的，也替你记着谁欠了你这一句道歉，记在心里，从不催。',
+      '你不是不懂事，你只是不肯装懂。'
+    ],
+    match:'和「妤」最搭：她帮你把顶撞翻译成人话。'},
+  B1:{emoji:'🧹',name:'芸 · 扫地界顶流',ep:'第 5 集',epSub:'全宫最勤快',
+    persona:'存在感全在「勤快」两个字上，谁上位你都第一个喊恭喜。',kw:['会看眼色','腿快','不争'],
+    insight:[
+      '宫里有任何动静，你永远是第一个站起来的人：端水、递帕子、扶着人下轿，谁上位你都第一个喊恭喜，喊得比当事人还真诚；喊完就低头把自己那块地扫得干干净净，一句多余的话都没有，连呼吸都放轻了。',
+      '你不是没有脾气，你只是把力气都用在了「让自己有用」这件事上。你太清楚争一次要付出什么代价，所以宁可不显山不露水，稳稳地把自己留在这局里——风头是别人的，日子是自己的，这笔账你早就算清了，也早就认了，也从不觉得这算委屈，你只是想睡个安稳觉，第二天照样起得最早。',
+      '不争不是没本事，是你知道什么时候不值得。'
+    ],
+    match:'和「岚」最搭：她出主意，你找人跑。'},
+  B2:{emoji:'❄️',name:'黛 · 冷宫门口长期住户',ep:'第 6 集',epSub:'贴墙根行走',
+    persona:'一生信条是「多一事不如少一事」，结果事后还是被牵连。',kw:['谨慎','怕事','低调'],
+    insight:[
+      '嬷嬷让人报名去御前伺候，你默默往后退了半步；有人拉你一起「说句公道话」，你说自己嗓子疼。走到最后，你连走路都贴着墙根，生怕自己的脚步声惊到谁，院里的门帘一年四季都只半掩着，风一吹就晃。',
+      '你把「别惹事」三个字活成了一种本能，因为你知道自己扛不住风浪，也不想拖累任何人。这份谨慎在宫里叫作胆小，在生活里叫作懂得保护自己——不是每个人都需要站到台前，能把自己安然无恙地带到下一集，本身就是一种很硬的本事，你从不觉得这叫将就，你只是想把日子过成自己认得出来的样子，慢一点也没关系。',
+      '你只是想安稳活着，这不是胆小。'
+    ],
+    match:'和「棠」最搭：两个守规矩的人凑一桌，最省心。'},
+  B3:{emoji:'👻',name:'婵 · 全剧最隐形的那位',ep:'第 8 集',epSub:'查无此人',
+    persona:'会装、会藏，会把「我不知道」说得像真的。',kw:['装傻','淡定','会躲'],
+    insight:[
+      '有人在你院里翻箱倒柜找一个「证据」，你端着一杯温水坐在旁边，一句「我不知道」说了七遍，语气一模一样，声调都没高过半分；最后她们自己都觉得没意思，收了手，走的时候还替你把门带上了。',
+      '你太会把自己藏起来了：不抢话、不站队、不露表情，连被夸也只是轻轻一笑点头。别人以为你没主意，其实每一步你都在心里走过一遍，只是懒得让人看见——看得见的是空，看不见的那部分，才是真正的你，你甚至连自己藏得多深都不打算告诉任何人，因为藏这件事本身就让你安心，也让你在这局棋里永远有一个位置。',
+      '懂得把锋芒收起来，是清醒，不是懦弱。'
+    ],
+    match:'和「琅」最搭：一个藏，一个狠，谁也不敢惹。'},
+  C1:{emoji:'🍵',name:'芍 · 混成管事姑姑',ep:'第 10 集',epSub:'谁倒台都少不了她端茶',
+    persona:'全靠「活儿干得好」活下来，谁倒台都少不了她端茶。',kw:['靠谱','勤恳','不站队'],
+    insight:[
+      '宫里换主子跟换季一样勤，只有你手里的活从没停过：账要清、库要点、新来的小宫女要一个个教。谁倒台都少不了你端的那杯茶，谁上位也都要先问你一句「这规矩怎么走」，问完就把整摊事放心交给你。',
+      '你的位置不是争来的，是干出来的。你从不站队，只把事办得漂亮，因为你相信手上的活比任何靠山都硬——靠山会倒，手艺不会。这种踏实，在任何地方都不会被轻易换掉；哪怕换了朝代、换了人，你依旧能把日子稳稳接住，也从没跟谁提过自己替这宫墙挡过多少事，你只当那是份内的活，干完了就洗手。',
+      '你的价值从不靠谁喜欢，靠自己手上有活。'
+    ],
+    match:'和「韶」最搭：她定方向，你把事办成。'},
+  C2:{emoji:'🧮',name:'蘅 · 掌事嬷嬷预备役',ep:'第 12 集',epSub:'全宫的账都在她心里',
+    persona:'全宫的账都在她心里，谁多领一两银子她记得比自己生日还清楚。',kw:['会算','细致','抠门'],
+    insight:[
+      '库房报账那天，你一眼就看出多领了三两银子，连是谁、哪个月、走了谁的手都记得清清楚楚；说得管事姑姑自己都不好意思，最后那三两银子被追了回来，而你一个铜板也没多要，连句谢也没等。',
+      '你把每一件小事都算得清楚，不是小气，是你不喜欢糊涂账——钱糊涂了，人心也就糊涂了。你这种「抠」，其实是在替所有人守一条底线，只是从来没人替你算过这一笔，也没人道过一句谢，你自己也从不提，你也从不解释自己为什么这么算，因为懂的人不必解释，不懂的人解释了也不会信。',
+      '算得清楚，是因为不想让谁吃亏。'
+    ],
+    match:'和「杏」最搭：一个精算，一个会做人。'},
+  C3:{emoji:'📜',name:'棠 · 有点小权的小主子',ep:'第 15 集',epSub:'规矩记得比谁都熟',
+    persona:'不抢不闹，但规矩记得比谁都熟，谁越界她第一个不答应。',kw:['讲规矩','稳妥','护自己人'],
+    insight:[
+      '有新人不懂事，直接越过品级去敬茶，你没吼也没闹，只轻轻说了一句「按顺序来」，声音不大，可那一屋子人忽然都安静了；规矩就这么立住了，连被拦下的那个人自己都觉得你拦得对。',
+      '你不抢不闹，但边界清清楚楚：什么该做、什么不该做，你比谁都明白。你护着自己人，也护着这套让所有人都不吃亏的秩序；温和从来不是没有底线，而是底线画得比谁都清楚，只是画在心里，不挂在嘴上，你也不指望谁来夸你一句公道，只要这院子里的次序不倒，你就觉得日子还过得下去。',
+      '你把边界守得清楚，是因为想护住身边的人。'
+    ],
+    match:'和「黛」最搭：两个稳妥派，日子过得最长。'},
+  D1:{emoji:'🍬',name:'榴 · 会撒娇的贵人',ep:'第 18 集',epSub:'三句话能把祸说成误会',
+    persona:'三句话能把一场祸说成一场误会，宫里气氛全靠她救。',kw:['会来事','热心','会撒娇'],
+    insight:[
+      '两位小主在宴上冷着脸谁也不理谁，你端着酒杯过去，一句「两位姐姐今天的簪子撞了，谁更好看啊」，把整桌人的注意力都挪了开去；气氛就这么活了过来，连最冷的那位都忍不住笑了一下。',
+      '你身上有一种别人学不来的软：会撒娇、会示弱、会把一场祸说成一场误会。这不是没主见，是你懂得用温度去解死结——硬邦邦撞不过去的地方，软的那一种常常能过去，还能过去得体面，让人记你的好，你也不觉得自己是在讨好谁，你只是舍不得看一屋子人僵在那儿，热汤凉了，人心也跟着凉。',
+      '你的柔软是有用的，别再被说成没主见。'
+    ],
+    match:'和「岚」最搭：她盘算，你打圆场。'},
+  D2:{emoji:'🥢',name:'杏 · 上桌吃饭的小主',ep:'第 24 集',epSub:'笑里全是分寸',
+    persona:'该演的戏一场不落，该退的步一步不退，笑里全是分寸。',kw:['会演','懂分寸','嘴甜'],
+    insight:[
+      '该演的戏你一场不落：受了委屈先笑，得了赏赐先谢别人，被问到难处就说自己笨。可你退的每一步都恰到好处，退完该拿的一样不少，连最挑刺的人都翻不出你哪句话说错了，也挑不出你哪步退多了。',
+      '你把分寸拿捏得像量过一样准：什么时候说话、说几分、对谁说，你心里都有数。别人以为你圆滑，其实你只是想让所有人都好过一点——包括那个总被排在最后、还笑着说没事的你自己，你也从没想过要谁记住你的好，你只是不愿意看见有人下不来台，包括那些为难过你的人，你也从没要求过谁回报。',
+      '你不是圆滑，你是懂得让大家都好过。'
+    ],
+    match:'和「蘅」最搭：一个会做人，一个会算账。'},
+  D3:{emoji:'🔥',name:'薏 · 被全宫议论的那位',ep:'第 30 集',epSub:'越说越红',
+    persona:'风头正盛，被议论也不解释，越说越红。',kw:['抗压','自来熟','会造势'],
+    insight:[
+      '宫里一夜之间都在传你的事，版本有七八个，最离谱的那个说你连太后都顶撞过。你照常出门、照常赴宴，还笑着给传话的人添了茶；第二天传闻又多了一条，说你不怕，语气里居然还有点佩服。',
+      '你能扛住别人的嘴，这在任何地方都是硬通货。别人被议论会缩起来，你被议论反而更亮，因为你知道，被讨论本身就意味着你还站在光里——真正没救的，是没人再提起你，连坏话都懒得说一句，你也不解释自己到底做过什么，因为你早就明白，解释一次，就等于承认自己在乎一次，而在乎就是软肋。',
+      '能扛住别人的嘴，就是硬通货。'
+    ],
+    match:'和「鸾」最搭：一个敢冲，一个敢压。'},
+  E1:{emoji:'♟️',name:'岚 · 宫斗常务副导演',ep:'第 36 集',epSub:'从不亲自出手',
+    persona:'从不亲自出手，所有局都是她递出去的第一步棋。',kw:['会布局','沉得住气','记性好'],
+    insight:[
+      '你从不出现在争执的现场，可每一次风向变化，最后都落到你手里：三个月前递出去的一句话，今天正好有人替你说完；你只是端着茶坐在一旁，说了句「我什么都不知道」，连眼睛都没抬一下。',
+      '你比的从来不是快，是谁能等。别人急着出手，你先看清牌面；别人抢着表态，你留一条后路。耐心在你这里不是慢，而是知道急的人一定先输——所以最后收网的，总是那个从头到尾都稳稳坐着的人，你也不是天生沉得住气，只是你算过，最快的路往往最容易被堵死，宁愿绕远一点，也要走到最后。',
+      '你的耐心不是慢，是早知道急的人先输。'
+    ],
+    match:'和「芸」最搭：你出主意，她找人跑。'},
+  E2:{emoji:'🗡️',name:'妤 · 笑到最后的那个笑',ep:'第 45 集',epSub:'全程没露过面',
+    persona:'从不沾手，被问起来永远只是「我什么都没做」。',kw:['会借力','面不改色','双商在线'],
+    insight:[
+      '那件事最后是别人替你办的，你全程没露过面。有人问起，你只轻轻一笑：「我什么都没做。」说完还替对方添了茶，手一点没抖，茶汤平平的，连一丝波纹都没有，像什么都没发生过。',
+      '你懂得把力气花在刀刃上：不必自己动手，只要在对的时候说出对的一句话。别人说你心机，其实你只是比别人更早想明白——真正的赢，往往不留指纹，也从来不需要解释，解释才是最先露怯的地方，你也从不跟人争一句谁对谁错，因为到最后能留下来的，从来不是说得最响的那个，而是最早看懂牌面的那个。',
+      '把力气花在刀刃上，那不是心机，是效率。'
+    ],
+    match:'和「穗」最搭：她替你把狠话摆到明面上。'},
+  E3:{emoji:'🐉',name:'鸾 · 太后都忌惮三分',ep:'第 52 集',epSub:'气场是自己挣的',
+    persona:'气场是自己挣的，不心软不是冷血，是早想明白了代价。',kw:['气场','会算','果断'],
+    insight:[
+      '太后当着满殿的人试探你，你一句「臣妾不敢」说得恭顺，眼睛却一点没低下去。散席之后，该换的人换了，该办的事办了，没人敢再来问第二遍；连传话的太监都走得比平时快了三分。',
+      '你的气场是自己挣来的：不心软，不代表冷血，而是你早就算过代价，并且愿意自己付。你护住的人其实很多，只是你从不说自己护过谁——硬气的人，往往把温柔藏得最深，也藏得最久，藏到没人看见，你也从不解释自己为什么这么硬，因为真正需要被你护住的人，从来不需要你解释，你只是不习惯把软的那一面拿出来给人看。',
+      '你的硬气护住了很多人，只是你没说。'
+    ],
+    match:'和「薏」最搭：一个扛事，一个扛话。'},
+  F1:{emoji:'🕯️',name:'韫 · 活到六十集还能加戏',ep:'第 60 集',epSub:'谁倒台她都在',
+    persona:'谁倒台她都还在，靠的是人情和耐力，不是运气。',kw:['会转圜','耐力','朋友多'],
+    insight:[
+      '第一年跟你交好的小主倒了，第五年另一个也倒了，你还在。你送出去的人情从不当场收账，也不提当年；等到真正需要的时候，总有人愿意替你说一句话，而这一句话往往比十句辩解都管用。',
+      '你走得不算快，但每一步都没走错，也从没停下。你早就知道单靠聪明撑不了太久，真正靠的是别人愿不愿意在你难的时候拉你一把——而这份愿意，是你一年一年自己攒出来的，攒得慢，但结实，你也从不催别人还这份情，因为你信一件事：真心攒下来的东西，早晚会自己走回来，也从没催过谁还这份人情。',
+      '你走得慢，但你从没停，长久本身就是赢。'
+    ],
+    match:'和「芍」最搭：一个扛压，一个扛事。'},
+  F2:{emoji:'🌙',name:'琅 · 关灯前最后一个笑',ep:'第 72 集',epSub:'一动没动',
+    persona:'喜怒不显，出手不多，但每次都在对的时候。',kw:['会藏','稳准狠','有耐心'],
+    insight:[
+      '宫里出事的那几个晚上，你都在自己屋里抄经。谁来了你都见，谁问你都笑，一个字也不多说。等到天亮，该倒的倒了，该散的散了，你的位置一动没动，连坐垫的褶子都和昨天一模一样。',
+      '你出手不多，但每一次都在对的时候。喜怒不显不是没有情绪，是你知道情绪一旦露出来，就成了别人手里的把柄。你把该做的做到位，然后安静地等结果——这种稳，比任何锋芒都难学，也更难得，你也从不觉得自己委屈，你只是把该做的都做完，然后关灯、睡下、等天亮，等一个本来就会来的结果。',
+      '不吵不闹把事做到位，这不叫隐忍，叫清醒。'
+    ],
+    match:'和「蕊」最搭：她心软，你替她挡。'},
+  F3:{emoji:'👑',name:'韶 · 活到大结局还坐着',ep:'大结局',epSub:'最上面那把椅子',
+    persona:'会用人、心大、不计一时输赢，最后赢的是整个局面。',kw:['会用人','有格局','心大'],
+    insight:[
+      '最难的那一年，别人都在算谁欠自己一次人情，你在算谁还没吃饭。后来要选一个人来领这摊事，所有人都不约而同地看向你，连你自己都没料到——原来你随手做过的那些小事，别人一直记着。',
+      '你能容得下别人，也容得下自己：不抢一时的功，不记一时的账，把位置让给更合适的人。走到最后你才明白，赢下整个局面的人，往往是最不急着赢的那一个，也是最能等、最能容的那一个，你也从不觉得自己吃了亏，因为那些让出去的位置，最后都变成了别人愿意替你说话的理由。',
+      '能容得下别人，也容得下自己，这才是真的赢。'
+    ],
+    match:'和「昭」最搭：她敢说，你敢担。'}
+};
+
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    if(ch === undefined) return;
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0)+1;
+  });
+  var keys = Object.keys(s);
+  var mx = Math.max.apply(null, keys.map(function(k){return s[k];}));
+  var tied = keys.filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length === 1){ code = tied[0]; }
+  else{
+    var lastQ = QUESTIONS.length-1;
+    var last = (answers[lastQ]!==undefined) ? QUESTIONS[lastQ].options[answers[lastQ]].code : null;
+    var first = (answers[0]!==undefined) ? QUESTIONS[0].options[answers[0]].code : null;
+    if(last && tied.indexOf(last) >= 0) code = last;
+    else if(first && tied.indexOf(first) >= 0) code = first;
+    else code = tied.sort()[0];
+  }
+  return {code:code, scores:s};
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 答题流程 ============ */
+var answers = [];
+var idx = 0;
+var lastResultCode = '';
+
+function renderQ(){
+  var q = QUESTIONS[idx];
+  document.getElementById('qIndex').textContent = '第 ' + (idx+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = (idx/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o,i){
+    var d = document.createElement('div');
+    d.className = 'option' + (answers[idx]===i ? ' on' : '');
+    var k = document.createElement('span');
+    k.className = 'key'; k.textContent = o.key;
+    var t = document.createElement('span');
+    t.className = 'txt'; t.textContent = o.text;
+    d.appendChild(k); d.appendChild(t);
+    d.addEventListener('click', function(){ pick(i); });
+    box.appendChild(d);
+  });
+  var back = document.getElementById('backBtn');
+  back.style.visibility = (idx === 0 ? 'hidden' : 'visible');
+}
+
+function pick(i){
+  answers[idx] = i;
+  if(idx < QUESTIONS.length - 1){
+    idx++;
+    setTimeout(renderQ, 180);
+  }else{
+    document.getElementById('progressFill').style.width = '100%';
+    setTimeout(finish, 220);
+  }
+}
+
+function finish(){
+  var res = resolve(answers);
+  lastResultCode = res.code;
+  var r = RESULTS[res.code];
+  var dimKey = res.code.charAt(0);
+
+  document.getElementById('rEp').textContent = r.ep;
+  document.getElementById('rEpSub').textContent = r.epSub;
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rDim').textContent = '段 位 · ' + (DIMS[dimKey] || '');
+  document.getElementById('rPersona').textContent = r.persona;
+
+  var kwBox = document.getElementById('rKeywords');
+  kwBox.innerHTML = '';
+  r.kw.forEach(function(k){
+    var s = document.createElement('span');
+    s.className = 'kw'; s.textContent = k;
+    kwBox.appendChild(s);
+  });
+
+  var ins = document.getElementById('rInsight');
+  ins.innerHTML = '';
+  var labels = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  r.insight.forEach(function(txt,i){
+    if(i === 2){
+      var q = document.createElement('div');
+      q.className = 'quote'; q.textContent = txt;
+      ins.appendChild(q);
+    }else{
+      var lab = document.createElement('div');
+      lab.className = 'seg'; lab.textContent = labels[i];
+      var p = document.createElement('p'); p.textContent = txt;
+      ins.appendChild(lab); ins.appendChild(p);
+    }
+  });
+
+  document.getElementById('rMatch').textContent = r.match;
+
+  var dimsBox = document.getElementById('rDims');
+  dimsBox.innerHTML = '';
+  var totals = {};
+  Object.keys(DIMS).forEach(function(k){ totals[k] = 0; });
+  Object.keys(res.scores).forEach(function(code){
+    totals[code.charAt(0)] = (totals[code.charAt(0)] || 0) + res.scores[code];
+  });
+  var maxV = Math.max.apply(null, Object.keys(totals).map(function(k){return totals[k];})) || 1;
+  Object.keys(DIMS).forEach(function(k){
+    var row = document.createElement('div'); row.className = 'dim-row';
+    var nm = document.createElement('div'); nm.className = 'dim-name'; nm.textContent = DIMS[k];
+    var tk = document.createElement('div'); tk.className = 'dim-track';
+    var fl = document.createElement('span'); fl.className = 'dim-fill';
+    fl.style.width = (totals[k]/maxV*100) + '%';
+    tk.appendChild(fl);
+    var num = document.createElement('div'); num.className = 'dim-num'; num.textContent = totals[k];
+    row.appendChild(nm); row.appendChild(tk); row.appendChild(num);
+    dimsBox.appendChild(row);
+  });
+
+  show('result');
+}
+
+/* ============ 海报 ============ */
+function rr(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '', out = y;
+  for(var i=0;i<text.length;i++){
+    var t = line + text.charAt(i);
+    if(c.measureText(t).width > maxW && line.length){
+      c.fillText(line, x, out); out += lineH; line = text.charAt(i);
+    }else{ line = t; }
+  }
+  if(line){ c.fillText(line, x, out); out += lineH; }
+  return out;
+}
+
+function buildPoster(){
+  var code = lastResultCode || resolve(answers).code;
+  var r = RESULTS[code];
+  var dimKey = code.charAt(0);
+  var W = 750, H = 1500, PAD = 54, CW = W - PAD*2;
+
+  var res = resolve(answers);
+  var sc = {};
+  Object.keys(DIMS).forEach(function(k){ sc[k] = 0; });
+  Object.keys(res.scores).forEach(function(k){
+    var d = k.charAt(0);
+    sc[d] = (sc[d] || 0) + res.scores[k];
+  });
+  var maxV = 1;
+  Object.keys(sc).forEach(function(k){ if(sc[k] > maxV) maxV = sc[k]; });
+
+  function draw(c, base){
+    var y = base;
+    c.textAlign = 'center';
+    c.fillStyle = 'rgba(246,236,216,.85)';
+    c.font = '20px "Songti SC","SimSun",serif';
+    c.fillText('宫 斗 生 存 测 试', W/2, y+60);
+
+    c.fillStyle = 'rgba(246,236,216,.5)';
+    c.font = '17px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText('你 在 宫 里 活 到 了', W/2, y+112);
+
+    c.fillStyle = '#e8c986';
+    c.font = '700 96px "Songti SC","SimSun",serif';
+    c.fillText(r.ep, W/2, y+218);
+
+    c.fillStyle = 'rgba(232,201,134,.7)';
+    c.font = '15px -apple-system,"PingFang SC",sans-serif';
+    c.fillText(r.epSub, W/2, y+254);
+    y += 300;
+
+    c.fillStyle = '#fdf5e6';
+    c.font = '600 34px "Songti SC","SimSun",serif';
+    c.fillText(r.name, W/2, y);
+    y += 40;
+
+    c.fillStyle = 'rgba(246,236,216,.5)';
+    c.font = '16px -apple-system,"PingFang SC",sans-serif';
+    c.fillText('段位 · ' + (DIMS[dimKey]||''), W/2, y);
+    y += 34;
+
+    c.textAlign = 'left';
+    c.fillStyle = 'rgba(253,245,230,.88)';
+    c.font = '21px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    y = wrapText(c, r.persona, PAD, y, CW, 33) + 16;
+
+    var x = PAD;
+    c.font = '17px -apple-system,"PingFang SC",sans-serif';
+    r.kw.forEach(function(k){
+      var tw = c.measureText(k).width + 28;
+      if(x + tw > W - PAD){ x = PAD; y += 40; }
+      c.strokeStyle = 'rgba(232,201,134,.6)'; c.lineWidth = 1.3;
+      rr(c, x, y-24, tw, 34, 17); c.stroke();
+      c.fillStyle = '#e8c986';
+      c.fillText(k, x+14, y);
+      x += tw + 10;
+    });
+    y += 32;
+
+    c.strokeStyle = 'rgba(232,201,134,.3)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke();
+    y += 32;
+
+    r.insight.forEach(function(txt, i){
+      c.fillStyle = '#e8c986';
+      c.font = '600 17px -apple-system,"PingFang SC",sans-serif';
+      c.fillText(['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'][i], PAD, y);
+      y += 26;
+      if(i === 2){
+        c.fillStyle = 'rgba(253,245,230,.96)';
+        c.font = '600 24px "Songti SC","SimSun",serif';
+        y = wrapText(c, txt, PAD, y, CW, 36);
+      }else{
+        c.fillStyle = 'rgba(253,245,230,.82)';
+        c.font = '20px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+        y = wrapText(c, txt, PAD, y, CW, 33);
+      }
+      y += 14;
+    });
+
+    y += 4;
+    c.strokeStyle = 'rgba(232,201,134,.3)'; c.lineWidth = 1;
+    c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke();
+    y += 30;
+
+    Object.keys(DIMS).forEach(function(k){
+      c.fillStyle = 'rgba(246,236,216,.6)';
+      c.font = '14px -apple-system,"PingFang SC",sans-serif';
+      c.fillText(DIMS[k], PAD, y+6);
+      var tx = PAD + 116, tw = CW - 116 - 34;
+      c.fillStyle = 'rgba(246,236,216,.16)';
+      rr(c, tx, y-4, tw, 11, 5.5); c.fill();
+      var fw = Math.max(8, tw * sc[k] / maxV);
+      var g = c.createLinearGradient(tx, 0, tx+tw, 0);
+      g.addColorStop(0, '#c9a15a'); g.addColorStop(1, '#c05a4a');
+      c.fillStyle = g;
+      rr(c, tx, y-4, fw, 11, 5.5); c.fill();
+      c.fillStyle = 'rgba(246,236,216,.5)';
+      c.font = '12px -apple-system,"PingFang SC",sans-serif';
+      c.fillText(sc[k], PAD + CW - 22, y+7);
+      y += 24;
+    });
+
+    y += 16;
+    c.fillStyle = 'rgba(246,236,216,.72)';
+    c.font = '18px -apple-system,"PingFang SC",sans-serif';
+    y = wrapText(c, r.match, PAD, y, CW, 28) + 12;
+
+    c.fillStyle = 'rgba(232,201,134,.85)';
+    c.font = '17px -apple-system,"PingFang SC",sans-serif';
+    c.fillText('@ 那个你想到的人，一起测测谁活得更久', PAD, y+10);
+
+    return y + 10;
+  }
+
+  var mcv = document.createElement('canvas');
+  mcv.width = W; mcv.height = H;
+  var endY = draw(mcv.getContext('2d'), 0);
+
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+
+  var bg = c.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#341318'); bg.addColorStop(.55,'#7a1f24'); bg.addColorStop(1,'#3d1418');
+  c.fillStyle = bg; c.fillRect(0,0,W,H);
+
+  c.strokeStyle = 'rgba(201,161,90,.55)'; c.lineWidth = 2;
+  rr(c, 26, 26, W-52, H-52, 18); c.stroke();
+
+  var base = Math.round((H - 60 - endY) / 2);
+  if(base < 24) base = 24;
+  draw(c, base);
+
+  c.textAlign = 'center';
+  c.fillStyle = 'rgba(246,236,216,.35)';
+  c.font = '13px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考', W/2, H-38);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  document.getElementById('posterDownload').href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 事件绑定 ============ */
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = []; idx = 0;
+  renderQ();
+  show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(idx > 0){ idx--; renderQ(); }
+});
+document.getElementById('posterBtn').addEventListener('click', buildPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('posterDownload').addEventListener('click', function(){
+  var toast = document.getElementById('toast');
+  toast.textContent = '已开始下载，也可长按图片保存';
+  toast.classList.add('on');
+  setTimeout(function(){ toast.classList.remove('on'); }, 1800);
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  answers = []; idx = 0;
+  show('home');
+});
+</script>
+</body>
+</html>
