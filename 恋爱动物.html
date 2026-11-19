@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋爱动物人格测试 · 你是哪种恋人？</title>
+<style>
+  /* ===== 基础与主题色 ===== */
+  :root{
+    --bg:#fbf3ec;
+    --card:#ffffff;
+    --primary:#b5654a;
+    --primary-soft:#f3ddd2;
+    --accent:#e8a87c;
+    --text:#4a3b33;
+    --text-soft:#8a766b;
+    --line:#eee1d8;
+    --radius:20px;
+    --shadow:0 10px 30px rgba(150,90,60,.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  .wrap{max-width:560px;margin:0 auto;min-height:100%;padding:24px 18px 40px;}
+  .view{display:none;animation:fade .35s ease;}
+  .view.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+  /* ===== 解锁页 ===== */
+  .lock-box{max-width:320px;margin:0 auto;display:flex;flex-direction:column;gap:14px;align-items:center;}
+  .code-input{width:100%;padding:15px 18px;font-size:20px;letter-spacing:10px;text-align:center;border:1.5px solid var(--line);border-radius:16px;font-family:inherit;background:#fff;color:var(--text);outline:none;}
+  .code-input:focus{border-color:var(--primary);}
+  .lock-error{color:#b5654a;font-size:13px;min-height:18px;}
+
+  /* ===== 首页 ===== */
+  .hero{text-align:center;padding:36px 12px 10px;}
+  .hero .emoji-row{font-size:34px;letter-spacing:8px;margin-bottom:18px;}
+  .hero h1{font-size:28px;letter-spacing:1px;margin-bottom:14px;}
+  .hero h1 span{color:var(--primary);}
+  .hero p{color:var(--text-soft);font-size:15px;max-width:380px;margin:0 auto 26px;}
+  .meta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;}
+  .meta-chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;color:var(--text-soft);}
+  .btn{
+    display:inline-block;border:none;cursor:pointer;font-family:inherit;
+    background:var(--primary);color:#fff;font-size:17px;font-weight:600;
+    padding:15px 34px;border-radius:999px;box-shadow:var(--shadow);
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn.ghost{background:#fff;color:var(--primary);border:1.5px solid var(--primary-soft);box-shadow:none;}
+  .animal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:34px;}
+  .animal-grid .cell{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 6px;text-align:center;}
+  .animal-grid .cell .e{font-size:26px;}
+  .animal-grid .cell .n{font-size:11px;color:var(--text-soft);margin-top:6px;}
+  .disclaimer{margin-top:30px;font-size:12px;color:var(--text-soft);text-align:center;line-height:1.7;}
+
+  /* ===== 答题页 ===== */
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;font-size:13px;color:var(--text-soft);}
+  .progress{height:8px;background:var(--primary-soft);border-radius:999px;overflow:hidden;margin-bottom:28px;}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:999px;transition:width .3s ease;}
+  .q-title{font-size:21px;font-weight:700;margin-bottom:24px;}
+  .opts{display:flex;flex-direction:column;gap:14px;}
+  .opt{
+    background:var(--card);border:1.5px solid var(--line);border-radius:18px;
+    padding:16px 18px;font-size:15px;cursor:pointer;text-align:left;font-family:inherit;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .opt:hover{border-color:var(--accent);}
+  .opt.selected{border-color:var(--primary);background:var(--primary-soft);}
+  .quiz-nav{display:flex;justify-content:space-between;margin-top:26px;gap:12px;}
+  .quiz-nav .btn{padding:12px 24px;font-size:15px;}
+
+  /* ===== 结果页 ===== */
+  .result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-top:10px;}
+  .result-banner{padding:34px 22px;text-align:center;color:#fff;}
+  .result-banner .big{font-size:60px;line-height:1;}
+  .result-banner h2{font-size:24px;margin:14px 0 6px;}
+  .result-banner .tag{font-size:14px;opacity:.92;}
+  .result-body{padding:24px 22px;display:flex;flex-direction:column;gap:20px;}
+  .block h3{font-size:14px;color:var(--primary);margin-bottom:8px;letter-spacing:1px;}
+  .block p{font-size:15px;}
+  .tagline{background:var(--bg);border-radius:14px;padding:14px 16px;font-size:15px;}
+  .match-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .match-box{flex:1;min-width:130px;border-radius:14px;padding:14px;}
+  .match-box.good{background:#eef5ec;}
+  .match-box.risk{background:#fbeee9;}
+  .match-box h4{font-size:13px;margin-bottom:6px;}
+  .match-box.good h4{color:#5a8a4e;}
+  .match-box.risk h4{color:#b5654a;}
+  .match-box p{font-size:13px;}
+  .result-actions{display:flex;gap:12px;justify-content:center;margin-top:26px;flex-wrap:wrap;}
+  .poster-wrap{display:none;margin-top:20px;text-align:center;}
+  .poster-wrap canvas{max-width:100%;border-radius:16px;box-shadow:var(--shadow);}
+  .poster-wrap .tip{font-size:12px;color:var(--text-soft);margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 视图：解锁页 ===== -->
+  <section id="view-lock" class="view active">
+    <div class="hero">
+      <div class="emoji-row">🔒</div>
+      <h1>输入<span>验证码</span>开始测试</h1>
+      <p>购买后请在客服处获取 4 位验证码，输入后即可开始测试，验证码不要有空格。</p>
+      <div class="lock-box">
+        <input id="codeInput" class="code-input" type="text" inputmode="numeric" maxlength="4" placeholder="4 位验证码" autocomplete="off" onkeydown="if(event.key==='Enter')verifyCode()">
+        <p class="lock-error" id="codeError"></p>
+        <button class="btn" onclick="verifyCode()">进入测试</button>
+      </div>
+    </div>
+    <p class="disclaimer">本测试为娱乐性质，结果仅供参考，不构成心理或专业建议。</p>
+  </section>
+
+  <!-- ===== 视图：首页 ===== -->
+  <section id="view-home" class="view">
+    <div class="hero">
+      <div class="emoji-row">🐱🐨🐹🐧</div>
+      <h1>谈起恋爱，你是<span>哪种动物</span>？</h1>
+      <p>12 道恋爱场景小题，测出你在亲密关系里的动物人格。是黏人挂件，还是清醒大佬？做完就知道。</p>
+      <div class="meta-row">
+        <span class="meta-chip">🐾 共 12 题</span>
+        <span class="meta-chip">⏱ 约 3 分钟</span>
+        <span class="meta-chip">🎁 12 种结果</span>
+      </div>
+      <button class="btn" onclick="startQuiz()">测测我的恋爱动物</button>
+    </div>
+    <div class="animal-grid" id="animalGrid"></div>
+    <p class="disclaimer">本测试为娱乐性质，结果仅供参考，不构成心理或专业建议。</p>
+  </section>
+
+  <!-- ===== 视图：答题页 ===== -->
+  <section id="view-quiz" class="view">
+    <div class="quiz-top">
+      <span id="quizStep">第 1 / 12 题</span>
+      <span>凭第一感觉选</span>
+    </div>
+    <div class="progress"><i id="progressBar" style="width:8%"></i></div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <div class="opts" id="optsBox"></div>
+    <div class="quiz-nav">
+      <button class="btn ghost" id="prevBtn" onclick="prevQuestion()">上一题</button>
+      <button class="btn" id="nextBtn" onclick="nextQuestion()">下一题</button>
+    </div>
+  </section>
+
+  <!-- ===== 视图：结果页 ===== -->
+  <section id="view-result" class="view">
+    <div class="result-card">
+      <div class="result-banner" id="resultBanner">
+        <div class="big" id="resEmoji"></div>
+        <h2 id="resName"></h2>
+        <div class="tag" id="resTag"></div>
+      </div>
+      <div class="result-body">
+        <div class="block">
+          <h3>性格画像</h3>
+          <p id="resPortrait"></p>
+        </div>
+        <div class="block">
+          <h3>优点 &amp; 雷区</h3>
+          <p><strong>优点：</strong><span id="resPros"></span></p>
+          <p style="margin-top:6px;"><strong>雷区：</strong><span id="resCons"></span></p>
+        </div>
+        <div class="block">
+          <h3>相处建议</h3>
+          <p><strong>给你自己：</strong><span id="resAdviceSelf"></span></p>
+          <p style="margin-top:6px;"><strong>给伴侣：</strong><span id="resAdvicePartner"></span></p>
+        </div>
+        <div class="block match-row">
+          <div class="match-box good">
+            <h4>💚 适配类型</h4>
+            <p id="resMatch"></p>
+          </div>
+          <div class="match-box risk">
+            <h4>🟠 需要避雷</h4>
+            <p id="resAvoid"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn" onclick="drawPoster()">生成我的结果海报</button>
+      <button class="btn ghost" onclick="restart()">再测一次</button>
+    </div>
+    <div class="poster-wrap" id="posterWrap">
+      <canvas id="posterCanvas" width="900" height="1200"></canvas>
+      <p class="tip">长按或右键即可保存海报图片</p>
+    </div>
+    <p class="disclaimer">本测试为娱乐性质，结果仅供参考，不构成心理或专业建议。</p>
+  </section>
+
+</div>
+
+<script>
+/* ===== 维度说明 =====
+   indep   独立：越高越有主见、不黏人；越低越依赖、需要陪伴
+   warm    热情：越高越外放热烈；越低越克制内敛
+   rational 理性：越高越讲道理重分析；越低越感性重感受
+   lead    主导：越高越主动掌控；越低越跟随配合
+*/
+
+/* ===== 数据：12 种动物人格（含四维画像） ===== */
+const ANIMALS = {
+  cat:{
+    emoji:"🐱", name:"猫咪反骨型", color:"#d98c7a",
+    profile:{indep:2, warm:0, rational:0, lead:1},
+    tag:"外表黏人，内心有自己的小王国",
+    portrait:"你在恋爱里像一只猫：亲近是真的，独立也是真的。你需要陪伴，但更需要对方尊重你的节奏；喜欢一个人时会悄悄靠近，被逼太紧又会立刻后退。",
+    pros:"敏感细腻，能察觉到对方情绪的细微变化；有主见，不会在关系里丢掉自我。",
+    cons:"嘴硬心软，不习惯直接示弱；偶尔会用冷淡和试探来确认自己被爱着。",
+    adviceSelf:"想被爱就直接说出来，反复试探容易把对方推远；你的独立很迷人，但也别忘了给伴侣明确的回应。",
+    advicePartner:"别试图控制她/他，给足空间反而会被主动靠近；TA 的冷淡不一定是不爱，可能只是需要缓一缓。",
+    match:"考拉挂件型、水豚清醒型",
+    avoid:"狮王主导型、老虎直球型"
+  },
+  koala:{
+    emoji:"🐨", name:"考拉挂件型", color:"#8fa89b",
+    profile:{indep:-2, warm:1, rational:-1, lead:-1},
+    tag:"温柔黏人，安全感都挂在对方身上",
+    portrait:"你在恋爱里像一只考拉：温和、依赖、喜欢贴着喜欢的人。情绪稳定的时候很治愈，一旦觉得被冷落，就会不自觉地抓紧对方。",
+    pros:"体贴温柔、情绪柔软，愿意把伴侣放在心上；相处起来轻松无攻击性。",
+    cons:"容易把自我价值绑在对方的回应上；独处能力偏弱，分开一会儿就容易不安。",
+    adviceSelf:"慢慢培养自己的生活重心——朋友、爱好、事业都是你的安全感来源；被偏爱时也要记得独立站立。",
+    advicePartner:"你的主动和确定感对 TA 很重要，别玩消失式冷处理；TA 黏你不是负担，是信任你的表现。",
+    match:"修勾暖炉型、猫咪反骨型",
+    avoid:"狐狸机灵型、猫头鹰理性型"
+  },
+  capybara:{
+    emoji:"🐹", name:"水豚清醒型", color:"#b98a63",
+    profile:{indep:1, warm:-1, rational:2, lead:0},
+    tag:"情绪稳定，恋爱里的定海神针",
+    portrait:"你在恋爱里像一只水豚：不急不躁，什么事都能慢慢消化。很少情绪化，遇到矛盾先讲道理、再讲感受，是身边人眼里最靠谱的那一个。",
+    pros:"情绪稳定、包容度高，不容易被争吵带偏；关系里能托住对方的崩溃。",
+    cons:"情绪表达偏淡，偶尔让伴侣觉得「不够爱」；习惯自己扛，不擅长开口求助。",
+    adviceSelf:"稳定是优势，但别把温柔变成冷淡；适当表露脆弱和占有欲，对方才知道你也在乎。",
+    advicePartner:"TA 的平静不是冷淡，需要你主动把情绪氛围带起来；别逼 TA 立刻给激烈反应。",
+    match:"企鹅同盟型、猫头鹰理性型",
+    avoid:"兔子敏感型、老虎直球型"
+  },
+  penguin:{
+    emoji:"🐧", name:"企鹅同盟型", color:"#6d8aa8",
+    profile:{indep:0, warm:0, rational:1, lead:0},
+    tag:"认准了就并肩走，一对一的忠诚派",
+    portrait:"你在恋爱里像一只企鹅：不喜欢暧昧拉扯，认准一个人就想结伴同行。重视承诺和一致性，喜欢两个人像队友一样，把日子过成安稳的日常。",
+    pros:"专一靠谱、有责任感，说到做到；愿意和伴侣一起规划长远。",
+    cons:"不擅长甜言蜜语，浪漫细胞偏务实；遇到心动竞争容易不知道怎么主动争取。",
+    adviceSelf:"日常也要留一点仪式感，别让感情变成只剩过日子；喜欢要表达出来，别只放在行动里。",
+    advicePartner:"TA 的爱藏在细节和行动里，不要只听嘴上说的；给 TA 清晰稳定的关系预期，TA 会回报同等忠诚。",
+    match:"水豚清醒型、棕熊憨厚型",
+    avoid:"狐狸机灵型、猫咪反骨型"
+  },
+  dog:{
+    emoji:"🐶", name:"修勾暖炉型", color:"#e0a458",
+    profile:{indep:-1, warm:2, rational:-1, lead:0},
+    tag:"热情直给，把喜欢写在脸上",
+    portrait:"你在恋爱里像一只修勾：喜欢就藏不住，热情、主动、对人掏心掏肺。会记得对方的喜好，乐于付出，是走到哪里都想把伴侣带上的类型。",
+    pros:"真诚热烈，情绪价值给得足；行动力强，说想见你就真的会出现。",
+    cons:"付出感有时过重，容易期待对等回报；热情来得快，被忽略时也委屈得快。",
+    adviceSelf:"付出前先确认对方接不接得住；保留自己的生活圈子，别把全部注意力挂在一个人身上。",
+    advicePartner:"认真回应 TA 的热情，冷淡会让 TA 很受伤；TA 吃醋黏人，本质是怕被丢下。",
+    match:"考拉挂件型、棕熊憨厚型",
+    avoid:"猫头鹰理性型、狐狸机灵型"
+  },
+  lion:{
+    emoji:"🦁", name:"狮王主导型", color:"#d9a441",
+    profile:{indep:1, warm:1, rational:0, lead:2},
+    tag:"大气护短，关系里的主心骨",
+    portrait:"你在恋爱里像一头狮子：大方、有担当、护短，习惯站在前面替伴侣挡风遮雨。有魅力也有掌控欲，希望被崇拜，也愿意为自己人撑腰。",
+    pros:"果断可靠，遇事不退缩；对自己人慷慨护短，归属感很强。",
+    cons:"掌控欲偏强，不爱被反驳；面子看得重，吵架时不肯先低头。",
+    adviceSelf:"学会把决定权分一部分给伴侣，强势不等于强大；温柔下来反而更有吸引力。",
+    advicePartner:"TA 需要被尊重和肯定，公开场合给足面子；有分歧私下好好说，别当众让 TA 下不来台。",
+    match:"企鹅同盟型、修勾暖炉型",
+    avoid:"猫咪反骨型、兔子敏感型"
+  },
+  fox:{
+    emoji:"🦊", name:"狐狸机灵型", color:"#c96f4a",
+    profile:{indep:1, warm:1, rational:1, lead:1},
+    tag:"脑子转得快，恋爱里的策略高手",
+    portrait:"你在恋爱里像一只狐狸：聪明、风趣、反应快，很会拿捏氛围和分寸。擅长观察人心，聊天从不会冷场，但真心藏得比较深，不会轻易全交出去。",
+    pros:"有趣有梗，社交魅力强；看问题通透，不容易在感情里钻牛角尖。",
+    cons:"心思活络，偶尔让人摸不透；防备心重，真到该投入时容易留一手。",
+    adviceSelf:"机灵是吸引力，但长久关系靠真诚；适当卸下防备，让对方看到你认真的一面。",
+    advicePartner:"别猜来猜去，直接问 TA 的想法；TA 游刃有余的背后，也在观察你值不值得交心。",
+    match:"老虎直球型、猫头鹰理性型",
+    avoid:"考拉挂件型、企鹅同盟型"
+  },
+  rabbit:{
+    emoji:"🐰", name:"兔子敏感型", color:"#d99ab0",
+    profile:{indep:-1, warm:0, rational:-2, lead:-1},
+    tag:"心思细腻，一点点风吹草动都在意",
+    portrait:"你在恋爱里像一只兔子：敏感、温柔、共情力强。对方语气稍微变一点，你心里已经演完一出戏；很在意细节，也很容易因为一句话受伤。",
+    pros:"体贴细腻，能接住伴侣的情绪；真诚柔软，相处起来让人想保护。",
+    cons:"容易多想内耗，把中性信号解读成不被爱；安全感不足，需要反复确认。",
+    adviceSelf:"练习把想法直接说出口，而不是让对方猜；区分「事实」和「自己脑补的剧情」，少折磨自己。",
+    advicePartner:"说话尽量明确温和，别忽冷忽热；TA 的脆弱需要被温柔接住，一句解释比讲道理更管用。",
+    match:"水豚清醒型、棕熊憨厚型",
+    avoid:"狮王主导型、狐狸机灵型"
+  },
+  bear:{
+    emoji:"🐻", name:"棕熊憨厚型", color:"#9c7a5e",
+    profile:{indep:0, warm:-1, rational:0, lead:-1},
+    tag:"踏实稳重，慢热但长情",
+    portrait:"你在恋爱里像一只棕熊：话不多但人很实在，慢热、稳重、有担当。不搞花里胡哨的套路，认定一个人就默默地对 TA 好，是适合过日子的类型。",
+    pros:"踏实可靠、长情专一；情绪不浮夸，给人很强的安定感。",
+    cons:"不善表达浪漫和情绪；反应偏慢，有时跟不上伴侣的情绪节奏。",
+    adviceSelf:"学着把关心说出口、把浪漫做出来；感情也需要经营，不能只靠默默付出。",
+    advicePartner:"别嫌 TA 闷，TA 的爱都在行动里；多给 TA 一点时间，慢热的人一旦认定就很稳。",
+    match:"企鹅同盟型、兔子敏感型",
+    avoid:"狐狸机灵型、老虎直球型"
+  },
+  owl:{
+    emoji:"🦉", name:"猫头鹰理性型", color:"#7d86a8",
+    profile:{indep:2, warm:-2, rational:2, lead:0},
+    tag:"冷静克制，凡事先分析再投入",
+    portrait:"你在恋爱里像一只猫头鹰：理性、克制、爱思考。进入关系前会反复评估，遇到矛盾先分析问题本身，情绪上来之前先讲道理，是旁人眼里成熟清醒的代表。",
+    pros:"冷静客观，不容易被情绪冲昏头；边界感清晰，尊重彼此独立空间。",
+    cons:"情感共鸣偏弱，常被说「太冷静」；习惯抽离观察，让伴侣觉得不够亲密。",
+    adviceSelf:"亲密关系不是解题，偶尔放下分析去感受；表达关心和偏爱，比逻辑正确更重要。",
+    advicePartner:"TA 需要独处和思考空间，别黏太紧；感情上多主动带一点温度，TA 会慢慢靠近。",
+    match:"水豚清醒型、狐狸机灵型",
+    avoid:"考拉挂件型、修勾暖炉型"
+  },
+  tiger:{
+    emoji:"🐯", name:"老虎直球型", color:"#cf7a3d",
+    profile:{indep:1, warm:2, rational:-1, lead:2},
+    tag:"爱憎分明，喜欢就全力冲",
+    portrait:"你在恋爱里像一只老虎：直接、热烈、敢爱敢恨。喜欢就主动争取，不喜欢也不拖着；个性鲜明，相处有张力，讨厌拐弯抹角和猜谜式恋爱。",
+    pros:"爽快真诚，不搞暧昧套路；行动力强，想要的关系会主动推进。",
+    cons:"脾气来得快，吵架火力猛；不够耐心，容易忽视对方的慢节奏。",
+    adviceSelf:"冲之前先听对方把话说完；强势表达可以，别用语气压人，冷静下来再解决问题。",
+    advicePartner:"跟 TA 有话直说，绕弯子反而起反效果；TA 发完火通常就翻篇，别记仇太久。",
+    match:"狐狸机灵型、企鹅同盟型",
+    avoid:"考拉挂件型、兔子敏感型"
+  },
+  turtle:{
+    emoji:"🐌", name:"乌龟慢热型", color:"#7fa68a",
+    profile:{indep:0, warm:-2, rational:1, lead:-2},
+    tag:"慢慢来，确定了才交出真心",
+    portrait:"你在恋爱里像一只乌龟：慢热、谨慎、长情。初识时客气疏离，需要很长时间观察和信任，才会慢慢打开自己；一旦认定，感情就稳得很。",
+    pros:"谨慎真诚，不轻易开始；长情稳定，关系耐得住时间。",
+    cons:"反应慢半拍，容易被误会冷淡；开启心防的过程让对方着急。",
+    adviceSelf:"可以慢，但要给对方明确信号；别让真心一直藏在壳里，适度回应才能让关系往前走。",
+    advicePartner:"耐心等 TA 敞开心扉，别逼 TA 快速表态；TA 的冷淡只是还在观察，不是拒绝。",
+    match:"棕熊憨厚型、水豚清醒型",
+    avoid:"老虎直球型、修勾暖炉型"
+  }
+};
+
+/* ===== 题目：每题选项标注四维加分 ===== */
+const QUESTIONS = [
+  {
+    q:"周末对方问你想去哪约会，你通常？",
+    opts:[
+      {t:"先看看对方安排，再决定自己想不想去", s:{lead:-1}},
+      {t:"当然想一直待在一起，去哪都行", s:{indep:-1}},
+      {t:"提前做好攻略，把行程安排得明明白白", s:{lead:1, rational:1}},
+      {t:"先分析一下这次约会值不值得去", s:{rational:1}}
+    ]
+  },
+  {
+    q:"两人闹了别扭，你的第一反应是？",
+    opts:[
+      {t:"先让自己冷静下来，再慢慢谈", s:{rational:1, warm:-1}},
+      {t:"想马上和好，不想一直冷战", s:{warm:1}},
+      {t:"找找对方话里的漏洞，盘算怎么回应", s:{rational:1}},
+      {t:"把话说开，谁的问题谁承担", s:{lead:1, warm:1}}
+    ]
+  },
+  {
+    q:"对方半天没回消息，你会？",
+    opts:[
+      {t:"忍不住多想，是不是自己哪句话说错了", s:{rational:-1, indep:-1}},
+      {t:"默默记在心里，等见面再说", s:{warm:-1}},
+      {t:"直接问清楚，顺便把节奏握在自己手里", s:{lead:1}},
+      {t:"不急不催，该干嘛干嘛，等 TA 回", s:{indep:1, rational:1}}
+    ]
+  },
+  {
+    q:"你表达喜欢的方式，更接近哪一种？",
+    opts:[
+      {t:"嘴上傲娇，行动上却很诚实", s:{indep:1, warm:-1}},
+      {t:"忽冷忽热，看心情也看对方表现", s:{rational:1, indep:1}},
+      {t:"心里反复琢磨，表面不太敢表现", s:{rational:-1, lead:-1}},
+      {t:"先观察够了，再判断要不要表达", s:{rational:1}}
+    ]
+  },
+  {
+    q:"在一段关系里，你最在意的是？",
+    opts:[
+      {t:"被需要、被贴着，感觉自己很重要", s:{indep:-1}},
+      {t:"热情有回应，付出能被看见", s:{warm:1}},
+      {t:"两个人像队友一样并肩往前走", s:{lead:-1}},
+      {t:"彼此踏实，日子安稳不出乱子", s:{warm:-1, rational:1}}
+    ]
+  },
+  {
+    q:"对方想带你融入 TA 的朋友圈子，你？",
+    opts:[
+      {t:"先观察一圈，熟了再放开", s:{rational:1}},
+      {t:"想成为关系里被认可、被捧着的那个人", s:{lead:1, warm:1}},
+      {t:"有话直说，能不能处一次就见分晓", s:{lead:1, warm:1}},
+      {t:"慢慢适应，需要一段时间才放得开", s:{lead:-1, warm:-1}}
+    ]
+  },
+  {
+    q:"遇到分歧时，你更倾向于？",
+    opts:[
+      {t:"保留自己的立场，不轻易被说服", s:{indep:1, lead:1}},
+      {t:"优先维护关系，不想吵得太难看", s:{lead:-1, warm:1}},
+      {t:"找角度绕过去，不让场面僵住", s:{rational:1}},
+      {t:"先认下来，自己回去慢慢消化", s:{rational:-1, lead:-1}}
+    ]
+  },
+  {
+    q:"你情绪低落时，更希望对方怎么做？",
+    opts:[
+      {t:"陪着我就好，不用急着讲道理", s:{rational:-1}},
+      {t:"主动哄我、安慰我，让我感受到被在意", s:{warm:1, indep:-1}},
+      {t:"直接带我做点开心的事，把情绪带起来", s:{warm:1}},
+      {t:"帮我分析问题，给出可行的解决办法", s:{rational:1}}
+    ]
+  },
+  {
+    q:"你进入一段恋爱的速度通常是？",
+    opts:[
+      {t:"先观察磨合，不轻易交付真心", s:{rational:1, indep:1}},
+      {t:"认准了就想主导这段关系的走向", s:{lead:1}},
+      {t:"慢热，确定安全了才慢慢靠近", s:{warm:-1, lead:-1}},
+      {t:"喜欢就直接冲，不爱磨叽", s:{warm:1, lead:1}}
+    ]
+  },
+  {
+    q:"你对喜欢的人好，通常是？",
+    opts:[
+      {t:"嘴上不饶人，背地里默默照顾", s:{warm:-1, indep:1}},
+      {t:"实实在在做事，不搞虚的浪漫", s:{rational:1, lead:-1}},
+      {t:"容易患得患失，特别怕对方不满意", s:{rational:-1, indep:-1}},
+      {t:"投其所好，把对方哄得开心是本事", s:{warm:1, rational:1}}
+    ]
+  },
+  {
+    q:"在关系里，你最不能接受的是？",
+    opts:[
+      {t:"被黏太紧、失去个人空间", s:{indep:1}},
+      {t:"暧昧不清、没有明确承诺", s:{rational:1, lead:1}},
+      {t:"感情被冷淡处理，什么都不沟通", s:{warm:1}},
+      {t:"拐弯抹角、有话不直说", s:{rational:1}}
+    ]
+  },
+  {
+    q:"聊到长远未来，你的态度是？",
+    opts:[
+      {t:"先过好当下，以后的事慢慢看", s:{warm:-1, indep:1}},
+      {t:"想把对方规划进自己的未来里", s:{warm:1, lead:1}},
+      {t:"希望关系由自己掌握节奏和方向", s:{lead:1, indep:1}},
+      {t:"不急着承诺，相处舒服了再说长远", s:{warm:-1, rational:1}}
+    ]
+  }
+];
+
+/* ===== 状态与视图切换 ===== */
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ===== 验证码白名单（纯前端，可循环复用） ===== */
+const ACCESS_CODES = ["4729"];
+
+function verifyCode(){
+  const v = document.getElementById("codeInput").value.trim();
+  const err = document.getElementById("codeError");
+  if(ACCESS_CODES.includes(v)){
+    err.textContent = "";
+    showView("view-home");
+  }else{
+    err.textContent = "验证码不正确，请核对后再输入";
+  }
+}
+
+/* 初始化：每次打开都停在验证码页，不记忆解锁状态 */
+
+/* 首页动物预告 */
+(function(){
+  const grid = document.getElementById("animalGrid");
+  Object.values(ANIMALS).forEach(a=>{
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.innerHTML = `<div class="e">${a.emoji}</div><div class="n">${a.name.replace(/型$/,"")}</div>`;
+    grid.appendChild(cell);
+  });
+})();
+
+function startQuiz(){
+  current = 0;
+  answers = new Array(QUESTIONS.length).fill(null);
+  renderQuestion();
+  showView("view-quiz");
+}
+
+function renderQuestion(){
+  const item = QUESTIONS[current];
+  document.getElementById("quizStep").textContent = `第 ${current+1} / ${QUESTIONS.length} 题`;
+  document.getElementById("progressBar").style.width = `${((current+1)/QUESTIONS.length)*100}%`;
+  document.getElementById("qTitle").textContent = item.q;
+  const box = document.getElementById("optsBox");
+  box.innerHTML = "";
+  item.opts.forEach((op,i)=>{
+    const btn = document.createElement("button");
+    btn.className = "opt" + (answers[current]===i ? " selected" : "");
+    btn.textContent = op.t;
+    btn.onclick = ()=>selectOption(i);
+    box.appendChild(btn);
+  });
+  document.getElementById("prevBtn").style.visibility = current===0 ? "hidden" : "visible";
+  document.getElementById("nextBtn").textContent = current===QUESTIONS.length-1 ? "查看结果" : "下一题";
+}
+
+function selectOption(i){
+  answers[current] = i;
+  renderQuestion();
+}
+
+function prevQuestion(){
+  if(current>0){ current--; renderQuestion(); }
+}
+
+function nextQuestion(){
+  if(answers[current]===null){
+    alert("先选一个最贴近你的选项哦");
+    return;
+  }
+  if(current<QUESTIONS.length-1){
+    current++;
+    renderQuestion();
+  }else{
+    showResult();
+  }
+}
+
+/* ===== 计分：四维向量 + 画像距离匹配 ===== */
+const DIMS = ["indep","warm","rational","lead"];
+
+function calcVector(ans){
+  const vec = {indep:0, warm:0, rational:0, lead:0};
+  ans.forEach((ansIdx,qi)=>{
+    if(ansIdx===null) return;
+    const s = QUESTIONS[qi].opts[ansIdx].s || {};
+    DIMS.forEach(d=>{ vec[d] += (s[d]||0); });
+  });
+  return vec;
+}
+
+function calcResult(ans){
+  const vec = calcVector(ans);
+  let best = Object.keys(ANIMALS)[0];
+  let bestDist = Infinity;
+  Object.keys(ANIMALS).forEach(k=>{
+    const p = ANIMALS[k].profile;
+    let dist = 0;
+    DIMS.forEach(d=>{ dist += Math.pow(vec[d]-p[d], 2); });
+    if(dist < bestDist){ bestDist = dist; best = k; }
+  });
+  return best;
+}
+
+function showResult(){
+  const key = calcResult(answers);
+  const r = ANIMALS[key];
+  document.getElementById("resultBanner").style.background =
+    `linear-gradient(135deg, ${r.color}, ${shade(r.color)})`;
+  document.getElementById("resEmoji").textContent = r.emoji;
+  document.getElementById("resName").textContent = r.name;
+  document.getElementById("resTag").textContent = r.tag;
+  document.getElementById("resPortrait").textContent = r.portrait;
+  document.getElementById("resPros").textContent = r.pros;
+  document.getElementById("resCons").textContent = r.cons;
+  document.getElementById("resAdviceSelf").textContent = r.adviceSelf;
+  document.getElementById("resAdvicePartner").textContent = r.advicePartner;
+  document.getElementById("resMatch").textContent = r.match;
+  document.getElementById("resAvoid").textContent = r.avoid;
+  document.getElementById("posterWrap").style.display = "none";
+  showView("view-result");
+}
+
+function shade(hex){
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r=Math.max(0,r-30); g=Math.max(0,g-30); b=Math.max(0,b-30);
+  return `rgb(${r},${g},${b})`;
+}
+
+function restart(){
+  showView("view-home");
+}
+
+/* ===== 结果海报（Canvas 绘制，可保存） ===== */
+function drawPoster(){
+  const key = calcResult(answers);
+  const r = ANIMALS[key];
+  const canvas = document.getElementById("posterCanvas");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, r.color);
+  grad.addColorStop(1, shade(r.color));
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle = "rgba(255,255,255,.12)";
+  ctx.beginPath(); ctx.arc(120,160,120,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(800,1000,160,0,Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = "rgba(255,255,255,.9)";
+  ctx.font = "500 34px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("我的恋爱动物人格", W/2, 130);
+
+  ctx.font = "180px sans-serif";
+  ctx.fillText(r.emoji, W/2, 380);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "700 64px sans-serif";
+  ctx.fillText(r.name, W/2, 520);
+
+  ctx.font = "400 32px sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,.92)";
+  wrapText(ctx, r.tag, W/2, 600, 700, 44);
+
+  ctx.strokeStyle = "rgba(255,255,255,.35)";
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(180,720); ctx.lineTo(W-180,720); ctx.stroke();
+
+  ctx.font = "400 30px sans-serif";
+  wrapText(ctx, r.portrait, W/2, 800, 680, 46);
+
+  ctx.font = "400 24px sans-serif";
+  ctx.fillStyle = "rgba(255,255,255,.75)";
+  ctx.fillText("趣味测试 · 结果仅供参考，不构成专业建议", W/2, H-70);
+
+  document.getElementById("posterWrap").style.display = "block";
+  document.getElementById("posterWrap").scrollIntoView({behavior:"smooth"});
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const chars = text.split("");
+  let line = "", yy = y;
+  chars.forEach(ch=>{
+    if(ctx.measureText(line+ch).width > maxWidth){
+      ctx.fillText(line, x, yy);
+      line = ch;
+      yy += lineHeight;
+    }else{
+      line += ch;
+    }
+  });
+  if(line) ctx.fillText(line, x, yy);
+}
+</script>
+</body>
+</html>
