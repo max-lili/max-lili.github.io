@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>深宫人格图鉴 · 趣味测试</title>
+<style>
+  :root{
+    --pink:#a63a2e; --pink-deep:#8c2b22; --pink-soft:#f3e3d8;
+    --cream:#fffaf1; --ink:#2f3e46; --ink-2:#5a6668; --ink-3:#8a9390;
+    --line:#e3d6bd; --gold:#b8893b;
+    --shadow-sm:0 4px 18px rgba(140,70,40,.12);
+    --shadow:0 12px 40px rgba(140,70,40,.18);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Serif SC",serif;
+    background:linear-gradient(135deg,#f7f0e2,#fdeee6);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(247,240,226,.97),rgba(253,238,230,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--pink-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#fffafc}
+  #passInput:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(166,58,46,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink-deep);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1.5px solid var(--pink-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:28px;line-height:1.3;margin:6px 0 14px}
+  h1 .hl{color:var(--pink-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pink-deep);
+    background:var(--pink-soft);padding:4px 11px;border-radius:999px}
+  .progress-track{height:8px;background:var(--pink-soft);border-radius:99px;overflow:hidden;margin:14px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--gold),var(--pink));transition:width .8s ease}
+  .option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s}
+  .option:hover{transform:translateY(-2px);border-color:var(--pink-soft)}
+  .option.on{border-color:var(--pink);background:#fdf3ee}
+  .opt-tag{flex:none;width:30px;height:30px;border:1px solid var(--gold);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:700;font-size:14px}
+  .option.on .opt-tag{background:var(--pink);border-color:var(--pink);color:#fff}
+  .type-emoji{font-size:56px;line-height:1;margin-bottom:8px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--pink-deep);background:var(--pink-soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.6;text-align:center;margin-top:24px}
+  .insight-block{margin:16px 0}
+  .insight-block .lab{font-size:13px;font-weight:800;color:var(--gold);margin-bottom:6px}
+  .insight-block p{font-size:15px;line-height:1.8;color:var(--ink);margin:0}
+  .insight-block.gold p{background:linear-gradient(135deg,#fff7ec,#fdf3ee);border-left:3px solid var(--gold);
+    padding:12px 14px;border-radius:10px;font-weight:700;color:var(--pink-deep)}
+  .match{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin-top:14px}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(47,62,70,.6);
+    align-items:center;justify-content:center;padding:20px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:16px;max-width:400px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(47,62,70,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">✨ 趣味测试</span>
+    <h1>深宫人格<span class="hl">图鉴</span></h1>
+    <p class="gsub">12 道情景小题，看清自己骨子里的处世模样。不问历史知识，只凭第一反应选择场景偏好；没有标准答案，不制造焦虑，图个乐、照见性格侧面。</p>
+    <button class="btn" id="startBtn">开始测试 →</button>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="gsub">第 1 / 12 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin-top:0">题干</h2>
+      <div id="options"><!-- 选项由 JS 渲染 --></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div class="type-emoji" id="rEmoji">🎀</div>
+      <h2 id="rName" style="margin:0 0 6px">结果类型</h2>
+      <p class="gsub" id="rPersona">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div id="rInsight"></div>
+      <p class="match" id="rMatch"></p>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的结果海报.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "8595"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 数据区 ============ */
+var DIMS = { A:'清醒谋略', B:'锋芒外放', C:'温润守护', D:'城府制衡' };
+
+var QUESTIONS = [
+  { title:'初入新环境，你最先做的事是？', options:[
+    {key:'A', code:'A1', text:'先观察一圈人情脉络，心里默默记下谁和谁走得近'},
+    {key:'B', code:'B1', text:'径直把自己喜欢的位置占了，气场先立住'},
+    {key:'C', code:'C1', text:'找个舒服的角落坐下，随性自在，不刻意应酬'},
+    {key:'D', code:'D1', text:'按规矩礼数把场面走周全，让所有人挑不出错'}
+  ]},
+  { title:'有人无意得罪了你，你心里第一反应是？', options:[
+    {key:'A', code:'A2', text:'先弄清原委，原则问题不让步，但也不记私仇'},
+    {key:'B', code:'B2', text:'面上不动声色，把这件事默默记在心里'},
+    {key:'C', code:'C2', text:'先替对方找个台阶，能过去就不往心里去'},
+    {key:'D', code:'D2', text:'判断对方是无心还是有意，再决定怎么回应'}
+  ]},
+  { title:'宴席上有人当众言语挤兑你，你会？', options:[
+    {key:'A', code:'A3', text:'耳根发热，先低下头，回去再慢慢琢磨这话的意思'},
+    {key:'B', code:'B3', text:'当场笑着顶回去，热闹不能输了场面'},
+    {key:'C', code:'C3', text:'打个圆场把话岔开，谁的面子都不伤'},
+    {key:'D', code:'D3', text:'斜睨一眼懒得接招，心里根本没把对方放在眼里'}
+  ]},
+  { title:'得了一件稀罕赏赐，你会怎么处理？', options:[
+    {key:'A', code:'B1', text:'立刻戴上穿出去，就要让所有人看见这份光彩'},
+    {key:'B', code:'C1', text:'随手搁在一边，东西合心意就好，不拿来显摆'},
+    {key:'C', code:'D1', text:'登记造册、按份例分派妥当，规矩上滴水不漏'},
+    {key:'D', code:'A1', text:'先收下观察风向，再决定什么时候、用什么方式亮出来'}
+  ]},
+  { title:'发现身边盟友藏着心事，你会？', options:[
+    {key:'A', code:'B2', text:'不追问，等对方愿意开口时自然会说'},
+    {key:'B', code:'C2', text:'默默多照应几分，用行动让对方知道有人撑腰'},
+    {key:'C', code:'D2', text:'旁敲侧击摸清顾虑，必要时替对方把难处兜住'},
+    {key:'D', code:'A2', text:'直接坦诚问一句，有难处一起商量，不藏着掖着'}
+  ]},
+  { title:'面对位高者的试探，你如何自处？', options:[
+    {key:'A', code:'B3', text:'顺着话头撒娇卖俏，把试探变成讨喜的机会'},
+    {key:'B', code:'C3', text:'谦和应对，话留三分，不越界也不冷场'},
+    {key:'C', code:'D3', text:'爱答不理，全凭心意，讨好这套我学不会'},
+    {key:'D', code:'A3', text:'小心斟酌每一句回答，生怕哪句说错落人口实'}
+  ]},
+  { title:'夜深独处时，你通常在想什么？', options:[
+    {key:'A', code:'C1', text:'想山外的风景和自由，心里盼着哪天能出去走走'},
+    {key:'B', code:'D1', text:'盘算眼下的局面和各人的位置，把棋一步步摆稳'},
+    {key:'C', code:'A1', text:'复盘白天的得失，琢磨自己下一步该怎么走'},
+    {key:'D', code:'B1', text:'想那个人为什么还不来，爱恨都要痛痛快快'}
+  ]},
+  { title:'朋友被人算计了，你会怎么做？', options:[
+    {key:'A', code:'C2', text:'先把人护到身后，能扛的风险自己先扛下来'},
+    {key:'B', code:'D2', text:'理清来龙去脉，替朋友出主意、找退路'},
+    {key:'C', code:'A2', text:'当面把道理讲清楚，该争的公道绝不退让'},
+    {key:'D', code:'B2', text:'冷眼看清局势，在关键处递一句点醒的话'}
+  ]},
+  { title:'想达成一个目标，你的惯用方式是？', options:[
+    {key:'A', code:'C3', text:'稳扎稳打，顾全大局，慢慢把人和事都理顺'},
+    {key:'B', code:'D3', text:'认准了就按自己的性子来，谁劝都不听'},
+    {key:'C', code:'A3', text:'反复掂量自己够不够格，小心翼翼地争取'},
+    {key:'D', code:'B3', text:'主动凑上前刷存在感，机会要靠热闹争取'}
+  ]},
+  { title:'被人误会了，你会？', options:[
+    {key:'A', code:'D1', text:'不急着辩解，等时机合适再让事实自己说话'},
+    {key:'B', code:'A1', text:'先判断这误会值不值得解释，值得就巧妙化解'},
+    {key:'C', code:'B1', text:'当场把话说开，凭什么受这份委屈'},
+    {key:'D', code:'C1', text:'一笑了之，懂我的人自然懂，懒得费口舌'}
+  ]},
+  { title:'若能离开眼下的环境，你理想的日子是？', options:[
+    {key:'A', code:'D2', text:'找个安稳去处，把往后的日子安排得妥帖周全'},
+    {key:'B', code:'A2', text:'守一方清净小院，读书品茶，按自己的心意活'},
+    {key:'C', code:'B2', text:'闭门静养，远离是非，谁也别来打扰'},
+    {key:'D', code:'C2', text:'安分度日，身边有值得照顾的人就知足'}
+  ]},
+  { title:'回头看自己一路的选择，你最认同哪句？', options:[
+    {key:'A', code:'D3', text:'我这一生，只认自己的心，不认旁人的规矩'},
+    {key:'B', code:'A3', text:'我已经很努力了，只盼着有人能看见我的好'},
+    {key:'C', code:'B3', text:'日子就要热热闹闹，有风光就要尽情享'},
+    {key:'D', code:'C3', text:'不争一时长短，平安和顺才是最长远的福气'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'🪷', name:'通透主角型', persona:'逆风翻盘的解语花', kw:['聪慧','清醒','能屈能伸'],
+    insight:[
+      '你习惯在开口前先把一圈人情脉络看清：谁和谁走得近、哪句话是随口寒暄、哪一句是旁敲侧击的试探，你都默默记在心里，不急着表态。遇上委屈也不急着辩解，先在心里掂量这误会值不值得解释、眼下是不是说开的时机；值得才出手，时机未到就沉住气，等风来再落子。',
+      '你聪慧清醒，能屈能伸，从一路风雨里慢慢走到如今的从容，既有柔软的共情，也有守住底线的定力。你不急于向谁证明自己，却总能在局面转圜时稳稳接住机会，把一手不算好的牌慢慢打好，情绪稳得住，判断也站得准。',
+      '走过的弯路都算数，你本就有把日子过成自己想要模样的能力。'
+    ],
+    match:'与默默守护者最搭，傲骨知己最懂你。@那个总替你兜底的朋友来测测。' },
+  A2:{ emoji:'🌿', name:'傲骨贤妃型', persona:'端方自持的白月光', kw:['端庄','刚直','有原则'],
+    insight:[
+      '你待人真诚却有分寸，原则上的事从不让步，私下也不记私仇；朋友有难处，你会当面坦诚地问一句，有误会就把道理清清楚楚讲在明处，不藏着掖着，更不会为了场面好看就曲意逢迎、委屈自己配合别人。',
+      '你外柔内刚，端庄有风骨，处事有尺有节，那份不随波逐流的体面本身就是光。你也许偶尔担心坚持原则会显得不近人情，但真正值得深交的人，敬重的恰恰是你这份不讨好、不迎合的清醒，懂得的人自会靠近。和你相处不必提防，也不必费力解释自己，这份踏实正是旁人求之不得的底气。',
+      '你的风骨不必迎合谁，清白自持的人自有荣光。'
+    ],
+    match:'与灵魂知己最同频，宽厚长辈型最护你。@那个和你三观合拍的朋友。' },
+  A3:{ emoji:'🌱', name:'敏感隐忍型', persona:'小心翼翼的含羞草', kw:['细腻','敏感','向上心强'],
+    insight:[
+      '你常在一句话出口前反复斟酌：耳根容易发热，怕哪句说错落人口实；明明已经很努力，却总先掂量自己够不够格，夜里还会翻来覆去回想白天那句随口的话、那个微小的眼神，习惯把压力和不安悄悄咽下去，不轻易麻烦别人。偶尔也想有个人看穿你嘴上说的没事，主动问一句是不是累了。',
+      '你心思细腻、肯上进，对世界保有温柔的体察，只是常常把自我评价压得太低，把别人的感受放在自己前面。你不必处处讨好、时时自证，慢一点也没关系，总有人愿意接住你的情绪，看见你默默付出的那些好。',
+      '你值得被好好对待，不必先低着头再开口。'
+    ],
+    match:'与温柔包容者最暖，通透引导者最能拉你一把。@那个总安慰你的朋友。' },
+  B1:{ emoji:'🌹', name:'明艳骄宠型', persona:'热烈张扬的红玫瑰', kw:['明艳','骄傲','敢爱敢恨'],
+    insight:[
+      '你拿到喜欢的东西就想大大方方亮出来，不爱藏着掖着；受了委屈当场把话说开，爱恨都痛痛快快，宴席上有人言语挤兑你，你也能笑着顶回去，热闹场面绝不肯输了气势。喜欢就争取，在意就表露，从不拧巴着让自己受委屈。',
+      '你明艳骄傲，敢爱敢恨，活得热烈直白，这份感染力总能点亮周围的气氛。锋芒之外记得留一点温柔给自己，别人的眼光挡不住你发光；尽兴做自己，比面面俱到地周全更动人，也更像你本来的样子。你身上有种毫不扭捏的生命力，想靠近你的人往往先被这份坦荡打动。',
+      '热烈从不是错，你尽管盛开，自有赏花人。'
+    ],
+    match:'与同类烈性最互相欣赏，温柔化解者最能哄你。@那个和你一起飒的朋友。' },
+  B2:{ emoji:'🍵', name:'沉静端方型', persona:'久病成医的旁观者', kw:['沉静','隐忍','心中有数'],
+    insight:[
+      '你面上总是不动声色，心里却把周遭看得通透；朋友藏着心事，你不追着盘问，等对方愿意开口了自然会说，只在关键处递一句点醒的话。你习惯了自己消化情绪，也习惯了先替别人着想、尽量不添麻烦，很多事都默默放在心里慢慢消化。情绪上来时你也习惯自己慢慢平复，很少向外人倾倒苦水。',
+      '你沉静隐忍，心中有数，在复杂的关系里始终守着自己的节奏，不急着争抢也不轻易站队。偶尔也可以示弱，不必凡事都一个人扛过来；有人愿意听你说说心里话，这并不丢人，反而是被人亲近、被人放在心上的证明。',
+      '沉默不是软弱，你心里自有一片清明天地。'
+    ],
+    match:'与沉稳同盟最默契，清直之人最合你意。@那个安静懂你的朋友。' },
+  B3:{ emoji:'🐦', name:'玲珑争宠型', persona:'人来疯的小雀鸟', kw:['活泼','外向','爱热闹'],
+    insight:[
+      '你走到哪里气氛就热到哪里，聚会里坐不住，总爱凑在人群里说笑；机会来了会主动上前刷存在感，顺着话头撒娇卖俏也不觉得难为情，眉眼弯弯全是兴致，笑点低、反应快，谁冷场了你都能顺手把话题接过来。',
+      '你活泼外向，天生热爱热闹，这份鲜活是难得的天赋，和你待在一起总不无聊。偶尔静下来听听自己内心，会发现你想要什么其实最清楚；你不必一直充当气氛担当，累了也可以安静待着，自在舒服比讨所有人欢心更重要。你自带让人放松的气场，朋友说只要有你在，场子就不会冷下来。',
+      '鲜活的人自带光，怎么开心就怎么活。'
+    ],
+    match:'与洒脱玩伴最玩得来，宽厚包容者最疼你。@那个聚会少不了的朋友。' },
+  C1:{ emoji:'🍃', name:'深情洒脱型', persona:'风一样的白衣客', kw:['温柔','深情','自由洒脱'],
+    insight:[
+      '你独处时总想着山外的风景和远方，心底装着风月与自由，不为虚名所困；懂你的人知道你重情重义，只是不爱被条条框框拴住，向往长亭策马、衣袂随风的开阔日子。对在意的人肯付出真心，对束缚自己的关系也舍得抽身。答应过的人和事你放在心上，可一旦感到被捆绑，也愿意承认自己并不属于这里。',
+      '你温柔深情，又洒脱不羁，在奔赴心意的路上清醒通透，不把自己困在得失里。记得先照顾好自己，再去成全别人；自由不是冷漠，而是懂得把真心留给真正值得的人和事，来去都干干净净。',
+      '心向江湖的人，走到哪里都有风。'
+    ],
+    match:'与灵魂相惜者最意难平，开心果最能让你笑。@那个懂你浪漫的朋友。' },
+  C2:{ emoji:'☂️', name:'仁厚守护型', persona:'默默撑伞的老实人', kw:['踏实','仁厚','默默付出'],
+    insight:[
+      '朋友被算计，你会先把人护到身后，能扛的风险自己先扛下来；日常里也是默默多照应几分，用行动让身边人知道有人撑腰，雨天把大半伞面倾向别人，自己肩头湿了一片也不在意。别人没开口，你往往已经把难处想到了前头。',
+      '你踏实仁厚，习惯默默付出，温柔从不张扬却最让人安心。这份善意也请分一半给自己，你的需要同样值得被认真回应；不必总做兜底的那个人，先把自己照顾好，才有力气长久地守护别人，而不是一直消耗自己。你总把别人的难处先揽到自己身上，却常常忘了自己也可以被照顾。',
+      '你撑过的伞，终会替你挡回风雨。'
+    ],
+    match:'与被你守护的人最念你好，敏感者最依赖你。@那个总被你照顾的朋友。' },
+  C3:{ emoji:'🏮', name:'宽厚通透型', persona:'看破不说破的大家长', kw:['宽厚','沉稳','顾全大局'],
+    insight:[
+      '晚辈们说笑争执，你总在一旁含笑不语，端着茶盏轻轻吹开浮沫；场面快僵持时，你打个圆场把话岔开，谁的面子都不伤，稳扎稳打把人和事慢慢理顺，顾全大局是你的本能。很多话你心里明白，却不点破，只在合适的时候轻轻提点。',
+      '你宽厚沉稳，通透周全，习惯替旁人着想、把局面稳住，是集体里让人安心的那一个。这份体谅很有分量，但不必总做兜底的人，你也可以优先考虑自己的感受；温和与边界感并不冲突，照顾好别人之前先安顿好自己。你像团队里的定海神针，有你在，旁人心里就稳了大半。',
+      '不争一时长短，平安和顺才是最长远的福气。'
+    ],
+    match:'与沉稳知己最合拍，活泼晚辈最黏你。@那个集体里最可靠的朋友。' },
+  D1:{ emoji:'♟️', name:'端庄制衡型', persona:'规则之上的掌局人', kw:['沉稳','谋略','深谙规则'],
+    insight:[
+      '你习惯在心里盘算眼下的局面和各人的位置，把棋一步步摆稳；待人接物按规矩礼数走周全，让人挑不出错处，遇上试探也不急着反应，等时机合适再让事实自己说话。你很少被情绪推着走，凡事先看清楚再决定怎么出手。',
+      '你沉稳有谋略，深谙规则，在复杂关系里始终站得稳，想得长远也守得住分寸。这份掌控力是你的本事，只是偶尔可以卸下防备，让人看见你柔软的一面；布局之外，也该有属于自己的松弛时刻，不必把每一步都绷得太紧。你看得懂规则也守得住分寸，局面越乱，你越能沉住气理清头绪。',
+      '棋局在握的人，不必时时绷着弦。'
+    ],
+    match:'与干练执行者最得力，沉静旁观者最让你放心。@那个天生领导者朋友。' },
+  D2:{ emoji:'📿', name:'干练忠仆型', persona:'察言观色的主心骨', kw:['干练','忠心','洞察人情'],
+    insight:[
+      '你总能在别人开口前把事情办妥：旁敲侧击摸清顾虑，替朋友出主意、找退路，神色妥帖，前后关节早想明白；身边人拿不定主意时，第一个想到的往往就是问问你的看法。你看人看事细致周到，答应下来的事一定有交代。交办给你的事不必反复叮嘱，你总能提前把细节和退路都安排妥当。',
+      '你干练忠心，洞察人情，是大家最依赖的后盾。这份靠谱来之不易，但你的价值不止于付出，你的想法也值得被征询；不必总把自己放在次要位置，你的判断同样有分量，被人需要的同时，也该被人认真看见和尊重。',
+      '看得清局面的你，值得被同等尊重。'
+    ],
+    match:'与上下级同盟最默契，同样踏实的人最交心。@团队里那个靠谱的朋友。' },
+  D3:{ emoji:'🐎', name:'桀骜直爽型', persona:'冷眼旁观的小野马', kw:['桀骜','直率','只认心意'],
+    insight:[
+      '你不爱逢迎那一套，讨好的话学不会，旁人喧嚣时你倚在廊柱上抱臂冷眼看过，全凭心意待人，只对真正在意的人抬一抬眼；认准的事按自己性子来，谁劝都不听。不勉强自己合群，也不为了情面去演一场不喜欢的热闹。',
+      '你桀骜直率，活得坦荡锋利，这份独立很难得，有自己的判断和底线。若愿意把柔软留给极少数人，会发现被理解的感觉并不差；坚持自我和与人靠近其实并不矛盾，你可以做自己，同时也留住真心待你的人。你不攀附、不讨好，认准的价值观谁也动摇不了，身上有股难得的野气。',
+      '你这一生只认自己的心，这没什么不好。'
+    ],
+    match:'与同类烈性最惺惺相惜，自由灵魂最懂你。@那个有个性的朋友。' }
+};
+
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){ var code=QUESTIONS[i].options[ch].code; s[code]=(s[code]||0)+1; });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){return s[k];}));
+  var tied = Object.keys(s).filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length===1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0) code = last;
+    else if(tied.indexOf(first)>=0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code:code, scores:s };
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 答题渲染 ============ */
+var state = { answers:new Array(QUESTIONS.length).fill(null), current:0, lastCode:null };
+
+function renderQuiz(){
+  var i = state.current, item = QUESTIONS[i];
+  document.getElementById('qIndex').textContent = '第 ' + (i+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((i+1)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = item.title;
+  document.getElementById('backBtn').disabled = i===0;
+  document.getElementById('backBtn').style.opacity = i===0 ? .35 : 1;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  item.options.forEach(function(opt, idx){
+    var btn = document.createElement('button');
+    btn.className = 'option' + (state.answers[i]===idx ? ' on' : '');
+    btn.innerHTML = '<span class="opt-tag">'+opt.key+'</span><span>'+opt.text+'</span>';
+    btn.onclick = function(){ chooseOption(idx); };
+    box.appendChild(btn);
+  });
+}
+
+function chooseOption(idx){
+  state.answers[state.current] = idx;
+  if(state.current < QUESTIONS.length-1){
+    state.current++;
+    renderQuiz();
+  }else{
+    finishQuiz();
+  }
+}
+
+function prevQuestion(){
+  if(state.current>0){ state.current--; renderQuiz(); }
+}
+
+function finishQuiz(){
+  var r = resolve(state.answers);
+  state.lastCode = r.code;
+  window.lastResultCode = r.code;
+  renderResult(r.code);
+  show('result');
+}
+
+function renderResult(code){
+  var r = RESULTS[code];
+  var dim = DIMS[code.charAt(0)];
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = dim + ' · ' + r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  document.getElementById('rKeywords').innerHTML = r.kw.map(function(k){return '<span class="kw">'+k+'</span>';}).join('');
+  var labs = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  var cls = ['','','gold'];
+  document.getElementById('rInsight').innerHTML = r.insight.map(function(seg,i){
+    return '<div class="insight-block '+cls[i]+'"><div class="lab">'+labs[i]+'</div><p>'+seg+'</p></div>';
+  }).join('');
+  document.getElementById('rMatch').textContent = r.match;
+}
+
+/* ============ 海报生成 ============ */
+var EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+
+function wrapText(cv, ctx, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(ctx.measureText(line+ch).width > maxW && line){
+      ctx.fillText(line, x, y);
+      y += lineH; line = ch;
+    }else{ line += ch; }
+  }
+  if(line){ ctx.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function drawPoster(){
+  var code = state.lastCode;
+  var r = RESULTS[code];
+  var dim = DIMS[code.charAt(0)];
+  var W = 750, H = 1500, PAD = 54, CW = W - PAD*2;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+
+  var g = c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#fdf3ee'); g.addColorStop(1,'#fff7ec');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  var y = 70;
+  c.textAlign = 'center';
+  c.fillStyle = '#8a9390'; c.font = '26px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('我的深宫人格', W/2, y);
+  y += 70;
+
+  c.font = '104px ' + EMOJI_FONT;
+  c.fillText(r.emoji, W/2, y + 52);
+  y += 110;
+
+  c.fillStyle = '#a63a2e'; c.font = '700 40px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(dim + ' · ' + r.name, W/2, y);
+  y += 44;
+  c.fillStyle = '#b8893b'; c.font = '26px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(r.persona, W/2, y);
+  y += 40;
+
+  // 关键词胶囊
+  var kws = r.kw;
+  var kwW = kws.map(function(k){ return c.measureText(k).width; });
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  var total = kwW.reduce(function(a,b){return a+b;},0) + (kws.length-1)*24 + kws.length*36;
+  var kx = (W-total)/2;
+  kws.forEach(function(k,i){
+    var w = kwW[i]+36;
+    c.fillStyle = '#f3e3d8';
+    c.beginPath(); c.roundRect(kx, y-26, w, 40, 20); c.fill();
+    c.fillStyle = '#8c2b22'; c.textAlign='center';
+    c.fillText(k, kx+w/2, y+2);
+    kx += w + 24;
+  });
+  y += 70;
+
+  // 三段解读
+  var labs = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  c.textAlign = 'left';
+  r.insight.forEach(function(seg,i){
+    c.fillStyle = '#b8893b'; c.font = '700 26px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(labs[i], PAD, y); y += 38;
+    c.fillStyle = i===2 ? '#8c2b22' : '#2f3e46';
+    c.font = (i===2?'700 ':'400 ')+'26px "PingFang SC","Microsoft YaHei",sans-serif';
+    y = wrapText(cv, c, seg, PAD, y, CW, 38);
+    y += 22;
+  });
+
+  // 四维能量条
+  y += 10;
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  Object.keys(DIMS).forEach(function(k){
+    var val = k===code.charAt(0) ? 90 : [58,52,46][Object.keys(DIMS).indexOf(k)%3];
+    c.fillStyle = '#5a6668'; c.textAlign='left';
+    c.fillText(DIMS[k], PAD, y+24);
+    var barX = PAD+170, barW = CW-170, barH = 16;
+    c.fillStyle = '#f3e3d8';
+    c.beginPath(); c.roundRect(barX, y+10, barW, barH, 8); c.fill();
+    var fg = c.createLinearGradient(barX,0,barX+barW,0);
+    fg.addColorStop(0,'#b8893b'); fg.addColorStop(1,'#a63a2e');
+    c.fillStyle = fg;
+    c.beginPath(); c.roundRect(barX, y+10, barW*val/100, barH, 8); c.fill();
+    y += 44;
+  });
+
+  y += 16;
+  c.textAlign = 'center';
+  c.fillStyle = '#5a6668'; c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('@那个你想到的人，一起测测谁和你最搭', W/2, y);
+  y += 56;
+
+  c.textAlign = 'left';
+  c.fillStyle = '#8a9390'; c.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  var disc = '本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。';
+  wrapText(cv, c, disc, PAD, y, CW, 30);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  var dl = document.getElementById('posterDownload');
+  dl.href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 事件绑定 ============ */
+document.getElementById('startBtn').addEventListener('click', function(){ state.current=0; state.answers=new Array(QUESTIONS.length).fill(null); renderQuiz(); show('quiz'); });
+document.getElementById('backBtn').addEventListener('click', prevQuestion);
+document.getElementById('againBtn').addEventListener('click', function(){ show('home'); });
+document.getElementById('posterBtn').addEventListener('click', drawPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+</script>
+</body>
+</html>
