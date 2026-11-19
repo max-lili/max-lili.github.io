@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<!--
+  深宫生存人格测试 · 单文件互动网页
+  口令门控 -> 首页 -> 答题 -> 结果 -> Canvas海报
+  零外部依赖，双击本地可运行；全部内容原创虚构，不指向任何真实影视作品。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>深宫生存 · 你能活到第几集</title>
+<style>
+  :root{
+    --pink:#c45b78; --pink-deep:#a63f60; --pink-soft:#f8e3ea;
+    --gold:#c9a24a; --cream:#fffaf6; --ink:#4a3a42; --ink-2:#7c6974; --ink-3:#a8929c;
+    --line:#f2e2e4; --shadow-sm:0 4px 18px rgba(166,63,96,.12);
+    --shadow:0 12px 40px rgba(166,63,96,.18);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#fff6ef,#fdf1f5 60%,#f6f3ff);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(255,246,239,.98),rgba(253,241,245,.98));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--pink-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#fffafc}
+  #passInput:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(196,91,120,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink-deep);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1.5px solid var(--pink-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:29px;line-height:1.32;margin:8px 0 14px}
+  h1 .hl{color:var(--pink-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pink-deep);
+    background:var(--pink-soft);padding:5px 12px;border-radius:999px;font-weight:700}
+  .hero-emoji{font-size:60px;font-family:var(--emoji);margin:6px 0 2px}
+  .progress-track{height:8px;background:var(--pink-soft);border-radius:99px;overflow:hidden;margin:14px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--gold),var(--pink));transition:width .5s ease}
+  .option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;font-size:14.5px;line-height:1.5}
+  .option:hover{transform:translateY(-2px);border-color:var(--pink-soft)}
+  .option.on{border-color:var(--pink);background:#fff5f8}
+  .option .k{flex:0 0 30px;height:30px;width:30px;border-radius:50%;background:var(--pink-soft);
+    color:var(--pink-deep);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .option.on .k{background:var(--pink);color:#fff}
+  .type-emoji{font-size:58px;line-height:1;margin-bottom:8px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--pink-deep);background:var(--pink-soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .episode{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:#fff;
+    background:linear-gradient(135deg,var(--gold),var(--pink-deep));padding:7px 15px;border-radius:999px;
+    box-shadow:var(--shadow-sm);margin-bottom:12px}
+  .insight{padding:13px 0;border-top:1px dashed var(--line)}
+  .insight .lead{font-size:13px;font-weight:800;color:var(--pink-deep);margin-bottom:5px}
+  .insight p{margin:0;font-size:14px;line-height:1.78;color:var(--ink)}
+  .insight.gold{background:linear-gradient(135deg,#fffaf0,#fff4e8);border:1px solid #f2e2b8;
+    border-radius:14px;padding:15px;margin-top:8px;border-top:0}
+  .insight.gold p{color:#8a5a12;font-weight:800;font-size:15px}
+  .energy-row{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:12.5px;color:var(--ink-2)}
+  .energy-row .nm{flex:0 0 74px}
+  .energy-row .track{flex:1;height:9px;background:var(--pink-soft);border-radius:99px;overflow:hidden}
+  .energy-row .fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--pink))}
+  .energy-row .num{flex:0 0 30px;text-align:right;color:var(--pink-deep);font-weight:800}
+  .sec-t{font-size:13px;font-weight:800;color:var(--pink-deep);margin:16px 0 6px}
+  .match{font-size:13.5px;line-height:1.7;color:var(--ink-2);background:#fff9f5;
+    border-left:3px solid var(--gold);padding:10px 13px;border-radius:0 10px 10px 0}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.6;text-align:center;margin-top:22px}
+  .note{font-size:11.5px;color:var(--ink-3);text-align:center;margin-top:10px}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(74,58,66,.6);
+    align-items:center;justify-content:center;padding:18px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:14px;max-width:420px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(74,58,66,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔐</div>
+      <h2>输入口令，踏入深宫</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入深宫 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <div style="text-align:center">
+      <span class="eyebrow">🏮 深宫生存趣味测试</span>
+      <div class="hero-emoji">🏯</div>
+      <h1>在深宫里，<br>你能活到<span class="hl">第几集</span>？</h1>
+      <p class="gsub">12 道情境题，不问知识只看本能。<br>有人活不过 10 集，有人笑到最后 72 集——你是哪一种？</p>
+      <button class="btn" id="startBtn">开始测试 →</button>
+      <p class="note">全程约 1–2 分钟 · 纯娱乐虚构设定</p>
+    </div>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><span class="bar-fill" id="progressFill"></span></div>
+    <p id="qIndex" class="gsub" style="margin:0 0 10px">第 1 / 12 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin:0 0 16px;font-size:18px;line-height:1.55">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn" id="nextBtn">下一题 →</button>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div class="type-emoji" id="rEmoji">🏮</div>
+      <span class="episode" id="rEpisode">第 72 集 · 笑到最后</span>
+      <h2 id="rName" style="margin:0 0 6px;font-size:23px">结果类型</h2>
+      <p class="gsub" id="rPersona" style="margin-bottom:12px">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div id="rInsight"></div>
+      <div class="sec-t">📊 深宫生存能量</div>
+      <div id="rEnergy"></div>
+      <div class="sec-t">💞 适配关系</div>
+      <div class="match" id="rMatch"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为原创虚构娱乐内容，与任何真实影视作品无关；结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的深宫生存海报.png">⬇️ 保存图片</a>
+    <p class="note" style="margin:8px 0 0">手机端可长按图片保存</p>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "9902"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 数据区 ============ */
+var DIMS = { A:'谋略深潜', B:'情绪定力', C:'人际经营', D:'临变应对' };
+
+var QUESTIONS = [
+  { title:'选秀入宫第一晚，同住的朋友被位份高的嫔妃当众奚落，还把你一起捎带上。你的第一反应？', options:[
+    {key:'A',code:'A1',text:'赔笑认下，暗暗记住这个人，来日方长再算账'},
+    {key:'B',code:'B2',text:'忍住气低头不语，把委屈先咽进肚子里'},
+    {key:'C',code:'C3',text:'翻个白眼懒得搭理，清者自清不屑争辩'},
+    {key:'D',code:'D1',text:'笑着打圆场，几句话把气氛搅活，反让对方讨了没趣'}]},
+  { title:'上位忽然赏了你一件贵重礼物，引来旁人嫉妒议论。你会？', options:[
+    {key:'A',code:'A2',text:'把礼物收进匣子，低调处置，从不拿出来炫耀'},
+    {key:'B',code:'B3',text:'当场喜形于色，忍不住扬眉吐气回敬那些眼神'},
+    {key:'C',code:'C1',text:'借机邀几位姐妹来赏礼，趁热络拉近关系'},
+    {key:'D',code:'D1',text:'顺势把赏赐说成托大家的福，当面把好处分了'}]},
+  { title:'你无意撞见一位高位嫔妃的私密之事，她看你的眼神明显起了疑。你会？', options:[
+    {key:'A',code:'A1',text:'装作什么都没看见，日后握着这个把柄留作后用'},
+    {key:'B',code:'B3',text:'当场变了脸色，脱口而出让场面尴尬'},
+    {key:'C',code:'C3',text:'扭头就走，不屑掺和，也懒得解释'},
+    {key:'D',code:'D2',text:'低头退开，回去后反复琢磨该怎么避嫌'}]},
+  { title:'宫中传出针对你的谣言，越传越离谱，连上位都听说了。你会？', options:[
+    {key:'A',code:'A3',text:'心里藏不住事，逢人便解释自己冤枉'},
+    {key:'B',code:'B1',text:'照常起居，不慌不辩，谣言自会不攻自破'},
+    {key:'C',code:'C2',text:'不争不辩，管好自己的事，时间会证明'},
+    {key:'D',code:'D3',text:'直接找造谣的人当面对质，非要讨个说法'}]},
+  { title:'一位素来和你不和的嫔妃突然主动示好，还送来珍奇玩意儿。你会？', options:[
+    {key:'A',code:'A1',text:'照单全收，顺便记下她的反常，静观其变'},
+    {key:'B',code:'B3',text:'当场戳破，冷脸问她到底想干什么'},
+    {key:'C',code:'C2',text:'礼貌收下但心里有数，不轻易交心'},
+    {key:'D',code:'D2',text:'先谢过，再仔细打听她近日的动向'}]},
+  { title:'你最信任的贴身侍女被人收买，偷偷把你的话传出去。你发现了。你会？', options:[
+    {key:'A',code:'A1',text:'不动声色将计就计，借她放出自己想放的消息'},
+    {key:'B',code:'B2',text:'压住怒火先忍下，事后慢慢处置'},
+    {key:'C',code:'C3',text:'失望至极，从此谁也不信，独来独往'},
+    {key:'D',code:'D2',text:'先冷处理，暗中查清是谁在背后指使'}]},
+  { title:'上位在众人面前夸奖了你的对手，话里话外拿你作比较。你会？', options:[
+    {key:'A',code:'A3',text:'脸上挂不住，当场就把心里的不服说出口'},
+    {key:'B',code:'B2',text:'笑着称是，把羡慕藏在心里，不显山露水'},
+    {key:'C',code:'C1',text:'转头约上几位同源姐妹，抱团取暖'},
+    {key:'D',code:'D3',text:'直言自己也不差，非要争个高下'}]},
+  { title:'冬日宫宴，你被安排在很偏的角落，明显被冷落。你会？', options:[
+    {key:'A',code:'A2',text:'坦然坐定，不露半分不满，默默观察全场'},
+    {key:'B',code:'B3',text:'脸色沉下来，忍不住摔了杯盏表达不满'},
+    {key:'C',code:'C2',text:'安安静静吃自己的，不参与任何是非'},
+    {key:'D',code:'D1',text:'主动起身敬酒，几句玩笑把气氛拉回自己身上'}]},
+  { title:'你被人设计卷入一场是非，证据指向你，众目睽睽。你会？', options:[
+    {key:'A',code:'A2',text:'不急着辩白，悄悄留好证据，等时机再翻盘'},
+    {key:'B',code:'B1',text:'神色如常不慌不乱，静等水落石出'},
+    {key:'C',code:'C2',text:'闭口不言，守好自己的边界，清白自在人心'},
+    {key:'D',code:'D3',text:'当众据理力争，一句不让，非要还自己清白'}]},
+  { title:'宫里一位高位者想拉你入伙对付你的旧友，两边你都得罪不起。你会？', options:[
+    {key:'A',code:'A3',text:'心里藏不住，直说自己为难，把话摊开来讲'},
+    {key:'B',code:'B1',text:'稳住阵脚不急着表态，静观局势变化'},
+    {key:'C',code:'C1',text:'表面应承，私下给旧友通风报信'},
+    {key:'D',code:'D2',text:'反复权衡迟迟不表态，能拖就拖'}]},
+  { title:'你发现一位素来和善的嫔妃其实两面三刀，在背后挑拨离间。你会？', options:[
+    {key:'A',code:'A2',text:'看破不说破，暗中防着，表面照旧来往'},
+    {key:'B',code:'B1',text:'心里有数情绪不起波澜，按兵不动'},
+    {key:'C',code:'C1',text:'悄悄把真相告诉可信的姐妹，结盟自保'},
+    {key:'D',code:'D3',text:'当面揭穿她，让所有人看清她的真面目'}]},
+  { title:'风头最劲时，有人劝你趁势争一争那最高的位子。你会？', options:[
+    {key:'A',code:'A3',text:'心里想什么就说什么，直问自己凭什么不能争'},
+    {key:'B',code:'B2',text:'按住心思隐忍待发，不为眼前风光冒进'},
+    {key:'C',code:'C3',text:'一笑置之，那位子本就不是我想要的'},
+    {key:'D',code:'D1',text:'笑着说再等等，先把人情做足，机会自然来'}]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'🎯', name:'深宫棋手', episode:'第 72 集 · 笑到最后', persona:'不动声色间布好整盘棋，不争一时，只争最后。',
+       kw:['深谋远虑','隐忍布局','后发制人'], dim:'谋略深潜', dims:[95,72,60,68], energy:[95,72,60,68],
+       match:'和「定海针」最搭——一个会谋、一个稳得住。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 众人争得面红耳赤时，你低头喝茶像没听见。可谁也没注意，你早把每个人的立场在心里排好了序，谁和谁有过节、谁正缺谁的支持，你都默默记着。等风向一转，你才不紧不慢落下一子，众人这才回过神：原来整盘棋是你早就布好的。棋子的走向，本就不需要解说。',
+       '🌱 你习惯把锋芒收进袖子里，用一句都好挡住所有试探。你不是没脾气，只是懂得把力气留给真正重要的时刻。别人觉得你慢、不在意，其实你每一步都算得比谁都清楚，心里那杆秤从没歪过。笑到最后的人，从来不是嗓门最大的那个。',
+       '✨ 你从不着急赢，因为你下的，一直是最后那一盘棋。'] },
+  A2:{ emoji:'📦', name:'藏锋隐者', episode:'第 64 集 · 全身而退', persona:'有锋芒却从不外露，把聪明藏在「我无所谓」里。',
+       kw:['大智若愚','低调守拙','静观其变'], dim:'谋略深潜', dims:[88,80,62,65], energy:[88,80,62,65],
+       match:'和「救场高手」最搭——一个低调、一个机敏，进退皆宜。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 你明明一眼看穿了那人的小算盘，嘴上却笑着说我都不懂。分到手的好处从不急着炫耀，转手收进匣子连提都不提。别人笑你傻、笑你没本事，你只点点头继续做那个什么都不争的人，可到了关键时候，你手里的牌比谁都多。你把锋芒折进袖口，只留给懂的人看。',
+       '🌱 你把聪明藏成了一种本能。太早亮出的锋芒只会招风，不如先把自己放低，让对手放松警惕。这份低调不是怯，是很贵的修养：你清楚自己值多少，所以根本不需要别人来认证。沉得住气的人，往往才能走得最远。',
+       '✨ 真正厉害的人，从来不需要让所有人知道——藏拙，本身就是一种锋芒。'] },
+  A3:{ emoji:'💬', name:'坦荡直言', episode:'第 14 集 · 早早上线', persona:'心里藏不住半句话，活得真，也活得险。',
+       kw:['直来直去','胸无城府','真情实感'], dim:'谋略深潜', dims:[38,60,70,45], energy:[38,60,70,45],
+       match:'和「边界感达人」最搭——一个真、一个稳，刚好互补。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 心里刚冒出一句不同意，话就已经到了嘴边，拦都拦不住。你不背地里嘀咕，也不笑着记仇，喜欢谁就对谁好，看不惯就直说。别人被你噎得愣住，你还好心追问我是不是说错了，完全没意识到自己又得罪人了。可下一回，你照样把那句话说出口，一点没长记性。',
+       '🌱 你把真诚看得比输赢更重，这在处处讲算计的地方，是种罕见的勇敢。你不是不懂圆滑，只是不愿用圆滑换安稳。你的直来直去会让有些人一时不适应，却也让真正值得的人一眼认出你。你宁可被误会，也不愿戴着面具过日子。',
+       '✨ 你的坦荡或许不划算，可它比什么都真，真到让人舍不得弄丢。'] },
+  B1:{ emoji:'⚓', name:'定海针', episode:'第 70 集 · 稳坐钓鱼台', persona:'天塌下来也先喝完这杯茶，稳定就是最大武器。',
+       kw:['临危不乱','情绪稳定','稳如泰山'], dim:'情绪定力', dims:[70,96,65,72], energy:[70,96,65,72],
+       match:'和「深宫棋手」最搭——一个谋得深、一个稳得住。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 满屋子人都在慌，有人哭有人吵有人急着甩锅，你却先把茶杯稳稳放下，慢慢说了句别急先说清楚。那一刻你没提高音量，可所有人都安静下来了。你不是没有情绪，只是太明白：越是这样的时候，谁先稳住谁就握住了主动。你的镇定，像给慌乱的人群抛下了一个锚。',
+       '🌱 你的稳定不是装的，是从一次次风浪里练出来的本事。你习惯在别人乱成一团时先把呼吸调匀再想下一步。你不多话，却总能在最关键的地方托住所有人，走到哪都让人心里踏实。这份稳，是你给自己的底，也是给别人最大的安心。',
+       '✨ 你不必大声，因为你一开口，全场自然就安静了下来。'] },
+  B2:{ emoji:'🤐', name:'忍字诀', episode:'第 56 集 · 熬出头', persona:'把委屈咽成一口气，用一个忍字熬过最难夜。',
+       kw:['能屈能伸','隐忍不发','以退为进'], dim:'情绪定力', dims:[72,90,68,60], energy:[72,90,68,60],
+       match:'和「人脉玩家」最搭——能忍加上会处，日子越过越顺。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 被当众奚落那一下，你脸上还是笑着的，指甲却掐进了掌心。你没当场回嘴，只低头说了句你说得对，转身继续做自己的事。那晚你哭了很久，第二天照常来、照常笑，谁也没看出你一夜没睡。你把最难看的那一面，永远留给了没有人的深夜。',
+       '🌱 你把委屈咽成一口气，硬是熬成了自己的底气。你太懂忍字的分量：它不是认输，是把力气攒到真正值得的地方再用。你熬过的那些夜终会变成你站在高处时的光，别急着翻盘，账一笔都不会少。能忍的人，心里都有一片别人看不见的海。',
+       '✨ 你咽下去的每口气，都没有白费，它们在暗处替未来的你铺好了路。'] },
+  B3:{ emoji:'🔥', name:'急脾气', episode:'第 16 集 · 来去匆匆', persona:'一点就着藏不住火，真性情伤人也在所不惜。',
+       kw:['快人快语','性子如火','爱憎分明'], dim:'情绪定力', dims:[30,32,62,55], energy:[30,32,62,55],
+       match:'和「定海针」最搭——一个急、一个稳，彼此降温。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 话还没过脑子，火已经先窜上来了。对方刚说完半句，你就腾地站起来，把杯子往桌上一放，当场要论个明白。事后你也知道自己反应过了头，可下次遇到还是照样忍不住，你就是这样，爱恨都写在脸上，一秒都藏不住。你发完火又第一个心软，转身给人倒茶。',
+       '🌱 你的热烈是真的，真心也是真的。你只是太急着让世界明白你的立场，来不及等别人把话说完。这份直性子会让你吃点亏，却也让你活得特别痛快，从不憋着、从不假装，从不让自己在人群里变模糊。你的情绪来得快散得也快，从不记隔夜仇。',
+       '✨ 你的火会烫到别人，但更能照亮自己。'] },
+  C1:{ emoji:'🤝', name:'人脉玩家', episode:'第 68 集 · 众星捧月', persona:'朋友遍天下，最懂众人拾柴的道理。',
+       kw:['长袖善舞','善于结盟','左右逢源'], dim:'人际经营', dims:[65,70,95,74], energy:[65,70,95,74],
+       match:'和「忍字诀」最搭——会处加上能忍，人缘越攒越厚。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 你记得每个人的喜好：谁爱喝什么茶、谁生日快到了、谁最近正烦着。你从不临到用时才去求人，因为平日里早把这些细节一个个存进了心里。所以你一招呼朋友们就都来了，不是因为你厉害，是因为大家都记得你的好。你把关系处成了细水长流，从不临时抱佛脚。',
+       '🌱 你相信关系是慢慢攒出来的，不是临时算出来的。你真诚地对每个人好，不图立刻回报，只觉得多一个朋友就多一条路。这份热络让你在人群里游刃有余，也让你在最难的那些时候从不是一个人在扛。你的好，是有回响的。',
+       '✨ 你把人情一点点做成了路，所以走到哪里，都有人在拐角等你。'] },
+  C2:{ emoji:'🚧', name:'边界感达人', episode:'第 44 集 · 安全过关', persona:'不站队不掺和，把关我什么事活成护身符。',
+       kw:['独善其身','清醒克制','不站队'], dim:'人际经营', dims:[58,85,45,60], energy:[58,85,45,60],
+       match:'和「坦荡直言」最搭——一个真、一个稳，互补得刚刚好。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 满屋子人吵着要站队，你却在旁边安静喝茶、处理自己的事。谁来拉拢你都笑着打哈哈，谁想套话你也轻巧绕开。你不是没立场，只是太清楚掺和两个字的代价，别人的棋局你从来不进去踩一脚。你把自己活成了一座小小的岛，风浪再来也淹不到你。',
+       '🌱 你和自己保持一致，这在乱糟糟的环境里是难得的清醒。你从不靠站队换安全感，因为你心里那把尺子量得出什么该管、什么该放。守住边界不是冷漠，是把自己活成一块稳稳的礁石。你不需要热闹来证明自己的位置，因为你本来就站得很稳。',
+       '✨ 看透了却依然不入局，是你最难得的聪明。'] },
+  C3:{ emoji:'🌙', name:'孤高清冷', episode:'第 10 集 · 昙花一现', persona:'不屑逢迎，宁可一个人站着也不凑那份热闹。',
+       kw:['孤芳自赏','清冷自持','不屑合群'], dim:'人际经营', dims:[50,78,28,40], energy:[50,78,28,40],
+       match:'和「救场高手」最搭——一个冷、一个热，反差里藏着默契。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 别人扎堆寒暄互相递眼神时，你一个人靠在栏边看月亮。有人凑过来搭话，你只礼貌点头聊两句就断了。你不是不会热闹，只是觉得那些客套太费劲，与其陪一晚上笑，不如一个人安静待着来得舒服。你的独处不是孤单，是给自己留的一方干净天地。',
+       '🌱 你把体面看得比利益更重，这在人人忙着钻营的地方，是种珍贵的原则。你宁可少些帮手，也不愿把自己变成随时讨好别人的人。清高让你走得孤单，却也让你始终完整，这么多年过去你没把自己弄丢。这份孤勇，值得被温柔以待。',
+       '✨ 你站在人群之外，脊背却比谁都挺得直。'] },
+  D1:{ emoji:'🎭', name:'救场高手', episode:'第 66 集 · 左右逢源', persona:'越是突发场面，越能笑着把局圆回来。',
+       kw:['机敏圆滑','随机应变','化解尴尬'], dim:'临变应对', dims:[66,74,82,95], energy:[66,74,82,95],
+       match:'和「藏锋隐者」最搭——一个低调、一个机敏，配合无间。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 气氛凝固那一秒所有人都低下了头，你却笑着举杯说我来说两句。三句话之后尴尬被你抹平，僵住的局面重新活了过来。你甚至没让人察觉刚刚差点冷场，在你手里事故从来都只是小插曲。你救过的场子，连被救的人都不知道曾被你悄悄托住。',
+       '🌱 你的脑子转得比别人快半拍，嘴上又总带着三分幽默。你天然知道什么时候该接话、什么时候把话头递给谁。这种本事不是圆滑，是你太在意别人的感受，不忍心让任何人在场合里尴尬地站着。有你在，别人的难堪总能被轻轻化解。',
+       '✨ 有你在的地方，再冷的场子也撑不过三秒。'] },
+  D2:{ emoji:'⚖️', name:'谨慎派', episode:'第 52 集 · 平稳落地', persona:'三思而后行，把小心驶得万年船刻进骨头。',
+       kw:['谨小慎微','三思而行','稳中求安'], dim:'临变应对', dims:[70,82,58,90], energy:[70,82,58,90],
+       match:'和「深宫棋手」最搭——一个谨慎、一个善谋，绝配。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 别人都往前冲时，你先停下来看了一圈：这条路谁走过，前面有没有坑，万一出事退路在哪。想清楚了你才慢慢迈出第一步。你从不押上全部，也从不把自己放进没有退局的赌场，所以风浪来时你总是最稳的那个。你的稳，来自想在了所有人的前面。',
+       '🌱 谨慎常被误读成胆小，可你心里明白那是对自己负责。你不需要别人夸你果断，只要求自己每一步都踩得实。走得慢没关系，你没有摔过，这本身就已经是很大的本事了。你用耐心换来了别人用冲动换不来的安稳。',
+       '✨ 你走得比谁都慢，可每一步都踩得实实在在，从没摔过。'] },
+  D3:{ emoji:'🦴', name:'硬骨头', episode:'第 18 集 · 壮烈退场', persona:'宁折不弯，宁可站着输也不跪着赢。',
+       kw:['刚烈不屈','宁折不弯','据理力争'], dim:'临变应对', dims:[45,60,50,88], energy:[45,60,50,88],
+       match:'和「边界感达人」最搭——一个刚、一个稳，彼此撑腰。@那个你想到的人，一起测测谁和你最搭。',
+       insight:['👀 所有人都在低头忍着，只有你站出来说了那句这不公平。话一出口场面立刻安静，有人劝你算了，有人悄悄替你捏把汗。可你就是不收回，哪怕明知要付出代价，也宁可站着把话说完，不愿跪着把日子过下去。你的这句话，替很多不敢开口的人说出了心声。',
+       '🌱 你身上有一股很多人羡慕却做不到的硬气。你不是不知道变通，只是有些底线这辈子都不打算弯。这份刚烈会让你吃些苦头，却也让你在任何时候都抬得起头来，你活得很真，也很值。你的坚持，是这世上最贵的东西之一。',
+       '✨ 你宁可站着输，也绝不跪着赢——挺直脊梁的人，从没真正输过。'] }
+};
+
+/* ============ 计分逻辑（平局兜底：末题 -> 首题 -> 编号靠前） ============ */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){ var code=QUESTIONS[i].options[ch].code; s[code]=(s[code]||0)+1; });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){return s[k];}));
+  var tied = Object.keys(s).filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length===1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0) code = last;
+    else if(tied.indexOf(first)>=0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code:code, scores:s };
+}
+
+/* ============ 视图切换 · 答题渲染 ============ */
+var answers = new Array(QUESTIONS.length).fill(-1);
+var cur = 0;
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((cur+1)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o,i){
+    var d = document.createElement('div');
+    d.className = 'option' + (answers[cur]===i ? ' on' : '');
+    d.innerHTML = '<span class="k">'+o.key+'</span><span>'+o.text+'</span>';
+    d.addEventListener('click', function(){ answers[cur]=i; renderQ(); });
+    box.appendChild(d);
+  });
+  document.getElementById('nextBtn').textContent = (cur===QUESTIONS.length-1) ? '查看我的结果 →' : '下一题 →';
+  document.getElementById('backBtn').style.visibility = (cur===0) ? 'hidden' : 'visible';
+}
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = new Array(QUESTIONS.length).fill(-1); cur = 0; renderQ(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur>0){ cur--; renderQ(); }
+});
+document.getElementById('nextBtn').addEventListener('click', function(){
+  if(answers[cur]<0){ toast('先选一个答案吧～'); return; }
+  if(cur<QUESTIONS.length-1){ cur++; renderQ(); }
+  else{ finish(); }
+});
+
+/* ============ 结果渲染 ============ */
+var curResult = null;
+function finish(){
+  var res = resolve(answers);
+  curResult = RESULTS[res.code];
+  var r = curResult;
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rEpisode').textContent = r.episode;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  document.getElementById('rKeywords').innerHTML = r.kw.map(function(k){return '<span class="kw">'+k+'</span>';}).join('');
+  document.getElementById('rInsight').innerHTML =
+    '<div class="insight"><div class="lead">'+r.insight[0].slice(0,2)+'</div><p>'+r.insight[0].slice(2)+'</p></div>'+
+    '<div class="insight"><div class="lead">'+r.insight[1].slice(0,2)+'</div><p>'+r.insight[1].slice(2)+'</p></div>'+
+    '<div class="insight gold"><div class="lead">'+r.insight[2].slice(0,2)+'</div><p>'+r.insight[2].slice(2)+'</p></div>';
+  var dimNames = ['谋略深潜','情绪定力','人际经营','临变应对'];
+  document.getElementById('rEnergy').innerHTML = r.energy.map(function(v,i){
+    return '<div class="energy-row"><span class="nm">'+dimNames[i]+'</span><span class="track"><span class="fill" style="width:'+v+'%"></span></span><span class="num">'+v+'</span></div>';
+  }).join('');
+  document.getElementById('rMatch').textContent = r.match;
+  show('result');
+}
+document.getElementById('againBtn').addEventListener('click', function(){ show('home'); });
+
+/* ============ 海报生成 ============ */
+function wrapText(ctx, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var test = line + text[i];
+    if(ctx.measureText(test).width > maxW && line){
+      ctx.fillText(line, x, y); line = text[i]; y += lineH;
+    }else{ line = test; }
+  }
+  if(line) ctx.fillText(line, x, y);
+  return y + lineH;
+}
+function genPoster(){
+  var r = curResult; if(!r) return;
+  var W=750,H=1560,PAD=56,CW=W-PAD*2,y=0;
+  var cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  var c=cv.getContext('2d');
+  var g=c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#fff6ef'); g.addColorStop(.5,'#fdf1f5'); g.addColorStop(1,'#f6f3ff');
+  c.fillStyle=g; c.fillRect(0,0,W,H);
+  c.textBaseline='top';
+
+  y=PAD;
+  c.fillStyle='#a63f60'; c.font='bold 24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('🏮 深宫生存 · 我的结果', PAD, y); y+=44;
+  c.fillStyle='#c9a24a'; c.font='20px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('纯属虚构娱乐设定 · 与真实影视作品无关', PAD, y); y+=40;
+
+  c.font='104px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.fillText(r.emoji, PAD, y); y+=118;
+
+  c.fillStyle='#4a3a42'; c.font='bold 50px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(r.name, PAD, y); y+=70;
+
+  // 存活集数胶囊
+  var ep=r.episode; c.font='bold 26px "PingFang SC","Microsoft YaHei",sans-serif';
+  var epw=c.measureText(ep).width+44;
+  var eg=c.createLinearGradient(PAD,y,PAD+epw,y);
+  eg.addColorStop(0,'#c9a24a'); eg.addColorStop(1,'#a63f60');
+  c.fillStyle=eg; if(c.roundRect){c.beginPath();c.roundRect(PAD,y,epw,52,26);c.fill();}else{c.fillRect(PAD,y,epw,52);}
+  c.fillStyle='#fff'; c.fillText(ep, PAD+22, y+11); y+=76;
+
+  c.fillStyle='#7c6974'; c.font='24px "PingFang SC","Microsoft YaHei",sans-serif';
+  y=wrapText(c, r.persona, PAD, y, CW, 36)+6;
+
+  // 关键词胶囊
+  c.font='22px "PingFang SC","Microsoft YaHei",sans-serif';
+  var kx=PAD;
+  r.kw.forEach(function(k){
+    var kw=c.measureText(k).width+30;
+    if(kx+kw>W-PAD){ kx=PAD; y+=40; }
+    c.fillStyle='#f8e3ea'; if(c.roundRect){c.beginPath();c.roundRect(kx,y,kw,36,18);c.fill();}else{c.fillRect(kx,y,kw,36);}
+    c.fillStyle='#a63f60'; c.fillText(k,kx+15,y+6); kx+=kw+12;
+  });
+  y+=58;
+
+  // 三段解读
+  var leads=['👀 一个画面','🌱 这样的你','✨ 送给你'];
+  for(var i=0;i<3;i++){
+    var seg=r.insight[i];
+    var body=seg.slice(2);
+    if(i===2){
+      c.fillStyle='#fff4e8'; if(c.roundRect){c.beginPath();c.roundRect(PAD-8,y-10,CW+16,120,16);c.fill();}
+    }
+    c.fillStyle=(i===2?'#8a5a12':'#a63f60');
+    c.font='bold 23px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(leads[i], PAD, y); y+=34;
+    c.fillStyle=(i===2?'#8a5a12':'#4a3a42');
+    c.font=(i===2?'bold 24px':'22px')+' "PingFang SC","Microsoft YaHei",sans-serif';
+    y=wrapText(c, body, PAD, y, CW, i===2?34:32)+12;
+  }
+  y+=6;
+
+  // 能量条
+  c.fillStyle='#a63f60'; c.font='bold 23px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('📊 深宫生存能量', PAD, y); y+=36;
+  var dn=['谋略深潜','情绪定力','人际经营','临变应对'];
+  c.font='20px "PingFang SC","Microsoft YaHei",sans-serif';
+  r.energy.forEach(function(v,i){
+    c.fillStyle='#7c6974'; c.fillText(dn[i], PAD, y);
+    var bx=PAD+130, bw=CW-130-50, by=y+2;
+    c.fillStyle='#f8e3ea'; if(c.roundRect){c.beginPath();c.roundRect(bx,by,bw,20,10);c.fill();}else{c.fillRect(bx,by,bw,20);}
+    var fg=c.createLinearGradient(bx,0,bx+bw,0); fg.addColorStop(0,'#c9a24a'); fg.addColorStop(1,'#a63f60');
+    c.fillStyle=fg; var fw=bw*v/100;
+    if(c.roundRect && fw>0){c.beginPath();c.roundRect(bx,by,fw,20,10);c.fill();}else{c.fillRect(bx,by,fw,20);}
+    c.fillStyle='#a63f60'; c.fillText(String(v), bx+bw+10, y);
+    y+=34;
+  });
+  y+=18;
+
+  c.fillStyle='#a63f60'; c.font='bold 22px "PingFang SC","Microsoft YaHei",sans-serif';
+  y=wrapText(c,'💞 '+r.match, PAD, y, CW, 32)+16;
+
+  c.fillStyle='#a8929c'; c.font='17px "PingFang SC","Microsoft YaHei",sans-serif';
+  y=wrapText(c,'本测试为原创虚构娱乐内容，与任何真实影视作品无关；结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。', PAD, y, CW, 24);
+
+  var dataURL=cv.toDataURL('image/png');
+  document.getElementById('posterImg').src=dataURL;
+  document.getElementById('posterDownload').href=dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+document.getElementById('posterBtn').addEventListener('click', genPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+
+/* ============ toast ============ */
+var toastTimer=null;
+function toast(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('on');},1800);
+}
+</script>
+</body>
+</html>
