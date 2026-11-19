@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你总在吸引哪一类人 · 趣味测试</title>
+<style>
+  :root{
+    --pink:#ff9a76; --pink-deep:#ff7043; --pink-soft:#ffe6d5;
+    --mint:#3fc9b0; --mint-soft:#d9f5ee;
+    --cream:#fffaf0; --ink:#5a463c; --ink-2:#8b7468; --ink-3:#b7a398;
+    --line:#f6e7dc; --shadow-sm:0 4px 18px rgba(255,138,101,.12);
+    --shadow:0 12px 40px rgba(255,138,101,.18);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#fff8e7 0%,#f0fbf6 52%,#ffefe4 100%);
+    color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(255,248,231,.97),rgba(240,251,246,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--pink-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#fffdf8}
+  #passInput:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,154,118,.14)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink-deep);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn:active{transform:scale(.98)}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1.5px solid var(--pink-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:28px;line-height:1.35;margin:6px 0 14px}
+  h1 .hl{color:var(--pink-deep)}
+  h2{font-size:19px;line-height:1.5}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pink-deep);
+    background:var(--pink-soft);padding:5px 12px;border-radius:999px;font-weight:700}
+  .hero{text-align:center;padding:14px 8px 6px}
+  .hero .big{font-size:66px;line-height:1;margin:8px 0 14px;font-family:var(--emoji)}
+  .hero p{font-size:14.5px;color:var(--ink-2);line-height:1.75}
+  .meta-row{display:flex;gap:10px;justify-content:center;margin:18px 0 4px;flex-wrap:wrap}
+  .meta{font-size:12px;color:var(--ink-2);background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px}
+  .progress-track{height:8px;background:var(--pink-soft);border-radius:99px;overflow:hidden;margin:14px 0 6px}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--mint),var(--pink));transition:width .5s ease}
+  .qcount{font-size:12.5px;color:var(--ink-3);margin:0 0 12px}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;font-size:14.5px;line-height:1.55}
+  .option:hover{transform:translateY(-2px);border-color:var(--pink-soft)}
+  .option.on{border-color:var(--pink);background:#fff6ef}
+  .opt-key{flex:0 0 26px;height:26px;border-radius:50%;background:var(--pink-soft);color:var(--pink-deep);
+    font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .option.on .opt-key{background:var(--pink);color:#fff}
+  .type-emoji{font-size:56px;line-height:1;margin-bottom:6px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--pink-deep);background:var(--pink-soft);
+    padding:5px 12px;border-radius:999px;margin:6px 6px 2px 0;font-weight:700}
+  .insight-sec{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+  .insight{margin:0 0 14px;font-size:14px;line-height:1.85;color:var(--ink-2)}
+  .insight b{color:var(--pink-deep);margin-right:4px}
+  .golden{background:linear-gradient(135deg,#fff3e4,#eafaf4);border-left:4px solid var(--mint);
+    border-radius:0 12px 12px 0;padding:12px 14px;color:var(--ink);font-weight:700;font-size:14.5px}
+  .golden b{color:var(--mint)}
+  .subblock{background:linear-gradient(135deg,#fffdf8,#f4fbf7);border:1px solid var(--line);
+    border-radius:14px;padding:13px 15px;margin-top:12px;font-size:13px;line-height:1.7;color:var(--ink-2)}
+  .subblock .t{color:var(--pink-deep);font-weight:800;margin-right:5px}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(90,70,60,.6);
+    align-items:center;justify-content:center;padding:20px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:16px;max-width:400px;width:100%;text-align:center;
+    box-shadow:var(--shadow);max-height:92vh;overflow:auto}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  .poster-tip{font-size:11.5px;color:var(--ink-3);margin:8px 0 0}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(90,70,60,.94);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000;white-space:nowrap}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～<br>测测你总在吸引哪一类人 ✨</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <div class="hero">
+      <span class="eyebrow">✨ 趣味人格测试</span>
+      <div class="big">🧲</div>
+      <h1>你总在吸引<br><span class="hl">哪一类人</span>？</h1>
+      <p>不是测"你是谁"，而是测你在别人眼里<br>究竟是什么磁场。<br>12 道场景选择题，1 分钟揭晓答案～</p>
+      <div class="meta-row">
+        <span class="meta">⏱ 约 1 分钟</span>
+        <span class="meta">📝 12 道题</span>
+        <span class="meta">🎯 12 种结果</span>
+      </div>
+      <button class="btn" id="startBtn">开始测试 →</button>
+    </div>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="qcount">第 1 / 12 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin-top:0">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div style="text-align:center">
+        <div class="type-emoji" id="rEmoji">🎀</div>
+        <h2 id="rName" style="margin:0 0 6px">结果类型</h2>
+        <p class="gsub" id="rPersona" style="margin-bottom:6px">一句话人设</p>
+        <div id="rKeywords"></div>
+      </div>
+      <div class="insight-sec" id="rInsight"></div>
+      <div class="subblock" id="rScene"></div>
+      <div class="subblock" id="rMatch"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <p class="poster-tip">手机上可长按图片保存，或点击下方按钮下载</p>
+    <a class="btn" id="posterDownload" href="#" download="我的结果海报.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "7798"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+  this.closest('.gate-card').querySelector('.gate-msg').classList.remove('on');
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 数据区 ============ */
+var DIMS = { A:'松弛治愈系', B:'能量热度系', C:'可靠安心系', D:'有趣灵魂系' };
+
+var QUESTIONS = [
+  {title:'周末下午，你最想待在这种氛围里——', options:[
+    {key:'A',code:'A1',text:'阳光斜照的窗边泡杯茶，谁都不说话也挺舒服'},
+    {key:'B',code:'B1',text:'热闹的局上七嘴八舌，你负责把气氛拱到最高'},
+    {key:'C',code:'C1',text:'帮朋友把一堆杂事安排明白，看着就踏实'},
+    {key:'D',code:'D1',text:'翻一本冷门杂志，突然蹦出个谁都没听过的念头'}]},
+  {title:'朋友心情低落来找你，你的第一反应是——', options:[
+    {key:'A',code:'A2',text:'安静陪着，让他把委屈慢慢倒完'},
+    {key:'B',code:'B2',text:'拉他出门吃顿好的闹一场，坏心情得用热闹冲掉'},
+    {key:'C',code:'C2',text:'直接把问题拆成几步，告诉他先干哪件'},
+    {key:'D',code:'D2',text:'先讲个特别歪的冷笑话，把人逗笑再说'}]},
+  {title:'一群人里，你通常是那个——', options:[
+    {key:'A',code:'A3',text:'慢热，但一旦熟了就成了别人最想倾诉的对象'},
+    {key:'B',code:'B3',text:'自带 BGM 的发光体，走到哪哪就开始嗨'},
+    {key:'C',code:'C3',text:'被默认"你说了算"的那个，大家信不过自己信你'},
+    {key:'D',code:'D3',text:'冷不丁抛个神吐槽，笑得最狠的往往是自己'}]},
+  {title:'你发了条朋友圈，最常被朋友私聊吐槽的是——', options:[
+    {key:'A',code:'B1',text:'"你又组局？带我带我！"'},
+    {key:'B',code:'C1',text:'"这事还得问你，你比我靠谱。"'},
+    {key:'C',code:'D1',text:'"你发的这是哪？我也想去！"'},
+    {key:'D',code:'A1',text:'"看你发的，我突然没那么焦虑了。"'}]},
+  {title:'突然多个成天跟着你的"小跟班"，你猜他是被什么勾来的？', options:[
+    {key:'A',code:'B2',text:'你身上那股"跟你就有好事发生"的热闹劲'},
+    {key:'B',code:'C2',text:'你那种"天塌下来有你顶着"的稳'},
+    {key:'C',code:'D2',text:'你脑子里永远猜不到下一个的鬼点子'},
+    {key:'D',code:'A2',text:'你让人一靠近就想卸下防备的温柔'}]},
+  {title:'朋友给你起外号，最可能带哪个词？', options:[
+    {key:'A',code:'B3',text:'"卷王""永动机"——你太能带动人了'},
+    {key:'B',code:'C3',text:'"定海神针""活字典"——啥都能问你'},
+    {key:'C',code:'D3',text:'"梗王""显眼包"——你家的梗比段子还多'},
+    {key:'D',code:'A3',text:'"树洞""佛系"——跟你待着人就慢下来了'}]},
+  {title:'半夜有人发来说"睡不着"，你大概率会——', options:[
+    {key:'A',code:'C1',text:'帮他把明天要做的事排个序，心里有数就不慌了'},
+    {key:'B',code:'D1',text:'甩给他一个你刚发现的宝藏歌单 / 小众片单'},
+    {key:'C',code:'A1',text:'不急着劝睡，慢慢聊，让他在你的节奏里松下来'},
+    {key:'D',code:'B1',text:'直接语音过去："起来嗨，我陪你熬！"'}]},
+  {title:'出门旅行，同行的人最依赖你的哪一点？', options:[
+    {key:'A',code:'C2',text:'行程、路线、时间你全盯，闭眼跟着走就行'},
+    {key:'B',code:'D2',text:'你总能找到别人注意不到的宝藏角落'},
+    {key:'C',code:'A2',text:'你不催促不扫兴，谁掉队了你都等'},
+    {key:'D',code:'B2',text:'你把气氛搞得热热闹闹，没人会无聊'}]},
+  {title:'别人形容你，哪句最让你有"是我没错"的感觉？', options:[
+    {key:'A',code:'C3',text:'"交给你，我就彻底放心了。"'},
+    {key:'B',code:'D3',text:'"你这人太有意思了，跟你聊天永远不重样。"'},
+    {key:'C',code:'A3',text:'"在你面前，我不用装。"'},
+    {key:'D',code:'B3',text:'"你一来，整个场子都亮了。"'}]},
+  {title:'你身上最"招人"的小习惯是——', options:[
+    {key:'A',code:'D1',text:'手机相册里全是奇奇怪怪又好看的瞬间'},
+    {key:'B',code:'A1',text:'说话慢悠悠的，再急的事到这也缓下来'},
+    {key:'C',code:'B1',text:'群里最会接话、最爱张罗的那个'},
+    {key:'D',code:'C1',text:'出门永远多带一份，谁忘东西都找你'}]},
+  {title:'面对一个刚认识的人，你最容易让他——', options:[
+    {key:'A',code:'D2',text:'"这人脑回路好清奇，我想多聊聊。"'},
+    {key:'B',code:'A2',text:'"莫名其妙就想跟他说点心里话。"'},
+    {key:'C',code:'B2',text:'"感觉跟他待一会儿就能量满格。"'},
+    {key:'D',code:'C2',text:'"这事问他准没错，靠谱。"'}]},
+  {title:'如果你是一种"磁场"，朋友们会说你吸引来的人——', options:[
+    {key:'A',code:'D3',text:'都是些各有各古怪的有趣灵魂'},
+    {key:'B',code:'A3',text:'都是想找个地方安静待着的人'},
+    {key:'C',code:'B3',text:'都是一拍即合、说干就干的行动派'},
+    {key:'D',code:'C3',text:'都是懒得动脑、乐意被你安排的省心人'}]}
+];
+
+var RESULTS = {
+  A1:{emoji:'☁️',name:'云朵型 · 躺平搭子收割机',persona:'你吸引的，是那些在你身边终于敢"什么都不做"的人。',
+    kw:['松弛','治愈','零压力'],
+    insight:[
+      '👀 加班到深夜的朋友什么都没说，径直来敲你的门，两个人各刷各的手机，谁也不开口，空气却一点也不尴尬。他们多半在外面撑了整整一天，只有到你这里，才敢把那句"我好像有点累了"轻轻说出口。你家，不知不觉成了好多人的情绪避难所。',
+      '🌱 你从不催谁发光，也不替谁规划人生。你的温柔是一种"允许"——允许对方慢一点、软一点、暂时不优秀。这份不评判的松弛，恰恰是关系里最稀缺的东西：让人不必表现，也能被稳稳接住。你给的不是答案，是一处允许人歇脚的地方。',
+      '✨ 你不必追光，你本身就是那片让所有人敢停下来的阴凉。'
+    ],
+    scene:'周日下午的沙发，外卖盒还没收，两个人各刷各的手机，偶尔同时笑出声，谁也不觉得尴尬。',
+    match:'和"心事收纳盒""树懒定心丸"最合拍。@ 那个总说"跟你待着最放松"的朋友来测测。'},
+  A2:{emoji:'💌',name:'树洞型 · 心事收纳盒',persona:'你吸引的，是一靠近就想把心事全倒给你的人。',
+    kw:['倾听','安全感','共情'],
+    insight:[
+      '👀 晚上十一点，朋友发来一大段没有标点的话，从工作的委屈一路讲到小时候的事。你没急着给建议，只回了一个"我在"，然后安静听他把话倒完。半小时后他说"谢谢你，我好多了"，其实你什么都没做，只是把他的情绪好好接住了。',
+      '🌱 你有一种让人"放心软弱"的能力。别人话说到一半就知道你不会评判、不会外传，于是那些说不出口的，都先给了你。你不是标准答案，你是那个让人敢开口的地方——这份安全感，比任何漂亮的安慰都珍贵。',
+      '✨ 世界催人坚强，而你允许他们，在你这里短暂地不坚强。'],
+    scene:'深夜语音通话，对方絮絮叨叨讲了半小时，你几乎没插话，只在关键处轻轻"嗯"了一声，他就安心了。',
+    match:'易吸引"热闹制造机""文艺脑洞型"。@ 你最想倾诉的那个人来测测。'},
+  A3:{emoji:'🐌',name:'树懒型 · 慢热定心丸',persona:'你吸引的，是在你身边自动把节奏调慢的人。',
+    kw:['慢热','稳定','去焦躁'],
+    insight:[
+      '👀 热闹的聚会里，你和另一个人悄悄溜到阳台吹风，聊着聊着，世界好像安静下来，比在场任何人都尽兴。你从不第一时间冲进一段关系，可那些慢慢留下来的人，往往一留就是好多年。你的圈子不大，但每一个都稳稳当当。',
+      '🌱 你不急着靠近，也不急着证明什么，正因为这样，留下来的关系都格外结实。你像给生活按了 0.75 倍速，让身边人终于喘得过气。你的慢不是冷淡，而是一种温柔的筛选——把浮躁的挡在门外，把真心的留在身边。你的稳，是很多人愿意长久留下的理由。',
+      '✨ 慢慢来的关系，才最经得起时间的摇晃。'
+    ],
+    scene:'人多热闹的聚会里，你俩溜到阳台吹风，聊着聊着世界好像安静了，却比场内任何人都尽兴。',
+    match:'与"人形永动机"互补出奇效。@ 那个总被你"拖慢"却反过来感谢你的人。'},
+  B1:{emoji:'☀️',name:'小太阳型 · 热闹制造机',persona:'你吸引的，是一听见你声音就想"带我一个"的人。',
+    kw:['热情','组局','氛围担当'],
+    insight:[
+      '👀 你随手在群里喊了句"今晚撸串"，十分钟内凑齐一桌，连半年没冒泡的人都冒出来了。席间你未必话最多，但总在恰到好处时接住冷场、把气氛往上托一把。散场时有人拍拍你说"跟你出来真开心"，那是你最熟悉的台词。',
+      '🌱 你走到哪里，哪里就自动升温。你未必是最耀眼的那个，却是让所有人都亮起来的那个。被你吸引的人，其实是想借你的光，把自己也活得更热络一点——你不是在表演热情，你是真的乐在其中。你让每一次普通的相聚，都值得被人记很久。',
+      '✨ 你把寻常日子过成热闹，把路过的人都变成朋友。'
+    ],
+    scene:'你随手在群里喊了句"今晚撸串"，十分钟凑齐一桌，连很久没露面的人都冒出来了。',
+    match:'和"好运磁场""躺平搭子"一拍即合。@ 你最常组局时叫的那个死党。'},
+  B2:{emoji:'🍀',name:'乐子人型 · 好运磁场',persona:'你吸引的，是相信"跟你在一起就有好事发生"的人。',
+    kw:['乐观','感染','正能量'],
+    insight:[
+      '👀 本来冷场的团建，因为你临时起意的一个小游戏，全组笑到肚子疼，连领导都记住了你。朋友们拉你进群时爱说"有你在就有好事发生"——你像随身带着一团喜气，把平凡的日子过得有滋有味，把尴尬的瞬间都变成梗。',
+      '🌱 你身上有种"事情总会变好"的笃定，靠近你的人会不自觉被点亮。你很少抱怨，总能把麻烦变成段子，把意外变成笑点。这份乐观不是没心没肺，而是你看透了生活的难，依然选择热气腾腾地过。你笃信好事，于是真的常常遇见好事。',
+      '✨ 你是行走的好运预告，靠近你的人，都开始相信明天。'
+    ],
+    scene:'本来冷场的团建，因为你临时起意的一个小游戏，全组笑到肚子疼，连领导都记住了你。',
+    match:'吸引"省心制造局""选择困难终结者"。@ 那个总说"有你在就稳了"的朋友。'},
+  B3:{emoji:'🔥',name:'卷王型 · 人形永动机',persona:'你吸引的，是被你的干劲点燃、想跟你一起冲的人。',
+    kw:['行动力','带动','上进'],
+    insight:[
+      '👀 凌晨的自习室里，你俩对视一眼又低头干活，谁都没说话，却比任何鸡汤都提气。朋友原本打定主意要躺平，看你每天雷打不动地往前推进，也默默跟着支棱起来。你从不用口号催人，你说干就干的劲头，从不只停留在嘴上。',
+      '🌱 你不是在催促谁，你只是自己先跑了起来，然后回头喊了一句"跟上"。被你吸引的人，是终于找到了同频的队友——原来努力也可以是一件让人上瘾的事。你的干劲会传染，让身边的人也想成为更好的自己，和你一起把日子越过越有劲头。',
+      '✨ 你不必点亮谁，你只管往前跑，自会有人追着你的光。'
+    ],
+    scene:'凌晨的自习室或工位，你俩对视一眼又低头干活，谁都没说话，却比任何鸡汤都提气。',
+    match:'与"慢热定心丸"形成奇妙互补。@ 你的并肩作战搭子。'},
+  C1:{emoji:'⚓',name:'靠谱型 · 行走的定海神针',persona:'你吸引的，是生活自理堪忧、专找你兜底的人。',
+    kw:['可靠','兜底','安心'],
+    insight:[
+      '👀 朋友旅行把行程、订票、导航全交给你，自己只负责拍照和一句"哇好好看"。遇到突发状况，所有人第一反应都是转头看你——而你总能不慌不忙地拿出方案。你把"被需要"，过成了一种不动声色的温柔。',
+      '🌱 你把别人的慌张接过来，把复杂的事理成清楚的步骤。你很少说漂亮话，却从不让人落空。这份可靠是很多人悄悄的依赖：只要你在，事情就不会失控。大家信你，不是因为你从不出错，而是因为你从不缺席。可别忘了，那个总替别人兜底的人，也值得被人稳稳接住。',
+      '✨ 你替世界扛住了许多，也该轮到有人替你扛一次。'
+    ],
+    scene:'朋友旅行把行程、订票、导航全交给你，自己只负责拍照和"哇好好看"，而你觉得这样刚刚好。',
+    match:'最招"互怼天花板""未知盲盒"。@ 那个离了你寸步难行的朋友。'},
+  C2:{emoji:'🎯',name:'主心骨型 · 选择困难终结者',persona:'你吸引的，是一遇到选择就自动来问你的人。',
+    kw:['决断','思路清晰','被信赖'],
+    insight:[
+      '👀 点菜、选电影、定方案，朋友们齐刷刷看向你"你定"，你就真三下五除二全定了。有人纠结半小时的抉择，你两分钟就拍板，还从不后悔。你替大家省下的那些犹豫，攒起来大概能绕地球一圈。朋友开玩笑说，你就是他们的默认选项。',
+      '🌱 在别人左右为难的时候，你总能一句"就这个"把局面打开。你替他们扛下了选错的风险，也给了他们往前走的底气。你的决断不是武断，而是想清楚了就敢负责——这份担当，让人愿意把重要的事交给你。大家都信你，因为你从不轻率。',
+      '✨ 你的笃定，是别人犹豫时最想抓住的那根栏杆。'
+    ],
+    scene:'点菜、选电影、定方案，朋友们齐刷刷看向你"你定"，你就真三下五除二全定了。',
+    match:'吸引"选择困难户""文艺脑洞型"。@ 那个天天问你"吃啥"的人。'},
+  C3:{emoji:'📋',name:'托管型 · 省心制造局',persona:'你吸引的，是懒得动脑、乐意被你安排明白的人。',
+    kw:['周到','安排力','托管'],
+    insight:[
+      '👀 出游回来朋友才发现，全程自己只负责"跟着"，住宿、路线、时间表都被你安排得妥妥帖帖。你像一本活着的使用说明书，把混乱收拾成秩序。被你照顾的人常常不把感谢挂在嘴边，但下次出门，还是第一个来找你。细节里，全是你的心思。',
+      '🌱 你把周到藏在细节里：多带的那一份、提前查好的路线、刚好赶上的那班车。你擅长把别人的麻烦降到最低，让身边人省心到几乎察觉不到你的付出。这份不动声色的安排力，是很多关系里最踏实的底气。这种润物细无声的体贴，往往最让人依赖。',
+      '✨ 你把复杂留给自己，把省心给了所有人。'
+    ],
+    scene:'出游回来朋友才发现，全程自己只负责"跟着"，住宿、路线、时间表都被你安排得妥妥帖帖。',
+    match:'与"未知盲盒"搭配刚好。@ 那个被你照顾得最省心的人。'},
+  D1:{emoji:'💎',name:'文艺脑洞型 · 宝藏挖掘机',persona:'你吸引的，是被你的审美和脑洞勾住、想一探究竟的人。',
+    kw:['审美','脑洞','独特'],
+    insight:[
+      '👀 你分享了一首没人听过的歌，对方循环了一整晚，第二天郑重其事跑来跟你说"谢谢你"。你总能在寻常日子里挖出别人看不见的宝藏——一首冷门歌、一条绕远的小路、一个奇怪却合理的念头。你的分享，总像一份小小的礼物。',
+      '🌱 你有一双把日常过成展览的眼睛。别人眼里的寻常，到你手里都能变成惊喜。被你吸引的人，是想借你的视角，重新看看这个看腻了的世界。你从不刻意与众不同，只是忠实地跟着自己的好奇心往前走。你让身边的人，重新对世界好奇起来。',
+      '✨ 你挖出的每个宝藏，都在替这个世界多留一点浪漫。'
+    ],
+    scene:'你分享了一首没人听过的歌，对方循环了一整晚，第二天郑重其事来跟你说"谢谢你"。',
+    match:'吸引"心事收纳盒""未知盲盒"。@ 那个总被你安利好东西的朋友。'},
+  D2:{emoji:'🎁',name:'冒险家型 · 未知盲盒',persona:'你吸引的，是猜不到你下一站、却舍不得下车的人。',
+    kw:['新鲜感','探索','不设限'],
+    insight:[
+      '👀 你临时提议"今晚去看海"，几小时后一群人真站在了凌晨的沙滩上，冻得直哆嗦却笑得最大声。跟你在一起，计划永远赶不上惊喜。朋友们说你像一盒拆不完的盲盒，永远猜不到下一站会是哪里。生活在你这儿，从来不缺意外。',
+      '🌱 你像一阵说走就走的风，用一次次突发奇想告诉身边的人：生活还可以是这样。被你吸引的人，是想跟你一起去看世界的另一面。你不是不负责任，只是太不想让日子变成日复一日的复制粘贴。你用行动证明，人生不必只有一种活法。',
+      '✨ 你带着大家逃跑，逃向那些还没被生活磨平的地方。'
+    ],
+    scene:'你临时提议"今晚去看海"，几小时后一群人真站在了凌晨的沙滩上，冻得直哆嗦却笑得最大声。',
+    match:'吸引"行走的定海神针"来做你的锚。@ 那个陪你疯过的人。'},
+  D3:{emoji:'😏',name:'毒舌梗王型 · 互怼天花板',persona:'你吸引的，是嘴上嫌弃你、实际最离不开你的互怼搭子。',
+    kw:['机灵','毒舌','默契'],
+    insight:[
+      '👀 你俩在群里你来我往互损十几条，旁人看得心惊，你俩却笑得前仰后合，第二天照样一起吃饭。你的关心总裹着一层损人的壳，懂的人却一眼看穿里面的真心——嘴上嫌弃，行动上却从不含糊，关键时刻从不掉链子。',
+      '🌱 你用拌嘴代替煽情，用吐槽代替拥抱，反而养出了最不用伪装的亲密。被你吸引的人，是终于找到了能接住你所有梗、也接得住你所有锋利的人。你的毒舌从不是想伤人，只是太把对方当自己人。这种不讲究客套的亲近，反而最真、最长久。',
+      '✨ 愿意被你怼的人，都是早把你当成了最铁的自己人。'
+    ],
+    scene:'你俩在群里你来我往互损十几条，旁人看得心惊，你俩却笑得前仰后合，第二天照样一起吃饭。',
+    match:'和"文艺脑洞型"意外合拍。@ 你最铁的互怼搭子。'}
+};
+
+/* ============ 计分逻辑 ============ */
+// 平局兜底：先比最后一题所选 -> 再比第一题所选 -> 再取编号靠前者
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0) + 1;
+  });
+  var keys = Object.keys(s);
+  var mx = Math.max.apply(null, keys.map(function(k){return s[k];}));
+  var tied = keys.filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length === 1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last) >= 0) code = last;
+    else if(tied.indexOf(first) >= 0) code = first;
+    else code = tied.sort()[0];
+  }
+  return {code:code, scores:s};
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 答题流程 ============ */
+var answers = new Array(QUESTIONS.length).fill(-1);
+var cur = 0;
+var lastResultCode = '';
+var lastScores = {};
+
+function renderQuiz(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((cur)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o,i){
+    var el = document.createElement('div');
+    el.className = 'option' + (answers[cur] === i ? ' on' : '');
+    el.innerHTML = '<span class="opt-key">' + o.key + '</span><span>' + o.text + '</span>';
+    el.addEventListener('click', function(){ selectOption(i); });
+    box.appendChild(el);
+  });
+}
+
+function selectOption(i){
+  answers[cur] = i;
+  renderQuiz();
+  var opts = document.querySelectorAll('#options .option');
+  if(opts[i]) opts[i].classList.add('on');
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){ cur++; renderQuiz(); }
+    else{ finish(); }
+  }, 260);
+}
+
+function finish(){
+  var res = resolve(answers);
+  lastResultCode = res.code;
+  lastScores = res.scores;
+  var r = RESULTS[res.code];
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  var kwBox = document.getElementById('rKeywords');
+  kwBox.innerHTML = '';
+  r.kw.forEach(function(k){ var s=document.createElement('span'); s.className='kw'; s.textContent=k; kwBox.appendChild(s); });
+  var insBox = document.getElementById('rInsight');
+  insBox.innerHTML = '';
+  r.insight.forEach(function(t,i){
+    var p = document.createElement('p');
+    p.className = 'insight' + (i === 2 ? ' golden' : '');
+    var lines = t.split(' ');
+    p.innerHTML = '<b>' + lines[0] + '</b>' + lines.slice(1).join(' ') + (i===2?'':'');
+    insBox.appendChild(p);
+  });
+  document.getElementById('rScene').innerHTML = '<span class="t">🎬 同款场景</span>' + r.scene;
+  document.getElementById('rMatch').innerHTML = '<span class="t">💞 适配关系</span>' + r.match;
+  document.getElementById('progressFill').style.width = '100%';
+  show('result');
+}
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = new Array(QUESTIONS.length).fill(-1); cur = 0; renderQuiz(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQuiz(); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){ show('home'); });
+
+/* ============ Canvas 结果海报 ============ */
+function rr(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.lineTo(x+w-r,y); c.quadraticCurveTo(x+w,y,x+w,y+r);
+  c.lineTo(x+w,y+h-r); c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  c.lineTo(x+r,y+h); c.quadraticCurveTo(x,y+h,x,y+h-r);
+  c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y);
+  c.closePath();
+}
+function wrapText(c,text,x,y,maxW,lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(c.measureText(line+ch).width > maxW && line){ c.fillText(line,x,y); line=ch; y+=lineH; }
+    else{ line += ch; }
+  }
+  if(line){ c.fillText(line,x,y); y+=lineH; }
+  return y;
+}
+function genPoster(){
+  var r = RESULTS[lastResultCode];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var g = c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#fff4e2'); g.addColorStop(.55,'#eefaf4'); g.addColorStop(1,'#ffe8d9');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  var PAD = 54, CW = W - PAD*2, y = 0;
+  var EF = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+
+  c.textAlign = 'center';
+  c.fillStyle = '#ff7043'; c.font = 'bold 26px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('✨ 我总在吸引的，是这样一类人 ✨', W/2, 70);
+  y = 96;
+  c.font = '104px ' + EF;
+  c.fillText(r.emoji, W/2, y+96); y += 130;
+
+  c.fillStyle = '#8b7468'; c.font = '22px -apple-system,"PingFang SC",sans-serif';
+  c.fillText(DIMS[lastResultCode.charAt(0)] + ' · ' + r.name, W/2, y); y += 40;
+
+  c.fillStyle = '#5a463c'; c.font = 'bold 24px -apple-system,"PingFang SC",sans-serif';
+  y = wrapText(c, r.persona, W/2, y+26, CW, 36) + 6;
+
+  // 关键词胶囊
+  c.font = 'bold 20px -apple-system,"PingFang SC",sans-serif';
+  var totalW = 0, gaps = 14;
+  r.kw.forEach(function(k){ totalW += c.measureText(k).width + 36; });
+  totalW += gaps*(r.kw.length-1);
+  var kx = (W-totalW)/2;
+  r.kw.forEach(function(k){
+    var kw = c.measureText(k).width + 36;
+    c.fillStyle = '#ffe0cc'; rr(c,kx,y,kw,38,19); c.fill();
+    c.fillStyle = '#ff7043'; c.textAlign='center'; c.fillText(k, kx+kw/2, y+26);
+    kx += kw + gaps;
+  });
+  y += 62;
+
+  // 三段解读卡片
+  var contentX = PAD+24, contentW = CW-48;
+  r.insight.forEach(function(t,i){
+    var parts = t.split(' ');
+    var head = parts[0], body = parts.slice(1).join(' ');
+    var isGold = (i===2);
+    c.textAlign = 'left';
+    c.fillStyle = isGold ? '#2fae95' : '#ff7043';
+    c.font = 'bold 23px -apple-system,"PingFang SC",sans-serif';
+    var hh = 36;
+    c.fillText(head, contentX, y+26);
+    c.fillStyle = isGold ? '#3d6d61' : '#6b5a50';
+    c.font = (isGold?'bold ':'') + '21px -apple-system,"PingFang SC",sans-serif';
+    var ny = wrapText(c, body, contentX, y+26+hh, contentW, 33);
+    var cardBottom = ny + 10;
+    c.fillStyle = isGold ? 'rgba(63,201,176,.10)' : 'rgba(255,255,255,.72)';
+    // 先画背景需前置，这里采用描边分隔避免覆盖文字
+    c.strokeStyle = isGold ? 'rgba(63,201,176,.45)' : 'rgba(246,231,220,.9)';
+    c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(contentX, cardBottom); c.lineTo(contentX+contentW, cardBottom); c.stroke();
+    y = cardBottom + 18;
+  });
+
+  // 同款场景 & 适配关系
+  c.textAlign='left';
+  c.fillStyle='#ff7043'; c.font='bold 20px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('🎬 同款场景', PAD, y+22);
+  c.fillStyle='#6b5a50'; c.font='19px -apple-system,"PingFang SC",sans-serif';
+  y = wrapText(c, r.scene, PAD, y+52, CW, 29) + 10;
+  c.fillStyle='#ff7043'; c.font='bold 20px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('💞 适配关系', PAD, y+22);
+  c.fillStyle='#6b5a50'; c.font='19px -apple-system,"PingFang SC",sans-serif';
+  y = wrapText(c, r.match, PAD, y+52, CW, 29) + 14;
+
+  // 四维能量条
+  c.fillStyle='#8b7468'; c.font='bold 19px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('磁场能量分布', PAD, y+20); y += 40;
+  ['A','B','C','D'].forEach(function(dk){
+    var dimScore = (lastScores[dk+'1']||0)+(lastScores[dk+'2']||0)+(lastScores[dk+'3']||0);
+    c.fillStyle='#5a463c'; c.font='18px -apple-system,"PingFang SC",sans-serif';
+    c.fillText(DIMS[dk], PAD, y+14);
+    var bx = PAD+130, bw = CW-130-60, by = y+2;
+    c.fillStyle='rgba(255,154,118,.22)'; rr(c,bx,by,bw,16,8); c.fill();
+    var fg = c.createLinearGradient(bx,0,bx+bw,0);
+    fg.addColorStop(0,'#3fc9b0'); fg.addColorStop(1,'#ff9a76');
+    c.fillStyle=fg; rr(c,bx,by,Math.max(6,bw*dimScore/QUESTIONS.length),16,8); c.fill();
+    c.fillStyle='#8b7468'; c.textAlign='right'; c.fillText(String(dimScore), W-PAD, y+14); c.textAlign='left';
+    y += 34;
+  });
+
+  // @引导
+  y += 8;
+  c.textAlign='center'; c.fillStyle='#ff7043'; c.font='bold 22px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('@ 那个你第一时间想到的人，一起测测 ✨', W/2, y+20);
+
+  // 免责声明
+  c.fillStyle='#b7a398'; c.font='16px -apple-system,"PingFang SC",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，', W/2, H-46);
+  c.fillText('不构成任何心理诊断或情感建议。', W/2, H-22);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  document.getElementById('posterDownload').href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+document.getElementById('posterBtn').addEventListener('click', genPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('posterDownload').addEventListener('click', function(){
+  toast('图片已开始下载');
+});
+
+/* ============ 工具 ============ */
+var toastTimer = null;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+</script>
+</body>
+</html>
