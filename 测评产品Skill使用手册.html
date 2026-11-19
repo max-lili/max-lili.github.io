@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测评类产品 Skill 使用手册</title>
+<style>
+:root{
+  --bg:#faf8f6;
+  --surface:#ffffff;
+  --text:#2f2b28;
+  --text2:#6b635c;
+  --text3:#9a928a;
+  --border:#ece6e0;
+  --primary:#6c5ce7;
+  --primary-soft:#f1eeff;
+  --accent:#e07a5f;
+  --accent-soft:#fff1ea;
+  --green:#2e9e7b;
+  --green-soft:#e8f7f1;
+  --amber:#c1811a;
+  --amber-soft:#fff6e5;
+  --code-bg:#2f2b28;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.75;font-size:15px;
+  -webkit-font-smoothing:antialiased;
+}
+.layout{display:flex;max-width:1200px;margin:0 auto;gap:36px;padding:0 32px}
+.sidebar{
+  width:230px;flex:none;position:sticky;top:0;height:100vh;
+  padding:44px 0 40px;overflow-y:auto;
+}
+.sidebar-title{font-size:12px;letter-spacing:.12em;color:var(--text3);font-weight:600;margin-bottom:14px;padding-left:14px}
+.toc a{
+  display:block;padding:9px 14px;border-radius:9px;color:var(--text2);
+  text-decoration:none;font-size:13.5px;transition:.18s;border-left:2px solid transparent;
+}
+.toc a:hover{background:var(--primary-soft);color:var(--primary)}
+.toc a.active{background:var(--primary-soft);color:var(--primary);font-weight:600;border-left-color:var(--primary)}
+.toc a.sub{padding-left:28px;font-size:12.5px}
+.main{flex:1;min-width:0;padding:44px 0 100px}
+.hero{
+  background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:38px 40px;margin-bottom:22px;position:relative;overflow:hidden;
+}
+.hero::before{content:"";position:absolute;top:-60px;right:-60px;width:220px;height:220px;
+  background:var(--primary-soft);border-radius:50%;opacity:.6}
+.hero-body{position:relative;z-index:1}
+.hero h1{font-size:30px;line-height:1.3;font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+.hero h1 span{color:var(--primary)}
+.hero p{color:var(--text2);font-size:15px;max-width:640px}
+.meta{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.tag{font-size:12px;padding:5px 12px;border-radius:100px;background:var(--bg);border:1px solid var(--border);color:var(--text2)}
+.tag.p{background:var(--primary-soft);border-color:transparent;color:var(--primary)}
+section{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:34px 40px;margin-bottom:20px;scroll-margin-top:24px}
+section h2{font-size:21px;font-weight:700;display:flex;align-items:center;gap:12px;margin-bottom:22px;line-height:1.4}
+.sec-num{
+  width:30px;height:30px;flex:none;border-radius:9px;background:var(--primary-soft);color:var(--primary);
+  display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700
+}
+h3{font-size:17px;font-weight:700;margin:28px 0 12px;padding-left:12px;border-left:3px solid var(--primary)}
+h3:first-of-type{margin-top:0}
+h4{font-size:14px;font-weight:700;margin:18px 0 8px;color:var(--text)}
+p{margin:10px 0;color:var(--text2)}
+strong{color:var(--text);font-weight:600}
+ul,ol{margin:10px 0 10px 22px;color:var(--text2)}
+li{margin:5px 0}
+li::marker{color:var(--text3)}
+code{
+  font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:.9em;
+  background:var(--bg);padding:2px 6px;border-radius:5px;color:var(--primary);border:1px solid var(--border)
+}
+pre{
+  background:var(--code-bg);color:#f2ece6;border-radius:12px;padding:18px 20px;
+  overflow-x:auto;margin:14px 0;font-size:13px;line-height:1.7
+}
+pre code{background:none;border:none;color:inherit;padding:0;font-size:inherit}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px}
+th{background:var(--bg);text-align:left;padding:11px 14px;font-weight:600;color:var(--text);border-bottom:2px solid var(--border)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fdfcfa}
+.callout{border-radius:12px;padding:16px 20px;margin:16px 0;border:1px solid transparent;font-size:14px}
+.callout .lbl{font-weight:700;display:block;margin-bottom:4px}
+.callout.tip{background:var(--green-soft);border-color:#c6e9dc;color:#1d6b54}
+.callout.warn{background:var(--amber-soft);border-color:#f3dfb5;color:#8a5c0f}
+.callout.note{background:var(--primary-soft);border-color:#dcd5fb;color:#493c9e}
+.chain{display:flex;align-items:stretch;gap:8px;margin:20px 0;flex-wrap:wrap}
+.chain .node{
+  flex:1;min-width:130px;background:var(--bg);border:1px solid var(--border);border-radius:11px;
+  padding:14px 16px;text-align:center
+}
+.chain .node b{display:block;font-size:13.5px;color:var(--text);margin-bottom:3px}
+.chain .node small{color:var(--text3);font-size:11.5px}
+.chain .arw{display:flex;align-items:center;color:var(--primary);font-size:18px;font-weight:600}
+.skill-card{border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:18px 0;background:#fdfcfb}
+.skill-card .head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.badge{font-size:11.5px;padding:3px 10px;border-radius:100px;font-weight:600}
+.badge.a{background:var(--primary-soft);color:var(--primary)}
+.badge.b{background:var(--green-soft);color:var(--green)}
+.badge.c{background:var(--accent-soft);color:var(--accent)}
+.skill-card .head h3{border:none;padding:0;margin:0;font-size:17px}
+.flow{list-style:none;margin:18px 0 0;padding:0}
+.flow li{
+  position:relative;padding:0 0 22px 40px;border-left:2px solid var(--border);margin-left:13px
+}
+.flow li:last-child{border-left-color:transparent;padding-bottom:0}
+.flow li::before{
+  content:attr(data-n);position:absolute;left:-14px;top:-2px;width:26px;height:26px;border-radius:50%;
+  background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center
+}
+.flow li b{display:block;color:var(--text);font-size:14.5px;margin-bottom:3px}
+.flow li p{margin:2px 0;font-size:13.5px}
+details{border:1px solid var(--border);border-radius:11px;margin:10px 0;background:#fdfcfb}
+summary{padding:13px 18px;cursor:pointer;font-weight:600;font-size:14px;color:var(--text);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";color:var(--primary);font-weight:700;margin-right:10px;font-size:16px}
+details[open] summary::before{content:"−"}
+details .ans{padding:0 18px 16px 34px;font-size:13.5px;color:var(--text2)}
+details .ans p{margin:6px 0}
+.footer{text-align:center;color:var(--text3);font-size:12.5px;padding:10px 0 30px}
+#topbtn{
+  position:fixed;right:26px;bottom:26px;width:42px;height:42px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);color:var(--primary);font-size:18px;cursor:pointer;opacity:0;pointer-events:none;
+  transition:.25s;box-shadow:0 4px 16px rgba(0,0,0,.06)
+}
+#topbtn.show{opacity:1;pointer-events:auto}
+@media(max-width:900px){
+  .layout{padding:0 18px;gap:0;display:block}
+  .sidebar{display:none}
+  .main{padding-top:24px}
+  .hero{padding:28px 24px}
+  section{padding:26px 22px}
+  .hero h1{font-size:25px}
+  .chain .arw{display:none}
+}
+@media print{
+  .sidebar,#topbtn{display:none}
+  body{background:#fff}
+  section,.hero{border:none;box-shadow:none;padding:0 0 18px;margin-bottom:18px;page-break-inside:avoid}
+  details{display:block}
+  details .ans{display:block}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title">目录</div>
+    <nav class="toc">
+      <a href="#s1">01 &nbsp;这套工具能做什么</a>
+      <a href="#s2">02 &nbsp;快速上手：一条龙</a>
+      <a href="#s3">03 &nbsp;三个 skill 逐个说明</a>
+      <a href="#s3-1" class="sub">小测试制作</a>
+      <a href="#s3-2" class="sub">网页制作</a>
+      <a href="#s3-3" class="sub">发布物料</a>
+      <a href="#s4">04 &nbsp;完整实操流程</a>
+      <a href="#s5">05 &nbsp;常见问题与排错</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <div class="hero-body">
+        <h1>测评类产品 <span>Skill 使用手册</span></h1>
+        <p>从一个想法出发，策划成方案、做成能双击运行的互动网页、再产出可上架发社媒的全套物料。覆盖三个 skill 及把它们串起来的总控。</p>
+        <div class="meta">
+          <span class="tag p">小测试制作</span>
+          <span class="tag p">网页制作</span>
+          <span class="tag p">发布物料</span>
+          <span class="tag">总控：测评产品流水线</span>
+          <span class="tag">更新 2026-11</span>
+        </div>
+      </div>
+    </div>
+
+    <section id="s1">
+      <h2><span class="sec-num">01</span>这套工具能帮你做什么</h2>
+      <p>三个 skill 是一条完整产品线，各自负责一段：</p>
+      <table>
+        <thead><tr><th>skill</th><th>输入</th><th>输出</th><th>一句话</th></tr></thead>
+        <tbody>
+          <tr><td><strong>小测试制作</strong></td><td>主题、人群、规模、风格</td><td>八章选题策划案 <code>.md</code></td><td>把想法策划成可执行方案</td></tr>
+          <tr><td><strong>网页制作</strong></td><td>策划案里的题目、结果、文案</td><td>单文件互动网页 <code>.html</code></td><td>做成能双击运行的测试网站</td></tr>
+          <tr><td><strong>发布物料</strong></td><td>网页主题、文案、题库、公网链接</td><td>封面/卡片/文案 + 汇总文档 + PNG</td><td>做成能上架发社媒的素材</td></tr>
+        </tbody>
+      </table>
+      <div class="chain">
+        <div class="node"><b>想法</b><small>一句话需求</small></div>
+        <div class="arw">→</div>
+        <div class="node"><b>小测试制作</b><small>策划案 .md</small></div>
+        <div class="arw">→</div>
+        <div class="node"><b>网页制作</b><small>网页 .html</small></div>
+        <div class="arw">→</div>
+        <div class="node"><b>发布物料</b><small>上架素材</small></div>
+      </div>
+      <div class="callout note">
+        <span class="lbl">关于总控 skill</span>
+        另有一个总控 <code>测评产品流水线</code>（目录名 <code>quiz-product-pipeline</code>），它自己不干活，只负责触发一次就依次把上面三个跑完，并处理"需求只问一次""产出交接""公网链接卡点"这三件事。三个子 skill 与总控平级，装了总控不影响单独使用任何一个。
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="sec-num">02</span>快速上手：一条龙跑通</h2>
+      <p>如果想一次性做完，直接在对话里说：</p>
+      <pre><code>做一整套测评产品，主题是"恋人类型测评"，目标人群是 18-30 岁女生，
+规模用标准档，风格甜暖治愈，商用，口令用 3167。</code></pre>
+      <p>触发总控后，会自动完成：</p>
+      <ol>
+        <li><strong>统一澄清</strong>：上面没说的（如引流题数量、视觉细节）用默认值并注明，不再反复追问。</li>
+        <li><strong>出策划案</strong>：八章结构，去侵权处理。</li>
+        <li><strong>做网页</strong>：口令固定为 3167，做完浏览器实测。</li>
+        <li><strong>出物料</strong>：封面、引流卡片、文案、发货文案；没给公网链接则留"待发布后回填"占位。</li>
+      </ol>
+      <p>最后一次性交付三样成品：<code>.md</code> 策划案、<code>.html</code> 网页、物料汇总文档（含独立 PNG）。</p>
+      <h3>触发词对照</h3>
+      <table>
+        <thead><tr><th>你说的话</th><th>触发</th></tr></thead>
+        <tbody>
+          <tr><td>"做一整套测评产品" "从策划到上线一条龙" "全包了"</td><td>总控 <code>测评产品流水线</code></td></tr>
+          <tr><td>"帮我策划一个测试" "把选题策划清楚"</td><td>单独 <code>小测试制作</code></td></tr>
+          <tr><td>"做一个测评网站" "做成单文件网页"</td><td>单独 <code>网页制作</code></td></tr>
+          <tr><td>"出一张封面主图" "写发货文案" "做上架物料"</td><td>单独 <code>发布物料</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s3">
+      <h2><span class="sec-num">03</span>三个 skill 逐个说明</h2>
+
+      <div class="skill-card" id="s3-1">
+        <div class="head"><span class="badge a">SKILL 01</span><h3>小测试制作</h3></div>
+        <p><strong>什么时候用：</strong>只需要策划方案，不急着做网页时。</p>
+        <h4>必须给出的输入</h4>
+        <ul>
+          <li>主题 / 选题</li><li>目标人群</li><li>规模档位（三选一，不给具体数字）</li>
+          <li>风格偏好</li><li>是否商用变现（决定去侵权强度）</li>
+        </ul>
+        <h4>规模档位（只有三档，结果数与题数 1:1）</h4>
+        <table>
+          <thead><tr><th>档位</th><th>正式题数</th><th>结果数</th><th>维度数</th><th>每题选项</th><th>每原型出现次数</th></tr></thead>
+          <tbody>
+            <tr><td>轻量</td><td>12</td><td>12</td><td>4</td><td>4</td><td>4 次</td></tr>
+            <tr><td><strong>标准（默认）</strong></td><td>18</td><td>18</td><td>6</td><td>4</td><td>4 次</td></tr>
+            <tr><td>加大</td><td>24</td><td>24</td><td>8</td><td>4</td><td>4 次</td></tr>
+          </tbody>
+        </table>
+        <h4>输出：固定八章（名称与顺序不可变）</h4>
+        <ol>
+          <li>产品定位</li><li>题目大纲</li><li>结果大纲</li><li>引流题</li>
+          <li>计分规则</li><li>视觉与文案规范</li><li>可以发小红书的物料</li><li>风险清单与上线检查</li>
+        </ol>
+        <div class="callout warn">
+          <span class="lbl">硬性规则（踩坑高发区）</span>
+          <ul style="margin-bottom:0">
+            <li><strong>计分均衡</strong>：<code>题数 × 每题选项数 = 结果数 × 每原型出现次数</code>，且结果数必须能被 3 整除。不配平会导致某些结果永远抽不到。</li>
+            <li><strong>去侵权</strong>：真人姓名、节目/IP 名称一律换代号；不用真人照片、肖像、节目画面、logo。商用时为硬性要求。</li>
+            <li><strong>引流题只留题目本身</strong>：不加映射表、挑选标准、转化逻辑等分析内容。</li>
+            <li><strong>第八章是"物料"不是"标题列表"</strong>：按标题 / 副标题 / 正文 / 标签的小节结构写。</li>
+            <li><strong>用户给的引导语逐字保留</strong>：含 emoji、@账号、选项记录方式、评论区引导等，不要改写。</li>
+          </ul>
+        </div>
+        <h4>常见迭代指令</h4>
+        <ul><li>"结果大纲去掉代码列"</li><li>"引流题只留题目本身"</li><li>"正文改成约 200 字口语化种草文"</li></ul>
+        <p>只改被点名的部分，其他不动。</p>
+      </div>
+
+      <div class="skill-card" id="s3-2">
+        <div class="head"><span class="badge b">SKILL 02</span><h3>网页制作</h3></div>
+        <p><strong>什么时候用：</strong>已有策划案（或主题明确），要做出能直接运行的网页时。</p>
+        <h4>必须给出的输入</h4>
+        <ul><li>主题与规模档位</li><li>口令（指定或随机，默认随机 4 位数）</li><li>视觉调性（甜暖治愈 / 俏皮 / 文艺 / 简约）</li><li>是否商用（商用需去侵权）</li></ul>
+        <h4>输出</h4>
+        <p>单个 HTML 文件，HTML/CSS/JS 全部内嵌、零外部依赖、双击本地即可运行。</p>
+        <div class="callout warn">
+          <span class="lbl">文件名规则（非常容易踩坑）</span>
+          <ul style="margin-bottom:0">
+            <li>用测试主题的拼音，如"恋人类型测评" → <code>lianrenceping.html</code></li>
+            <li>全小写、拼音连写、不带声调、不加空格或连字符、≤ 20 字符</li>
+            <li><strong>不能是汉字文件名，也不能用 <code>index.html</code> / <code>index.htm</code></strong></li>
+            <li>禁止任何 <code>http(s)://</code> 外链、<code>&lt;link&gt;</code>、<code>@import</code>、<code>src=</code>、<code>fetch(</code>、<code>XMLHttpRequest</code></li>
+          </ul>
+        </div>
+        <h4>六项硬性要求</h4>
+        <ol>
+          <li><strong>口令门控默认必做</strong>：写死在代码里的固定数字（<code>var PASSCODE="3167"</code>），用 <code>&lt;input type="password"&gt;</code>，不是随机图形验证码。位于首页之前、不可绕过。只有用户明确说"不要口令"才省略。</li>
+          <li><strong>结果文案三段式</strong>：每结果约 250 字，「👀 一个画面（被说中）→ 🌱 这是这样的你（上升到性格）→ ✨ 一句话送给你（金句高亮）」。</li>
+          <li><strong>结果可保存</strong>：提供"生成我的结果海报"按钮，Canvas 绘制 750×1500 竖版海报，支持长按保存 / 点击下载 PNG。</li>
+          <li><strong>免责声明</strong>：结果页底部与海报底部都要有小字"本测试为趣味娱乐内容……不构成任何心理诊断或情感建议"。</li>
+          <li><strong>浏览器实测</strong>：口令拦截 → 正确口令进入 → 答题 → 结果 → 生成海报 → 下载 PNG，全程跑通并抓 <code>pageerror</code>。</li>
+          <li><strong>计分均衡校验</strong>：改一次题库就要重跑 <code>scripts/verify_quiz.js</code>。</li>
+        </ol>
+        <p>交付时会告诉你：口令是多少、在代码第几行修改、文件名怎么来的。</p>
+      </div>
+
+      <div class="skill-card" id="s3-3">
+        <div class="head"><span class="badge c">SKILL 03</span><h3>发布物料</h3></div>
+        <p><strong>什么时候用：</strong>网页已成型，要做上架和社媒素材时。</p>
+        <h4>必须给出的输入</h4>
+        <ul>
+          <li>主题与对外代号（去侵权后的称呼）</li>
+          <li><strong>公网答题链接</strong>（关键）</li>
+          <li>引流题数量（默认 4 道）</li>
+          <li>是否要 AI 插画背景（默认不要，走本地排版）</li>
+          <li>物料范围（只要图片 / 只要文案 / 全套汇总）</li>
+        </ul>
+        <h4>输出顺序（固定）</h4>
+        <div class="chain">
+          <div class="node"><b>主图封面</b></div><div class="arw">→</div>
+          <div class="node"><b>引流题卡片</b></div><div class="arw">→</div>
+          <div class="node"><b>社媒文案</b></div><div class="arw">→</div>
+          <div class="node"><b>发货文案</b></div><div class="arw">→</div>
+          <div class="node"><b>检查清单</b></div>
+        </div>
+        <p>外加一份汇总文档和全部独立高清 PNG 原图。</p>
+        <div class="callout warn">
+          <span class="lbl">硬性规则</span>
+          <ol style="margin-bottom:0">
+            <li><strong>链接前置、缺值才追问、不编造</strong>：发货文案里的链接必须是公网可直接打开答题的页面。本地文件路径、仓库源码页（blob 页）、未发布草稿都不能当发货链接。用户只说"有"却没贴网址，不算拿到链接，继续追问。</li>
+            <li><strong>没有链接时的合法做法</strong>：用户明确说"还没有 / 稍后补"时，其余物料先做，链接和口令位置留"待发布后回填"占位。</li>
+            <li><strong>默认本地排版不耗额度</strong>：图片用 HTML/CSS + 内联 SVG，脚本调系统 Edge 截图导出 PNG，不调用生图模型。要 AI 插画背景会先确认。</li>
+            <li><strong>全套风格统一</strong>：主图与所有卡片共用同一套色板、字体层级、边框与装饰语言。</li>
+            <li><strong>卡片尺寸</strong>：3:4 画布，1080×1440，导出 2 倍高清 PNG。</li>
+            <li><strong>图片独立交付</strong>：文档内嵌位图双击不弹原图是正常行为，必须同时给独立 PNG 原图。</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="sec-num">04</span>完整实操流程：从想法到上架</h2>
+      <ol class="flow">
+        <li data-n="1"><b>对话输入想法</b><p>说"做一整套 XX 测评"，触发总控。</p></li>
+        <li data-n="2"><b>拿到策划案 .md</b><p>检查八章齐不齐、计分均衡、去侵权、题目是否场景化。不满意就增量修改："结果大纲去掉代码列"。</p></li>
+        <li data-n="3"><b>拿到网页 .html</b><p>双击本地打开，输入口令，完整答一遍，生成海报并下载。检查口令、结果文案、海报有无溢出。</p></li>
+        <li data-n="4"><b>发布网页，拿到公网链接</b><p>发货文案需要公网可直接打开答题的链接，本地 <code>file://</code> 路径不能作为发货链接。拿到链接后进入下一步。</p></li>
+        <li data-n="5"><b>回到对话，提交链接</b><p>"链接是 https://xxx/…，继续出物料"，<code>发布物料</code> 会用它写发货文案。</p></li>
+        <li data-n="6"><b>拿到物料全套</b><p>汇总文档 + 独立 PNG，检查封面文字与文案一致、链接正确。</p></li>
+        <li data-n="7"><b>上架</b><p>按"上线检查清单"逐项核对。</p></li>
+      </ol>
+    </section>
+
+    <section id="s5">
+      <h2><span class="sec-num">05</span>常见问题与排错</h2>
+      <details>
+        <summary>说"做一整套"没触发总控，只触发了单个 skill？</summary>
+        <div class="ans"><p>检查话术里有没有"一整套 / 一条龙 / 全包了 / 从策划到上线"这类词。只说"做一个测试"偏向单个 skill。另外新装的 skill 要在<strong>新会话</strong>才会加载。</p></div>
+      </details>
+      <details>
+        <summary>总控跑了，但三个 skill 反复问我同样的问题？</summary>
+        <div class="ans"><p>总控的 Step 0 已经收口需求，正常不会再问。如果遇到，直接回答并把答案说清楚，或明确讲"这些前面已给，直接执行"。</p></div>
+      </details>
+      <details>
+        <summary>结果总是抽不到某几个？</summary>
+        <div class="ans"><p>计分不均衡。检查 <code>题数 × 选项数 = 结果数 × 每原型出现次数</code>，且结果数能被 3 整除。用 <code>网页制作</code> skill 自带的 <code>verify_quiz.js</code> 校验。</p></div>
+      </details>
+      <details>
+        <summary>物料文档里的图片双击不弹原图？</summary>
+        <div class="ans"><p>这是文档内嵌位图的通用行为，不是 bug。交付时已另给独立的高清 PNG 原图，用那些。</p></div>
+      </details>
+      <details>
+        <summary>没有公网链接，能先出物料吗？</summary>
+        <div class="ans"><p>能。图片、社媒文案、商品详情都能先做，链接和发货文案留"待发布后回填"占位，拿到链接后再补。</p></div>
+      </details>
+    </section>
+
+    <div class="footer">测评类产品 Skill 使用手册 · 2026-11</div>
+  </main>
+</div>
+<button id="topbtn" title="返回顶部" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))}).filter(Boolean);
+  var topbtn=document.getElementById('topbtn');
+  function update(){
+    var y=window.scrollY+120,cur=null;
+    secs.forEach(function(s){if(s.offsetTop<=y)cur=s.id});
+    links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+cur)});
+    topbtn.classList.toggle('show',window.scrollY>500);
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+})();
+</script>
+</body>
+</html>

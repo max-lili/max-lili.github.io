@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>在你的人生里，那件闭口不提的事</title>
+<style>
+:root{
+  --brand:#4A4368; --brand-deep:#332E50; --brand-soft:#E9E5F1;
+  --accent:#B89AA6; --accent-soft:#F2E9EC;
+  --cream:#F6F3EF; --ink:#3A3550; --ink-2:#6E6880; --ink-3:#9E98AC;
+  --line:#E6E1ED; --shadow-sm:0 4px 18px rgba(74,67,104,.10);
+  --shadow:0 14px 44px rgba(74,67,104,.18);
+  --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(160deg,#F6F3EF 0%,#EDE9F2 55%,#E6E3F0 100%);
+  color:var(--ink);min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:30px 20px 52px}
+.view{display:none}
+.view.show{display:block;animation:fadeUp .55s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s ease}
+
+#gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:linear-gradient(160deg,rgba(246,243,239,.97),rgba(230,227,240,.97));
+  backdrop-filter:blur(8px)}
+#gate.hide{display:none}
+.gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+  padding:40px 30px 32px;width:100%;max-width:400px;text-align:center}
+.gate-lock{font-size:46px;margin-bottom:10px;font-family:var(--emoji)}
+.gate-card h2{font-size:21px;margin:0 0 10px}
+.gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 22px}
+#passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+  padding:14px 12px 14px 24px;border:2px solid var(--brand-soft);border-radius:14px;
+  color:var(--ink);font-family:inherit;outline:none;background:#FCFAFE}
+#passInput:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(74,67,104,.10)}
+.gate-msg{height:20px;font-size:12.5px;color:#B06A7A;margin:6px 0 12px;opacity:0;transition:opacity .2s}
+.gate-msg.on{opacity:1}
+.gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+  color:#fff;background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+  box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+.btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand-soft);box-shadow:none}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+  padding:22px;margin-bottom:16px}
+h1{font-size:27px;line-height:1.38;margin:10px 0 14px}
+h1 .hl{color:var(--brand);background:linear-gradient(transparent 62%,rgba(184,154,166,.35) 0)}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--brand);
+  background:var(--brand-soft);padding:5px 12px;border-radius:999px;letter-spacing:.5px}
+.progress-track{height:8px;background:var(--brand-soft);border-radius:99px;overflow:hidden;margin:16px 0 8px}
+.bar-fill{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--accent),var(--brand));transition:width .5s ease}
+.qmeta{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-3);margin-bottom:12px}
+#qTitle{font-size:18px;line-height:1.55;margin:0 0 18px;font-weight:800}
+.option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--line);
+  border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;font-size:14px;line-height:1.5}
+.option:hover{transform:translateY(-2px);border-color:var(--accent);background:#FDFBFD}
+.option.on{border-color:var(--brand);background:var(--brand-soft)}
+.opt-key{flex:0 0 30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.option.on .opt-key{background:var(--brand);color:#fff}
+.type-emoji{font-size:56px;line-height:1;margin-bottom:10px;font-family:var(--emoji)}
+.kw{display:inline-block;font-size:12px;color:var(--brand);background:var(--brand-soft);
+  padding:5px 12px;border-radius:999px;margin:0 6px 6px 0}
+.dim-tag{display:inline-block;font-size:12px;color:#8A6E7A;background:var(--accent-soft);
+  padding:4px 12px;border-radius:999px;margin-bottom:12px}
+.insight{padding:14px 0 2px;border-top:1px dashed var(--line)}
+.insight + .insight{border-top:1px dashed var(--line)}
+.insight h4{font-size:13.5px;margin:0 0 7px;color:var(--brand)}
+.insight p{font-size:14px;line-height:1.85;margin:0;color:var(--ink-2)}
+.insight.gold{background:linear-gradient(135deg,#F7F1EC,#F2E9EC);border:1px solid #EBDDE2;
+  border-radius:16px;padding:16px 18px;margin-top:8px;border-top:0}
+.insight.gold h4{color:#9A6E7C}
+.insight.gold p{font-size:15.5px;color:var(--brand-deep);font-weight:800;letter-spacing:.3px}
+.mini-sec{font-size:12.5px;color:var(--ink-3);line-height:1.8;margin:14px 0 0;padding:12px 14px;
+  background:#FAF8FC;border-radius:12px}
+.mini-sec b{color:var(--brand)}
+.disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+
+#posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(51,46,80,.62);
+  align-items:center;justify-content:center;padding:18px}
+#posterModal.show{display:flex}
+.poster-box{background:#fff;border-radius:20px;padding:14px;max-width:400px;width:100%;text-align:center;
+  max-height:92vh;overflow:auto}
+#posterImg{width:100%;border-radius:12px;display:block}
+.poster-tip{font-size:11px;color:var(--ink-3);margin:8px 0 2px}
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:rgba(51,46,80,.94);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令，开启这场自我探寻</h2>
+      <p class="gsub">这是一封写给你的深夜来信<br>口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <section id="home" class="view">
+    <span class="eyebrow">🌙 深夜树洞 · 趣味测试</span>
+    <h1>在你的生活里<br>那件至关重要、<span class="hl">你却闭口不提</span>的事，是什么？</h1>
+    <p class="gsub">有些事太重要，反而说不出口。<br>24 道题，像一个安静的树洞，温柔地说出你藏得最深的那件心事。<br>它不评判，只想让你知道：你的那些小心思，都值得被好好看见。</p>
+    <button class="btn" id="startBtn">开始探寻 →</button>
+    <p class="gsub" style="margin:16px 0 0;font-size:12px">约需 3–4 分钟 · 24 道题 · 请跟着直觉作答</p>
+  </section>
+
+  <section id="quiz" class="view">
+    <div class="qmeta"><span id="qIndex">第 1 / 24 题</span><span>跟着感觉走 ✨</span></div>
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <div class="card">
+      <h2 id="qTitle">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div class="type-emoji" id="rEmoji">🌙</div>
+      <div class="dim-tag" id="rDim">维度 · 原型</div>
+      <h2 id="rName" style="margin:0 0 6px;font-size:23px">结果类型</h2>
+      <p class="gsub" id="rPersona" style="margin-bottom:12px">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div id="rInsight"></div>
+      <p class="mini-sec" id="rScene"></p>
+      <p class="mini-sec" id="rMatch"></p>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <p class="poster-tip">长按图片保存，或点击下方按钮下载</p>
+    <a class="btn" id="posterDownload" href="#" download="我的闭口不提的事.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "7319"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 数据区 ============ */
+var QUESTIONS = [{"title": "深夜睡不着，脑子里最常浮现的是——", "options": [{"key": "A", "code": "A1"}, {"key": "B", "code": "C2"}, {"key": "C", "code": "E3"}, {"key": "D", "code": "H1"}]}, {"title": "如果人生可以匿名重来一次，你最想改写的是——", "options": [{"key": "A", "code": "B3"}, {"key": "B", "code": "E1"}, {"key": "C", "code": "G2"}, {"key": "D", "code": "A3"}]}, {"title": "周末突然多出一整天自由时间，你的第一反应是——", "options": [{"key": "A", "code": "D2"}, {"key": "B", "code": "F3"}, {"key": "C", "code": "A1"}, {"key": "D", "code": "C2"}]}, {"title": "别人夸你「人真好」时，你心里真实的反应更接近——", "options": [{"key": "A", "code": "F1"}, {"key": "B", "code": "H2"}, {"key": "C", "code": "B3"}, {"key": "D", "code": "E1"}]}, {"title": "一家人坐在一起吃饭，你常常——", "options": [{"key": "A", "code": "G3"}, {"key": "B", "code": "B1"}, {"key": "C", "code": "D2"}, {"key": "D", "code": "F3"}]}, {"title": "收到一笔意料之外的钱，你更可能——", "options": [{"key": "A", "code": "A2"}, {"key": "B", "code": "C3"}, {"key": "C", "code": "F1"}, {"key": "D", "code": "H2"}]}, {"title": "看到同龄人过得比你好，你心里最先冒出的是——", "options": [{"key": "A", "code": "C1"}, {"key": "B", "code": "E2"}, {"key": "C", "code": "G3"}, {"key": "D", "code": "B1"}]}, {"title": "照镜子时，你最不愿承认的是——", "options": [{"key": "A", "code": "D3"}, {"key": "B", "code": "G1"}, {"key": "C", "code": "A2"}, {"key": "D", "code": "C3"}]}, {"title": "参加一场热闹的聚会，中途你会——", "options": [{"key": "A", "code": "F2"}, {"key": "B", "code": "H3"}, {"key": "C", "code": "C1"}, {"key": "D", "code": "E2"}]}, {"title": "生日那天，你最不想听到的一句是——", "options": [{"key": "A", "code": "H1"}, {"key": "B", "code": "B2"}, {"key": "C", "code": "D3"}, {"key": "D", "code": "G1"}]}, {"title": "独处的某个瞬间，你最常感到——", "options": [{"key": "A", "code": "A3"}, {"key": "B", "code": "D1"}, {"key": "C", "code": "F2"}, {"key": "D", "code": "H3"}]}, {"title": "做选择时你嘴上说「随便」，其实心里在——", "options": [{"key": "A", "code": "C2"}, {"key": "B", "code": "E3"}, {"key": "C", "code": "H1"}, {"key": "D", "code": "B2"}]}, {"title": "夜深人静时，那个你从没告诉任何人的念头是——", "options": [{"key": "A", "code": "E1"}, {"key": "B", "code": "G2"}, {"key": "C", "code": "A3"}, {"key": "D", "code": "D1"}]}, {"title": "手机忽然没电、彻底失联两小时，你的感觉更偏——", "options": [{"key": "A", "code": "F3"}, {"key": "B", "code": "A1"}, {"key": "C", "code": "C2"}, {"key": "D", "code": "E3"}]}, {"title": "如果能给过去的自己发一条消息，你会说——", "options": [{"key": "A", "code": "H2"}, {"key": "B", "code": "B3"}, {"key": "C", "code": "E1"}, {"key": "D", "code": "G2"}]}, {"title": "忙了一整天，你最想做的一件「自私」的事是——", "options": [{"key": "A", "code": "B1"}, {"key": "B", "code": "D2"}, {"key": "C", "code": "F3"}, {"key": "D", "code": "A1"}]}, {"title": "有人问起你真实的生活状态，你通常——", "options": [{"key": "A", "code": "C3"}, {"key": "B", "code": "F1"}, {"key": "C", "code": "H2"}, {"key": "D", "code": "B3"}]}, {"title": "朋友圈里有人晒出你想要的生活，你会——", "options": [{"key": "A", "code": "E2"}, {"key": "B", "code": "G3"}, {"key": "C", "code": "B1"}, {"key": "D", "code": "D2"}]}, {"title": "关于「成为什么样的人」，你心里藏着——", "options": [{"key": "A", "code": "G1"}, {"key": "B", "code": "A2"}, {"key": "C", "code": "C3"}, {"key": "D", "code": "F1"}]}, {"title": "想到十年后的自己，你心里更多是——", "options": [{"key": "A", "code": "H3"}, {"key": "B", "code": "C1"}, {"key": "C", "code": "E2"}, {"key": "D", "code": "G3"}]}, {"title": "一段关系里，你最难开口说出的一句是——", "options": [{"key": "A", "code": "B2"}, {"key": "B", "code": "D3"}, {"key": "C", "code": "G1"}, {"key": "D", "code": "A2"}]}, {"title": "如果此刻可以毫无代价地消失一段时间，你会——", "options": [{"key": "A", "code": "D1"}, {"key": "B", "code": "F2"}, {"key": "C", "code": "H3"}, {"key": "D", "code": "C1"}]}, {"title": "你很少对人说起的一个真相是——", "options": [{"key": "A", "code": "E3"}, {"key": "B", "code": "H1"}, {"key": "C", "code": "B2"}, {"key": "D", "code": "D3"}]}, {"title": "如果秘密可以被一个人听见，你希望是——", "options": [{"key": "A", "code": "G2"}, {"key": "B", "code": "A3"}, {"key": "C", "code": "D1"}, {"key": "D", "code": "F2"}]}];
+var RESULTS = {"A1": {"emoji": "🌙", "name": "夜行的人", "persona": "把真实自己藏给深夜的人", "kw": ["隐藏自我", "安静", "自留地"], "insight": ["晚上十一点之后，屏幕的微光是唯一照着你真实表情的光。白天你笑着附和，把「都行」「随便」挂在嘴边；关上房门的那一刻，你才敢卸下那副得体的人设，做回那个安静、松弛、不必向任何人解释的自己。只有在深夜，你才觉得真正喘过了一口气。", "你把最真实的自己留给了夜色，这不是孤僻，而是你给自己留的最后一块自留地。能被这样小心守护的东西，一定很珍贵。你只是把柔软与坦诚藏在无人知晓的时刻，安静，却从不虚假。这份不肯轻易示人的真实，恰恰是你最动人的部分。", "愿你终有一天，敢在白天也做回那个深夜的自己。"], "scene": "晚上十一点后，屏幕的光是唯一照着你真实表情的光；白天你笑着附和，夜里才敢做回那个安静的自己。", "match": "和同样习惯把心事藏起来的「夜行的人」最懂彼此的沉默。@那个总说「我没事」的朋友，来看看你藏起来的是哪一面。", "dim": "A", "theme": "清醒自守"}, "A2": {"emoji": "🌟", "name": "搁浅的星", "persona": "把梦想悄悄收起的人", "kw": ["未竟理想", "搁置", "余温"], "insight": ["深夜刷到别人正在做你曾经想做的事，你会愣一下，指尖停在屏幕上，然后默默退出页面，把那点隐隐的痒藏好。你从不主动提起那个被搁置的梦想，像收起一颗星，只在无人的夜里，才让它透出一点微光。", "暂时搁置并不等于放弃，它只是换了一种方式陪着你。那份没敢说出口的向往，仍在替你守住生活里最亮的一角。你心里一直有颗没有熄灭的星，它记得你最初的样子，也等着你重新抬头看它。把它收好并不代表你忘了，恰恰是因为太珍惜，你才会连提起它都怕被人笑。可它一直都在，从未走远。", "梦想没有丢，它只是在等你准备好。"], "scene": "深夜刷到别人在做你曾经想做的事，你会愣一下，然后默默退出页面，把那点痒藏好。", "match": "和「搁浅的星」相遇，是两个未完待续的故事彼此照亮。@那个也曾有梦想的朋友，看看你心里那颗星还在不在。", "dim": "A", "theme": "清醒自守"}, "A3": {"emoji": "🕯️", "name": "裂缝里的光", "persona": "把自卑藏得体面的人", "kw": ["自我怀疑", "不完美", "温柔"], "insight": ["被夸奖时你的第一反应是不敢当，嘴上说着「没有啦」，转身却把那句否定自己的话悄悄咽了回去。你总觉得自己没有别人以为的那么好，这份怀疑藏得很深，连最亲近的人都未必知道。", "可正是那条你以为的裂缝，透进了最真实的光。你不需要完美才值得被爱——那个会自我怀疑却依然一步步向前的你，已经足够了不起。请对自己温柔一点，你的不完美，恰恰是你最像人的地方。允许自己偶尔不那么坚强，也是一种勇敢。愿你慢慢学会，把自己也放进需要被好好善待的名单里。", "你不必完美，就已经值得被好好爱着。"], "scene": "被夸奖时你第一反应是不敢当，转身却把那句否定自己的话，悄悄咽了回去。", "match": "「裂缝里的光」之间，不必假装无坚不摧。@那个总在深夜否定自己的朋友，看看你也有被看见的脆弱。", "dim": "A", "theme": "清醒自守"}, "B1": {"emoji": "💌", "name": "未寄出的信", "persona": "把喜欢留在沉默里的人", "kw": ["暗恋", "没说出口", "珍藏"], "insight": ["对话框打了又删，名字看了又看，最后你只是把手机扣在桌上，笑了笑。有一份喜欢，你终究没有说出口，把它封成了一封永远不会寄出的信。那些欲言又止的瞬间，只有你自己知道有多用力。", "没说出口并不代表不珍贵。有些心意，正因为藏在心底，才纯粹得发光。你曾那样安静地、认真地在意过一个人，这份能力本身就很美好。谢谢你把那份心动保管得这样好，它没有消失，只是化作了你温柔的一部分。你把体面留给了对方，把心动留给了自己，这份克制里有你的温柔，也有你的勇气，都值得被珍惜。", "没说出口的喜欢，也一样郑重其事。"], "scene": "对话框打了又删，名字看了又看，最后只是把手机扣在桌上，笑了笑。", "match": "「未寄出的信」最懂那种止于唇齿的心动。@那个也曾把喜欢藏起来的朋友，看看你心里有没有一封没寄出的信。", "dim": "B", "theme": "柔软深情"}, "B2": {"emoji": "🤐", "name": "咽下的话", "persona": "在关系里隐忍的人", "kw": ["隐忍", "委屈", "体谅"], "insight": ["明明不想答应，话到嘴边却变成了「好啊」，然后在心里对自己小声道歉。你在关系里受过不少委屈，却总把那句「其实我不开心」咽了回去，怕扫兴，怕麻烦别人，怕破坏气氛。", "你的体谅很珍贵，但你的感受同样重要。允许自己偶尔说一次真话，不是任性，而是好好爱自己的开始。你不必永远做那个懂事的人，偶尔示弱、偶尔拒绝，关系才会更真实、更长久。你值得一段可以放心说「不开心」的关系。真实的表达不会赶走对的人，只会让留在你身边的人更靠近你。", "你的委屈，也值得被认真听见。"], "scene": "明明不想答应，话到嘴边却变成「好啊」，然后在心里对自己道了个歉。", "match": "「咽下的话」之间，最需要的是一个能让你放心诉苦的人。@那个总在关系里退让的朋友，看看你是不是也在偷偷委屈自己。", "dim": "B", "theme": "柔软深情"}, "B3": {"emoji": "🌤️", "name": "等光的孩子", "persona": "渴望被好好爱的人", "kw": ["被爱渴望", "柔软", "真诚"], "insight": ["收到一点小小的关心，你会偷偷开心很久，却又怕自己太容易满足。你比谁都渴望被坚定地爱着，却把这份需要藏得很深，总说「我一个人挺好」，转身却把那条消息又看了一遍。", "想要被爱从来不是软弱，而是人最本真的渴望。你值得被认真对待、被用力珍惜——这一点，从不因为你的小心翼翼而打折扣。你的柔软不是负担，而是你连接这个世界的温柔方式。别因为害怕麻烦别人，就把自己的需要一压再压。大大方方说出「我想要」，是每个人与生俱来的权利。", "你值得被爱，不需要任何条件。"], "scene": "收到一点小小的关心，你会偷偷开心很久，却又怕自己太容易满足。", "match": "「等光的孩子」遇到彼此，会懂得那份小心期盼。@那个总说自己「一个人挺好」的朋友，看看你是不是也在等一束光。", "dim": "B", "theme": "柔软深情"}, "C1": {"emoji": "🐚", "name": "背壳的人", "persona": "独自扛着经济压力的人", "kw": ["经济压力", "责任", "坚韧"], "insight": ["付款时你的手指在余额上停顿了半秒，然后若无其事地按下确认。有一笔账你从不在人前细算，有份窘迫你总是笑着带过。你把生活的重量背在身上，走得不快，却一步没有停。", "你背着的这份重量，是很多人看不见的担当。日子或许紧巴，但你一步步撑过来的样子，真的很了不起。请相信，眼下的难处只是暂时的，你比自己以为的更有力量，也更值得过上宽裕从容的生活。你不必用钱来证明自己的价值。你已经用双手撑起了很多，这份踏实和担当，任何人拿不走，也不会贬值。", "慢慢来，你背着的，终会变成你拥有的。"], "scene": "付款时手指在余额上停顿半秒，然后若无其事地按下确认。", "match": "「背壳的人」最懂那种不能说的沉。@那个总说「还好啦」的朋友，看看你是不是也在默默扛着重担。", "dim": "C", "theme": "踏实担当"}, "C2": {"emoji": "🤲", "name": "攥紧的人", "persona": "对安全感格外敏感的人", "kw": ["不安", "节俭", "踏实"], "insight": ["明明可以点的那道菜，你看看价格又放下，嘴上说着「不饿」。你对钱总有一份说不清的紧张，好像多攥一点，这个世界就多安全一点。你很少乱花，也很少为自己破例。", "这份不安，其实是你对生活和家人深沉的责任感。你已经做得很好了——允许自己偶尔松一口气，也是一种能力。安全感不只是账户里的数字，更是你相信自己有能力面对明天的底气。偶尔为自己花一次钱、圆一个小小的愿望，并不会让你变得不安全。你值得被自己慷慨地对待一次。", "你攥得越紧，越该偶尔为自己松松手。"], "scene": "明明可以点的菜，你会看看价格再放下，嘴上说「不饿」。", "match": "「攥紧的人」之间，最懂那份对未来的小心盘算。@那个总说「够了够了」的朋友，看看你是不是也总在为自己多留一点。", "dim": "C", "theme": "踏实担当"}, "C3": {"emoji": "🌒", "name": "影子里的人", "persona": "有不能明说的另一重身份的人", "kw": ["隐秘", "第二身份", "自持"], "insight": ["手机里有个不愿被人翻到的文件夹，那是你为自己保留的另一片天地。有人问起你的生活，你总是含糊带过。你有一面生活从不摊开给人看，或许是副业，或许是一段来路，你小心地护着它。", "你护着它，是因为它承载着你对掌控感的渴望。这份不肯示人的努力，是你给自己留的底气，值得被温柔以待。你不必向所有人交代清楚，有些秘密，正是你悄悄长大的地方。每个人都有不愿示人的角落，那不是隐瞒，而是你对自己生活的尊重。请安心地守护它，它从不是负担。", "你的另一面，也在认真地发光。"], "scene": "手机里有个不愿被人翻到的文件夹，那是你为自己保留的另一片天地。", "match": "「影子里的人」相遇，会珍惜彼此那份不便言说的分寸。@那个总是「无可奉告」的朋友，看看你是不是也藏着一重身份。", "dim": "C", "theme": "踏实担当"}, "D1": {"emoji": "🩹", "name": "静默的疼", "persona": "独自扛着健康问题的人", "kw": ["隐疾", "隐忍", "勇敢"], "insight": ["那个小毛病反复出现，你查了又查，最后还是把预约页面关掉。身体有些不适，你一直没敢深想，也没对谁说。你习惯独自消化疼痛，像什么都没发生一样，继续把日子往下过。", "独自消化疼痛的你，其实比想象中更勇敢。但身体发出的信号值得被认真对待——照顾好自己不是矫情，而是对自己最基本的温柔。愿你有勇气去面对，也有余地被照顾，不必一个人扛着所有不舒服。你不必等到撑不住才被允许休息。主动关心身体、及时寻求帮助，恰恰是一个人对自己最深沉的负责。", "请先照顾好自己，世界才会对你更温柔。"], "scene": "那个小毛病反复出现，你查了又查，最后还是把预约页面关掉。", "match": "「静默的疼」最懂那种不肯声张的坚强。@那个总说「我没事」的朋友，看看你是不是也在独自扛着什么。", "dim": "D", "theme": "坚韧自持"}, "D2": {"emoji": "🔋", "name": "透支的人", "persona": "长期疲惫却不停下的人", "kw": ["疲惫", "硬撑", "坚韧"], "insight": ["明明累到不想说话，消息来了你还是秒回，然后靠在椅背上长长地叹一口气。你已经累到发空，却还在咬牙往前走。你把「歇一歇」一直往后排，排在忙完这阵、排在完成所有事之后。", "这份撑着的力量很了不起，但你也值得被允许停下来。疲惫不是失败，而是身体在提醒你：该好好歇一歇了。今晚，请把「休息」也当成一件正事来完成。你不需要时刻满格，才有资格被爱。世界不会因为你歇了一天就塌下来。把紧绷的弦松一松，你才能走更远的路，也才有余力去爱身边的人。", "你不必一直满格，停下来也是一种前进。"], "scene": "明明累到不想说话，消息来了还是秒回，然后靠在椅背上长长地叹一口气。", "match": "「透支的人」之间，最希望对方能先照顾好自己。@那个总说「忙完这阵就好」的朋友，看看你是不是也该歇歇了。", "dim": "D", "theme": "坚韧自持"}, "D3": {"emoji": "🪞", "name": "羞怯的镜", "persona": "对自己的外表藏着不安的人", "kw": ["外貌焦虑", "不接纳", "细腻"], "insight": ["拍照时你下意识往后躲，发朋友圈前反复修图，最后还是犹豫着删掉了。镜子里的样子，你总有些不满意，这份不自在很少说出口。你习惯先看到自己的缺点，却忽略了别人眼里的光。", "你的价值从来不止于外表这一层。那些你嫌弃的小地方，也是独一无二的你。试着对自己温柔一点吧——你比自己以为的好看得多，尤其在你认真的时候，在你笑起来的时候。真正的美，从来不在苛刻的审视里，而在你放松下来、自在做自己的样子里。请多给自己一点善意和耐心。", "你比镜子告诉你的，好看得多。"], "scene": "拍照时下意识往后躲，发朋友圈前反复修图，最后还是犹豫着删掉了。", "match": "「羞怯的镜」之间，最需要彼此的一句「你很好」。@那个总对自己外表挑剔的朋友，看看你是不是也藏了一份不安。", "dim": "D", "theme": "坚韧自持"}, "E1": {"emoji": "🗡️", "name": "收鞘的剑", "persona": "藏着野心的人", "kw": ["野心", "克制", "锋芒"], "insight": ["明明有更好的想法，你却在会议上咽了回去，只说「我没什么补充」。你心里有一把锋利的剑，却习惯把它收在鞘里，生怕被人看见。你把「想赢」藏起来，像藏一个不太体面的秘密。", "想赢、想要更多，从来不是什么羞耻的事。你的野心是你对自己价值的清醒认知，它值得被正视，也值得被实现。请别忘了，你配得上更大的舞台。有一天，请大大方方地把那把剑亮出来。把想法说出口需要勇气，而你一直都有这份勇气，只是暂时藏着。下一次，试着让它被听见，你会更喜欢那样的自己。", "你的锋芒，值得被世界看见。"], "scene": "明明有更好的想法，却在会议上咽了回去，只说「我没什么补充」。", "match": "「收鞘的剑」相遇，会彼此看懂那份藏起来的锋芒。@那个总说「我随便」的朋友，看看你是不是也有想赢的心。", "dim": "E", "theme": "向上生长"}, "E2": {"emoji": "🍋", "name": "微酸的心", "persona": "藏着嫉妒与比较的人", "kw": ["嫉妒", "比较", "自省"], "insight": ["给别人的好消息点了赞，关掉屏幕后，你却对着天花板发了会儿呆。看到别人过得好，你会有一丝说不出口的酸，随即又为自己羞愧。你羡慕得那么小心，连嫉妒都不敢承认。", "嫉妒并不可耻，它只是替你说出了「我也想要」。把这份酸涩当成一面镜子，照见自己真正的渴望，然后温和地出发。你的上进心藏在羡慕背后，那份不甘，正是推动你前进的力量。把目光从别人身上收回来一点点，看看你已经走过的路，你会发现自己也一直在发光，只是你太少为自己鼓掌。", "你的羡慕里，藏着下一步的方向。"], "scene": "给别人的好消息点了赞，关掉屏幕后却对着天花板发了会儿呆。", "match": "「微酸的心」之间，最懂那种又羡慕又自责的拧巴。@那个总说「替他开心」的朋友，看看你是不是也偷偷比较过。", "dim": "E", "theme": "向上生长"}, "E3": {"emoji": "⚖️", "name": "精算的人", "persona": "习惯权衡利弊的人", "kw": ["权衡", "功利", "清醒"], "insight": ["答应一件事之前，你已经在心里飞快算过「值不值得」，尽管嘴上说的是「我考虑一下」。你比看起来的更在意得失，只是这份计算你很少摊开说。你把理性当作盔甲，替自己挡掉许多不确定。", "清醒地权衡是你保护自己的方式，没什么不对。只是别忘了，有些东西——比如真心和热爱——是不必计入成本收益的。偶尔凭感觉冲动一次，也许会有意想不到的惊喜在等你。理性是你送给自己的礼物，但别让它挡住温暖的入口。允许自己偶尔算不清、偶尔凭真心，生活反而更有温度。", "有些美好，算不清，也不必算。"], "scene": "答应一件事之前，你已经在心里飞快算过「值不值得」，尽管嘴上说的是「看情况」。", "match": "「精算的人」相遇，会懂彼此那份不动声色的权衡。@那个总说「我考虑一下」的朋友，看看你是不是也在心里打算盘。", "dim": "E", "theme": "向上生长"}, "F1": {"emoji": "🙇", "name": "点头的人", "persona": "学不会拒绝的人", "kw": ["讨好", "难拒绝", "善良"], "insight": ["明明已经很累了，同事一句帮忙，你还是把「好」字说出了口。你总是说「好啊」，哪怕心里一百个不愿意。你怕让人失望，怕破坏关系，于是把拒绝的机会一次次让给了别人。", "这份不愿让人失望的善良很珍贵，但它不该以委屈你为代价。练习说一次「不」，是在为你的关系立一道温柔的边界。你值得被尊重，包括被你自己；真正的朋友，不会因为你拒绝就离开。一个真正健康的关系，容得下你的拒绝。你的价值不需要靠不断答应来维系，做回自己，爱才会更轻盈。", "你的「不」，也值得被好好说出口。"], "scene": "明明已经很累了，同事一句帮忙，你还是把「好」字说出了口。", "match": "「点头的人」最需要学会对自己温柔。@那个总在帮忙的朋友，看看你是不是也把「拒绝」藏了起来。", "dim": "F", "theme": "独立清醒"}, "F2": {"emoji": "🏝️", "name": "微笑的孤岛", "persona": "人群里依然孤独的人", "kw": ["孤独", "合群", "清醒"], "insight": ["散场后你长舒一口气，终于可以做回那个不用社交的自己。你身在人群，笑着笑着却觉得没人是真正认识你的。你把热闹当作背景，自己站在人群之外，安静地看着这一切发生。", "这份热闹里的孤单，你从不说破。能享受独处是你的清醒，而渴望被真正理解，是你的温柔。请相信，总有人愿意走近你笑容背后的那片海。你不需要对每个人都敞开，只对值得的人就好。孤独不等于失败，它只是说明你对自己有要求。保持你的清醒与温柔，对的人终会读懂你笑容背后的那片海。", "你的孤岛，也等得到懂得靠岸的人。"], "scene": "散场后你长舒一口气，终于可以做回那个不用社交的自己。", "match": "「微笑的孤岛」之间，一个眼神就懂彼此的疲惫。@那个聚会里总在笑的朋友，看看你是不是也藏着一座孤岛。", "dim": "F", "theme": "独立清醒"}, "F3": {"emoji": "👻", "name": "隐身的念头", "persona": "想短暂消失的人", "kw": ["抽离", "断联", "喘息"], "insight": ["看到消息提示就心累，脑子里冒出「要是能消失几天就好了」。你有过想关掉手机、谁也别找到我的念头，却从未说出口。你把这种冲动藏得很深，因为它听起来太不像一个「正常人」。", "这不是逃避，而是你的心在喊累，想要一口喘息的空气。偶尔从关系里退一步，好好陪陪自己，是再正常不过的事。休息好了，你还是会回来的，也不必为想独处而感到抱歉。偶尔的抽离是在给自己充电，不是逃避。等你歇够了，会发现那些牵挂仍在，而你也重新有了面对它们的力气。", "想消失一会儿，是你在温柔地保护自己。"], "scene": "看到消息提示就心累，脑子里冒出「要是能消失几天就好了」。", "match": "「隐身的念头」最懂那种想按下暂停键的心情。@那个总秒回消息的朋友，看看你是不是也想偷偷消失一下。", "dim": "F", "theme": "独立清醒"}, "G1": {"emoji": "🪢", "name": "难解的结", "persona": "与家人有心结的人", "kw": ["原生家庭", "未愈", "和解"], "insight": ["挂完家里的电话，你对着空气愣了几秒，把涌上来的情绪按了下去。有些和家人之间的结，你至今没有真正解开，也很少对外提起。你学着把那些没被好好接住的情绪，一点自己消化。", "那些没能被好好爱过的部分，不是你的错。你可以试着和过去慢慢和解，也可以允许自己暂时不原谅。怎么选，都是为了让你过得好一点。你不必背着别人的期待，去过自己的人生。过去的事可以慢慢放下，不必逼自己一夜之间原谅。你只需要一步步把日子过成自己喜欢的样子，就已经很好。", "和解也好，暂不原谅也罢，都要为了你自己。"], "scene": "挂完家里的电话，你对着空气愣了几秒，把涌上来的情绪按了下去。", "match": "「难解的结」之间，最懂那种说不出口的家用沉重。@那个谈起家人就沉默的朋友，看看你是不是也藏着一个结。", "dim": "G", "theme": "重情负责"}, "G2": {"emoji": "🏋️", "name": "扛着的人", "persona": "被家庭责任压着的人", "kw": ["责任", "牺牲", "担当"], "insight": ["明明有自己的安排，一句「家里需要你」，你就把计划默默改了。你为家扛了很多，很多决定都向着别人，自己的那份却从没说出口。你已经习惯了把「我想要」排在所有人的后面。", "这份担当让人敬佩，但你也该被好好心疼一次。责任和你自己的人生，并不是单选题。请给自己留一点位置，哪怕很小。照顾好自己，才有力气照顾你在乎的人，这并不是自私。照顾自己的愿望不是亏欠任何人。你先把自己稳稳托住，才有余力去守护你在乎的家，这份顺序并不过分。", "你也值得被自己，放在第一位一次。"], "scene": "明明有自己的安排，一句「家里需要你」，你就把计划默默改了。", "match": "「扛着的人」最懂那种为别人活的重量。@那个总把家放第一的朋友，看看你是不是也藏了没为自己活的那部分。", "dim": "G", "theme": "重情负责"}, "G3": {"emoji": "🎭", "name": "别人的剧本", "persona": "被家人比较、活成异类的人", "kw": ["比较", "异类", "自我"], "insight": ["饭桌上又被拿来和亲戚家的孩子比，你低头扒饭，把那句反驳咽了回去。你总被拿来和家人比较，那份「我和他们不一样」的失落，你很少说出口。你走着自己的路，却总被别人的尺子衡量。", "可你不是谁的复制品，你有权写好属于自己的剧本。不必活成别人期待的样子——你走过的路，本身就有独一无二的光。那些不一样的地方，正是你区别于所有人的地方。别人的期待是参考，不是标准答案。你有权按自己的心意活一次，哪怕慢一点、不一样一点，那也是你的精彩。", "你不必成为谁，你只需要成为你自己。"], "scene": "饭桌上又被拿来和亲戚家的孩子比，你低头扒饭，把那句反驳咽了回去。", "match": "「别人的剧本」相遇，会彼此确认「做自己」的勇气。@那个总被比较的朋友，看看你是不是也在努力活成自己。", "dim": "G", "theme": "重情负责"}, "H1": {"emoji": "⏳", "name": "被时间追着的人", "persona": "藏着年龄焦虑的人", "kw": ["年龄焦虑", "紧迫", "前行"], "insight": ["刷到「同龄人都……」的帖子，你会忽然沉默，手指在屏幕上停住。「这个年纪还这样」的念头，常常在你心里刺一下，你却从没对人说过。你把焦虑藏起来，装作一切都不着急。", "可人生从没有统一的时间表，谁都不必在某一岁交出标准答案。你走的每一步都算数，慢一点也没关系。你的节奏就是对的节奏，不必因为别人的进度，而否定自己走过的路。把目光从别人的进度条上挪开，你会看见自己一直在向前。人生是长跑，不必抢跑，也不必因为暂时落后而慌张。", "你的人生，不必按别人的钟表走。"], "scene": "刷到「同龄人都……」的帖子，你会忽然沉默，手指在屏幕上停住。", "match": "「被时间追着的人」之间，最懂那份对年龄的隐隐慌张。@那个总说「我老了」的朋友，看看你是不是也在和时间较劲。", "dim": "H", "theme": "通透觉知"}, "H2": {"emoji": "🍂", "name": "回望的人", "persona": "放不下遗憾的人", "kw": ["遗憾", "回望", "释怀"], "insight": ["夜里想起那个没抓住的机会，你会反复推演另一种可能，然后轻轻叹气。有些事你总也放不下，一遍遍在心里假设「如果当时」。这份对过去的回望，你很少说给人听，只留给自己。", "可遗憾本身，恰恰证明你曾认真活过。别再用过去惩罚现在的自己了——和往事握个手，然后带着它继续往前走吧。那个犯过错、错过过的你，也同样值得被原谅、被爱。那些错过的、遗憾的，都轻轻放下吧。它们曾教会你珍惜，如今该轮到你带着这份懂得，去拥抱眼前的日子了。", "和往事握个手，然后继续往前走。"], "scene": "夜里想起那个没抓住的机会，你会反复推演另一种可能，然后轻轻叹气。", "match": "「回望的人」最懂那种对「如果当时」的执念。@那个常说起「早知道」的朋友，看看你是不是也藏着一段放不下的过往。", "dim": "H", "theme": "通透觉知"}, "H3": {"emoji": "🌌", "name": "望向终点的人", "persona": "对生命意义藏着恐惧的人", "kw": ["存在", "死亡焦虑", "觉知"], "insight": ["某个安静的深夜，你会忽然想到「人这一辈子到底图什么」，然后久久没有睡意。你偶尔会想起终点，生出一种说不出口的慌。这份对生命的好奇与畏惧，你从不摊开，只留给自己。", "能认真想过「活着为了什么」的人，往往也活得格外用心。正因为你懂得时光有限，才更值得把每个当下都过得温热而有意义。你的追问不是悲观，而是对生命最深的一种郑重。你认真追问过生命的意义，说明你从未敷衍地活着。把这份郑重落到今天的一餐一饭、一人一事里，就是最好的答案。", "正因为会结束，每个当下才值得温热。"], "scene": "某个安静的深夜，你会忽然想到「人这一辈子到底图什么」，然后久久没有睡意。", "match": "「望向终点的人」之间，聊起生死也不会觉得突兀。@那个偶尔发呆想人生的朋友，看看你是不是也在追问意义。", "dim": "H", "theme": "通透觉知"}};
+var DIMS = {"A": "自我之核", "B": "心之暗涌", "C": "安身之所", "D": "身之低语", "E": "欲之光", "F": "孤之领地", "G": "血缘之结", "H": "时之回响"};
+
+
+/* ============ 计分逻辑 ============ */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0) + 1;
+  });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){return s[k];}));
+  var tied = Object.keys(s).filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length===1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0) code = last;
+    else if(tied.indexOf(first)>=0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code:code, scores:s };
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 答题流程 ============ */
+var answers = new Array(QUESTIONS.length).fill(-1);
+var cur = 0;
+var lastResultCode = '';
+var lastScores = {};
+
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((cur+1)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o,i){
+    var el = document.createElement('div');
+    el.className = 'option' + (answers[cur]===i ? ' on' : '');
+    el.innerHTML = '<span class="opt-key">' + o.key + '</span><span>' + o.text + '</span>';
+    el.addEventListener('click', function(){
+      answers[cur] = i;
+      Array.prototype.forEach.call(box.children, function(c){c.classList.remove('on');});
+      el.classList.add('on');
+      setTimeout(function(){
+        if(cur < QUESTIONS.length-1){ cur++; renderQ(); }
+        else{ finish(); }
+      }, 320);
+    });
+    box.appendChild(el);
+  });
+  document.getElementById('backBtn').style.visibility = cur>0 ? 'visible' : 'hidden';
+}
+
+function finish(){
+  var r = resolve(answers);
+  lastResultCode = r.code;
+  lastScores = r.scores;
+  var R = RESULTS[r.code];
+  document.getElementById('rEmoji').textContent = R.emoji;
+  document.getElementById('rDim').textContent = DIMS[R.dim] + ' · ' + R.theme;
+  document.getElementById('rName').textContent = R.name;
+  document.getElementById('rPersona').textContent = R.persona;
+  document.getElementById('rKeywords').innerHTML = R.kw.map(function(k){return '<span class="kw"># '+k+'</span>';}).join('');
+  var html = '';
+  var heads = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  R.insight.forEach(function(t,i){
+    html += '<div class="insight' + (i===2?' gold':'') + '"><h4>' + heads[i] + '</h4><p>' + t + '</p></div>';
+  });
+  document.getElementById('rInsight').innerHTML = html;
+  document.getElementById('rScene').innerHTML = '<b>同款场景：</b>' + R.scene;
+  document.getElementById('rMatch').innerHTML = '<b>适配关系：</b>' + R.match;
+  show('result');
+}
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = new Array(QUESTIONS.length).fill(-1); cur = 0; renderQ(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur>0){ cur--; renderQ(); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){ show('home'); });
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+
+/* ============ Canvas 海报 ============ */
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var test = line + text[i];
+    if(c.measureText(test).width > maxW && line){
+      c.fillText(line, x, y); y += lineH; line = text[i];
+    }else{ line = test; }
+  }
+  if(line) c.fillText(line, x, y);
+  return y + lineH;
+}
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  if(c.roundRect){ c.roundRect(x,y,w,h,r); }
+  else{
+    c.moveTo(x+r,y); c.lineTo(x+w-r,y); c.quadraticCurveTo(x+w,y,x+w,y+r);
+    c.lineTo(x+w,y+h-r); c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    c.lineTo(x+r,y+h); c.quadraticCurveTo(x,y+h,x,y+h-r);
+    c.lineTo(x,y+r); c.quadraticCurveTo(x,y,x+r,y); c.closePath();
+  }
+}
+
+function makePoster(){
+  var R = RESULTS[lastResultCode];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var G = c.createLinearGradient(0,0,W,H);
+  G.addColorStop(0,'#F2EEF6'); G.addColorStop(.5,'#E9E4F0'); G.addColorStop(1,'#DED9EC');
+  c.fillStyle = G; c.fillRect(0,0,W,H);
+  // 顶部装饰
+  c.fillStyle = 'rgba(184,154,166,.18)';
+  c.beginPath(); c.arc(W-70,60,120,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(40,H-90,150,0,Math.PI*2); c.fill();
+
+  var PAD = 56, CW = W-PAD*2, y = 0;
+  c.textAlign = 'left'; c.textBaseline = 'top';
+
+  c.fillStyle = '#8A829A'; c.font = '22px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('🌙  在你的人生里，那件闭口不提的事', PAD, 54); y = 100;
+
+  // 主卡片
+  var cardY = y, cardH = 1160;
+  c.fillStyle = 'rgba(255,255,255,.92)';
+  roundRect(c, PAD-8, cardY, CW+16, cardH, 34); c.fill();
+  var ix = PAD+22, iw = CW-44;
+  y = cardY + 40;
+
+  c.textAlign = 'center';
+  c.font = '104px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.fillStyle = '#000'; c.fillText(R.emoji, W/2, y); y += 128;
+  c.textAlign = 'left';
+
+  // 维度胶囊
+  c.font = '20px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  var dt = DIMS[R.dim] + ' · ' + R.theme;
+  var dw = c.measureText(dt).width + 40;
+  c.fillStyle = '#EDE7F1'; roundRect(c, W/2-dw/2, y, dw, 40, 20); c.fill();
+  c.fillStyle = '#6E5F82'; c.textAlign='center'; c.fillText(dt, W/2, y+9); y += 62; c.textAlign='left';
+
+  // 名称
+  c.fillStyle = '#332E50'; c.font = 'bold 46px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.textAlign='center'; c.fillText(R.name, W/2, y); y += 66; c.textAlign='left';
+
+  // 人设
+  c.fillStyle = '#6E6880'; c.font = '22px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.textAlign='center'; c.fillText(R.persona, W/2, y); y += 44; c.textAlign='left';
+
+  // 关键词胶囊
+  c.font = '19px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  var kx = ix, ky = y;
+  R.kw.forEach(function(k){
+    var t = '# '+k, tw = c.measureText(t).width + 28;
+    if(kx+tw>ix+iw){ kx=ix; ky+=40; }
+    c.fillStyle='#EFE9F3'; roundRect(c,kx,ky,tw,34,17); c.fill();
+    c.fillStyle='#4A4368'; c.fillText(t,kx+14,ky+7);
+    kx += tw+10;
+  });
+  y = ky + 58;
+
+  // 三段解读
+  var heads = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  c.font = '21px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  R.insight.forEach(function(t,i){
+    c.fillStyle = i===2 ? '#9A6E7C' : '#4A4368';
+    c.font = 'bold 22px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(heads[i], ix, y); y += 36;
+    if(i===2){
+      c.fillStyle = '#F5ECF0'; roundRect(c, ix-6, y-6, iw+12, 82, 16); c.fill();
+      c.fillStyle = '#3A3550'; c.font = 'bold 23px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+      y = wrapText(c, t, ix+8, y+4, iw-16, 34); y += 20;
+    }else{
+      c.fillStyle = '#5E5872'; c.font = '20px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+      y = wrapText(c, t, ix, y, iw, 32); y += 14;
+    }
+  });
+
+  // 底部引导 + 免责
+  c.textAlign='center';
+  c.fillStyle='#8A829A'; c.font='19px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('@ 那个你想到的人，一起测测你藏起来的是什么', W/2, 1392);
+  c.fillStyle='#A9A2B4'; c.font='15px -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，仅供娱乐参考，不构成心理诊断或情感建议', W/2, 1436);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  document.getElementById('posterDownload').href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+document.getElementById('posterBtn').addEventListener('click', makePoster);
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+</script>
+</body>
+</html>
