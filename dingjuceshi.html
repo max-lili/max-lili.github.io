@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>哪个地方更适合你定居？· 24 城定居类型测试</title>
+<style>
+  :root{
+    /* 主色沿用同一套变量名，色值改为青绿+暖沙的旅行调 */
+    --pink:#4fa98c; --pink-deep:#2f8a71; --pink-soft:#ddefe8;
+    --cream:#fbfaf5; --ink:#39443f; --ink-2:#6f7d76; --ink-3:#9aa8a1;
+    --line:#e7eee9; --shadow-sm:0 4px 18px rgba(79,169,140,.12);
+    --shadow:0 12px 40px rgba(79,169,140,.18);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#f7fbf7,#eef6fa 45%,#fdf8ee);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(247,251,247,.97),rgba(238,246,250,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:6px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--pink-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#f8fcf9}
+  #passInput:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(79,169,140,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink-deep);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:15px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px;text-align:center;
+    text-decoration:none;min-height:48px}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1.5px solid var(--pink-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+    padding:22px;margin-bottom:16px}
+  h1{font-size:28px;line-height:1.32;margin:10px 0 14px}
+  h1 .hl{color:var(--pink-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pink-deep);
+    background:var(--pink-soft);padding:5px 12px;border-radius:999px}
+  .progress-track{height:8px;background:var(--pink-soft);border-radius:99px;overflow:hidden;margin:16px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--pink),var(--pink-deep));transition:width .6s ease}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:15px 14px;border:1.5px solid var(--line);
+    border-radius:15px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;min-height:52px}
+  .option:hover{transform:translateY(-2px);border-color:var(--pink-soft)}
+  .option.on{border-color:var(--pink);background:#f4fbf7}
+  .ol{flex:0 0 26px;height:26px;border-radius:50%;background:var(--pink-soft);color:var(--pink-deep);
+    font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:2px}
+  .option.on .ol{background:var(--pink);color:#fff}
+  .ot{flex:1;font-size:14.5px;line-height:1.62}
+  .type-emoji{font-size:54px;line-height:1;margin-bottom:6px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--pink-deep);background:var(--pink-soft);
+    padding:5px 12px;border-radius:999px;margin:0 6px 6px 0}
+  .tag{display:inline-block;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    padding:5px 13px;border-radius:999px}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+  .scene{font-size:13px;color:var(--ink-2);background:#f6faf6;border-left:3px solid var(--pink-soft);
+    padding:11px 13px;border-radius:0 12px 12px 0;line-height:1.7;margin-top:14px}
+  .ins-sec{margin-top:16px}
+  .ins-h{font-size:13.5px;font-weight:800;color:var(--pink-deep);margin-bottom:6px}
+  .ins-h .em{font-family:var(--emoji);margin-right:5px}
+  .ins-p{font-size:14.5px;line-height:1.85;color:var(--ink);margin:0}
+  .quote{margin-top:18px;padding:16px 16px;border-radius:14px;
+    background:linear-gradient(135deg,#e8f6f0,#f7f3e6);border:1px dashed #cbe5d9}
+  .quote .qt{font-size:15.5px;font-weight:800;line-height:1.7;color:#28685a}
+  .dimrow{margin-bottom:10px}
+  .dimtop{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+  .dimtrack{height:9px;background:var(--pink-soft);border-radius:99px;overflow:hidden}
+  .dimfill{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--pink-deep));
+    transition:width .8s ease}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(57,68,63,.62);
+    align-items:center;justify-content:center;padding:16px;overflow:auto}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:14px;max-width:400px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  .poster-tip{font-size:11.5px;color:var(--ink-3);margin:8px 0 2px}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(57,68,63,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">🧭 定居地选择测试 · 24 题</span>
+    <h1>哪个地方<br>更适合<span class="hl">你定居</span>？</h1>
+    <p class="gsub">24 道关于吃饭、通勤、天气和周末的选择，<br>测出最贴合你生活节奏的那座城。</p>
+    <div class="card" style="margin-top:18px">
+      <div style="font-size:13px;color:var(--ink-2);line-height:2">
+        🏙️ 24 座城市，8 个生活维度<br>
+        ⏱️ 大约 3 分钟，凭直觉选<br>
+        🖼️ 结果可以生成海报保存
+      </div>
+    </div>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，<br>不构成任何搬迁、置业或人生规划建议。</p>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="gsub" style="margin:0 0 12px;font-weight:800;color:var(--pink-deep)">第 1 / 24 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin:0 0 16px;font-size:18.5px;line-height:1.55">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div style="font-size:12px;color:var(--ink-3);margin-bottom:8px">你的定居类型是</div>
+      <div class="type-emoji" id="rEmoji">🏙️</div>
+      <h2 id="rCity" style="margin:0 0 8px;font-size:30px">城市</h2>
+      <div><span class="tag" id="rTag">类型标签</span></div>
+      <p class="gsub" id="rPersona" style="margin:14px 0 12px">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div id="rInsight"></div>
+      <div class="scene" id="rMatch"></div>
+      <div style="margin-top:20px">
+        <div class="ins-h" style="margin-bottom:12px"><span class="em">📊</span>你的生活维度能量</div>
+        <div id="rDims"></div>
+      </div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何搬迁、置业或人生规划建议。</p>
+  </section>
+
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <p class="poster-tip">手机可长按图片保存，电脑可点击下方按钮下载</p>
+    <a class="btn" id="posterDownload" href="#" download="我的定居地测试结果.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "7291"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 数据区 ============ */
+var DIMS = {
+  A:'气候体感', B:'山水意境', C:'城市节奏', D:'烟火人情',
+  E:'文化底蕴', F:'海岸生活', G:'都市能级', H:'辽阔自由'
+};
+
+var QUESTIONS = [
+{title:'周末有一整天完全自由，你最想怎么过？',options:[
+ {key:'A',text:'找个公园长椅晒太阳，什么都不干，晒到身上发暖',code:'A1'},
+ {key:'B',text:'泡进茶馆，点一碗茶坐一下午，听旁边人摆龙门阵',code:'C1'},
+ {key:'C',text:'骑车绕老城墙一圈，中午来一碗热腾腾的面',code:'E1'},
+ {key:'D',text:'逛展看演出，傍晚找家有腔调的咖啡馆坐到天黑',code:'G1'}]},
+{title:'想到明早上班，你更愿意是哪种通勤画面？',options:[
+ {key:'A',text:'骑车穿过一排排椰树，海风把头发吹得乱七八糟',code:'A2'},
+ {key:'B',text:'地铁二十分钟到公司，全程戴着耳机处理消息',code:'C2'},
+ {key:'C',text:'骑小电驴穿过老城小巷，顺手在路边买个早饭',code:'E2'},
+ {key:'D',text:'挤四十分钟地铁，但公司在整座城最中心的位置',code:'G2'}]},
+{title:'如果只能租一间房，你更想要哪一种？',options:[
+ {key:'A',text:'有暖气的大房子，冬天能在家里囤一冰箱的菜',code:'A3'},
+ {key:'B',text:'老宅里的小院，晚上能听见隔壁传来评弹声',code:'C3'},
+ {key:'C',text:'带一张工作台的小屋，随时能捏泥、做点手工',code:'E3'},
+ {key:'D',text:'新小区的一居室，楼下就有咖啡馆和共享办公',code:'G3'}]},
+{title:'晚上九点，你希望这座城市是什么样子？',options:[
+ {key:'A',text:'山水边的路上很安静，只有风声和虫鸣',code:'B1'},
+ {key:'B',text:'夜市正热闹，嗦一碗粉、撸几串再慢慢回家',code:'D1'},
+ {key:'C',text:'海边的小酒吧坐一会儿，点一杯听驻唱',code:'F1'},
+ {key:'D',text:'街角面馆还开着，加肉加蛋，再来一小杯',code:'H1'}]},
+{title:'想花一整天随便溜达，你会选哪一种？',options:[
+ {key:'A',text:'去山脚下的村子晒太阳，听人弹吉他',code:'B2'},
+ {key:'B',text:'在老巷子里吃一路小吃，路过庙口坐一坐',code:'D2'},
+ {key:'C',text:'老城区石头台阶上上下下，配一杯冰啤酒',code:'F2'},
+ {key:'D',text:'去寺庙转转经，抬头就是远处的雪山',code:'H2'}]},
+{title:'朋友第一次来找你玩，你会带他去哪里？',options:[
+ {key:'A',text:'带他去看雪山和寺庙，安静地走完一整天',code:'B3'},
+ {key:'B',text:'爬坡上坎，晚上吃火锅看江景夜景',code:'D3'},
+ {key:'C',text:'沿着海边骑车，中午吃刚上岸的海鲜',code:'F3'},
+ {key:'D',text:'开车出城，一路开到大片草地上躺着',code:'H3'}]},
+{title:'关于吃饭，你最舍得在哪件事上花时间？',options:[
+ {key:'A',text:'花一下午做一顿家常菜，然后慢慢吃到天黑',code:'C1'},
+ {key:'B',text:'一碗面、一个馍，吃得踏实又满足',code:'E1'},
+ {key:'C',text:'为环境、服务和一顿体面的饭心甘情愿付钱',code:'G1'},
+ {key:'D',text:'花很少的钱买到最新鲜的蔬菜和水果',code:'A1'}]},
+{title:'未来三年，你更想在工作上走哪条路？',options:[
+ {key:'A',text:'去一家创业公司拼一把，节奏越快越兴奋',code:'C2'},
+ {key:'B',text:'做一门小而稳的生意，慢慢来，不着急',code:'E2'},
+ {key:'C',text:'进大平台做专业，累一点但站得更高',code:'G2'},
+ {key:'D',text:'远程办公，能靠海就把电脑搬过去',code:'A2'}]},
+{title:'“家”在你心里是什么样子？',options:[
+ {key:'A',text:'有一个小院子，种点花，摆一张躺椅',code:'C3'},
+ {key:'B',text:'一间工作室就是客厅，桌上永远有半成品',code:'E3'},
+ {key:'C',text:'落地窗，窗外一片绿，光线永远柔和',code:'G3'},
+ {key:'D',text:'冬天围着一桌热菜，屋里暖得只穿单衣',code:'A3'}]},
+{title:'搬到一座城市，你最不能失去的是什么？',options:[
+ {key:'A',text:'半夜十二点，还有人和你一起出门吃饭',code:'D1'},
+ {key:'B',text:'海风，和一家随时能推门坐下的咖啡馆',code:'F1'},
+ {key:'C',text:'回家的路方便，机票火车都不算贵',code:'H1'},
+ {key:'D',text:'抬头就能看见山，低头就能看见水',code:'B1'}]},
+{title:'你希望住的地方，带一点什么味道？',options:[
+ {key:'A',text:'香火气和人情味，每个节日都认真过',code:'D2'},
+ {key:'B',text:'老建筑和啤酒味，傍晚坐在街边吹风',code:'F2'},
+ {key:'C',text:'干净、安静、人不多，天是很蓝的',code:'H2'},
+ {key:'D',text:'有山有湖，还有咖啡和民谣',code:'B2'}]},
+{title:'下面哪种城市气质最让你放松？',options:[
+ {key:'A',text:'有江有坡有烟火，走两步就能找到吃的',code:'D3'},
+ {key:'B',text:'路很宽、海很干净、晚上一点都不吵',code:'F3'},
+ {key:'C',text:'出城半小时就是旷野和星空',code:'H3'},
+ {key:'D',text:'空气稀薄但安静，人的脚步也慢',code:'B3'}]},
+{title:'一年四季，你更受得了哪种气候？',options:[
+ {key:'A',text:'四季分明，干燥清爽，冬天也能见到太阳',code:'E1'},
+ {key:'B',text:'湿润一点没关系，家里有空调和烘干机',code:'G1'},
+ {key:'C',text:'全年都像春天，衣柜里不需要厚羽绒',code:'A1'},
+ {key:'D',text:'阴天多一点，但只要不下雨就还好',code:'C1'}]},
+{title:'你希望窗外的城市长什么样？',options:[
+ {key:'A',text:'老城低楼、大树和旧墙，慢慢地旧下去',code:'E2'},
+ {key:'B',text:'宽阔的大道，一排排庄严的建筑',code:'G2'},
+ {key:'C',text:'满街绿意和椰树，阳光晃得人睁不开眼',code:'A2'},
+ {key:'D',text:'密集的高楼和玻璃幕墙，永远在动工',code:'C2'}]},
+{title:'业余时间，你最想学点什么？',options:[
+ {key:'A',text:'拉坯、上釉，亲手做一只属于自己的碗',code:'E3'},
+ {key:'B',text:'摄影和茶道，周末去湖边慢慢走',code:'G3'},
+ {key:'C',text:'滑雪、滑冰，冬天有一整季的雪可以玩',code:'A3'},
+ {key:'D',text:'一门乐器或书法，安静地练上几年',code:'C3'}]},
+{title:'一个人散步，你最喜欢走哪条路？',options:[
+ {key:'A',text:'沿着海边的大路走，一直走到天完全黑',code:'F1'},
+ {key:'B',text:'顺着河走，看水一刻不停地往下游去',code:'H1'},
+ {key:'C',text:'山间小路，两边都是竹子和水声',code:'B1'},
+ {key:'D',text:'江边夜市那条街，边走边买着吃',code:'D1'}]},
+{title:'理想的清晨是什么样？',options:[
+ {key:'A',text:'海边吹着风，边走边喝一瓶汽水',code:'F2'},
+ {key:'B',text:'清早去寺庙转一圈，再吃一碗酸奶',code:'H2'},
+ {key:'C',text:'湖边看日出，回来再补一觉',code:'B2'},
+ {key:'D',text:'老街上吃一碗热汤面，然后慢慢走回去',code:'D2'}]},
+{title:'你希望在这座城市里，有多少社交？',options:[
+ {key:'A',text:'认识邻居，但不用天天来往',code:'F3'},
+ {key:'B',text:'朋友很多，但都住得很远，见一面要计划',code:'H3'},
+ {key:'C',text:'圈子很小，但每一个人都交得很深',code:'B3'},
+ {key:'D',text:'天天有局，热闹才像真的活着',code:'D3'}]},
+{title:'外地朋友问你“为什么住在那儿”，你会怎么答？',options:[
+ {key:'A',text:'因为机会多，生活也足够精致',code:'G1'},
+ {key:'B',text:'因为天气太好，出门就是舒服',code:'A1'},
+ {key:'C',text:'因为吃得开心，日子过得松弛',code:'C1'},
+ {key:'D',text:'因为历史厚，随便走走都有故事',code:'E1'}]},
+{title:'如果预算有限，你会怎么选住处？',options:[
+ {key:'A',text:'咬咬牙买一套老破小，只要位置够好',code:'G2'},
+ {key:'B',text:'租房也要住得宽敞，最好有个阳台能看海',code:'A2'},
+ {key:'C',text:'住在城中村也不搬，省下的钱去干别的',code:'C2'},
+ {key:'D',text:'老城区的小房子，便宜又有人间气',code:'E2'}]},
+{title:'冬天来了，你希望它是什么味道？',options:[
+ {key:'A',text:'湿冷，但湖边一下雪就好看极了',code:'G3'},
+ {key:'B',text:'零下二十度，屋里有暖气，出门裹得像个球',code:'A3'},
+ {key:'C',text:'园林里落一点薄雪，正好配一杯热茶',code:'C3'},
+ {key:'D',text:'守在窑边烤火，手一直是暖的',code:'E3'}]},
+{title:'如果要考虑家人的生活，你更看重什么？',options:[
+ {key:'A',text:'生活成本低，普通收入也能过得体面',code:'H1'},
+ {key:'B',text:'有山有水，人可以在自然里长大',code:'B1'},
+ {key:'C',text:'资源热闹、机会多，累一点但热闹',code:'D1'},
+ {key:'D',text:'学校好、环境舒服，愿意为它多花钱',code:'F1'}]},
+{title:'一个月的生活费，你更愿意花在哪？',options:[
+ {key:'A',text:'三千块就够活，剩下的都交给自由',code:'H2'},
+ {key:'B',text:'花在小众演出、咖啡馆和旧书店',code:'B2'},
+ {key:'C',text:'花在吃和请客，人情最重要',code:'D2'},
+ {key:'D',text:'花在酒、海边和一趟说走就走的短途',code:'F2'}]},
+{title:'最后一句，你更想对未来的自己说——',options:[
+ {key:'A',text:'我想活得辽阔，也活得自由',code:'H3'},
+ {key:'B',text:'我想安静地靠近自己相信的东西',code:'B3'},
+ {key:'C',text:'我想热烈地活，不辜负每一天',code:'D3'},
+ {key:'D',text:'我想过得干净、安稳、不慌',code:'F3'}]}
+];
+
+var RESULTS = {
+A1:{emoji:'🌸',city:'昆明',tag:'四季闲人型',
+ persona:'日子过得舒展，比过得漂亮更重要',
+ kw:['慢热','随和','怕冷'],
+ insight:[
+ '你会在下午三点给自己放个假，端一杯热的东西坐到窗边，看阳光在墙上慢慢挪。别人问你今天干了什么，你想了想，说好像什么都没干，但一点也不觉得浪费。天气好的时候，你还会特意绕远路回家，只为了多晒十分钟太阳。',
+ '你不太擅长把自己赶得很紧，也不需要用热闹把生活填满。对你来说，日子舒展比漂亮更重要，你总能在很普通的下午里找到足够的满足感，然后安静地把它过完，从不觉得慢是一种损失。你也不急着把生活过成别人眼里的样子。',
+ '四季都开花的地方，最适合你这种把日子过成慢镜头的人——你不追赶季节，季节会等你。'
+ ],
+ match:'和成都、苏州型最聊得来，节奏相近；遇到深圳型会有点跟不上对方的快。'},
+A2:{emoji:'🌴',city:'三亚',tag:'阳光懒散型',
+ persona:'把每一天都当成一次短假来过',
+ kw:['爱海','松弛','怕冷'],
+ insight:[
+ '你到一座城市的第一件事，是找一片能坐下来的海边。行李还没放下，人已经蹲在礁石旁边看潮水。别人在赶景点，你在等日落，手机里存的全是天空和海面，一张人也没有。工作再忙，你也会给周末留一个什么都不安排的下午，让太阳把背晒暖。',
+ '你相信人要晒够了太阳才算真的休息好。你算不上特别上进，却很会让自己舒服，也不介意比别人慢半拍，因为你知道，赶出来的生活迟早都要还回去。你把快乐的标准调得很低，一片海、一朵云、一顿好吃的，就够撑起一整天。',
+ '去有太阳的地方住吧，把每一天都过成一小段假期，这才是你最正经的事。'
+ ],
+ match:'和厦门、青岛型是同类，都离不海；和北京型待久了你会觉得喘不过气。'},
+A3:{emoji:'❄️',city:'哈尔滨',tag:'冰雪热肠型',
+ persona:'外面越冷，你越要把屋里过热',
+ kw:['直爽','重感情','耐寒'],
+ insight:[
+ '你在冬天出门前会认真穿好三层，进门后又利落地脱成短袖，这套动作你已经练得很熟。零下的风刮在脸上，你反而觉得清醒，会顺手买一根冰棍，站在街边吃完。下雪的第一天你还要发一条朋友圈，只写三个字：下雪了。',
+ '你外表看着冷，心里其实很热，喜欢把话说透、把酒喝干。你受得了凛冽，也享受屋里那种被暖气烤着的踏实，你对家的要求从来不是好看，而是暖和，是有人愿意在寒天里给你留一盏灯。你也相信，真正的热闹不是人多，而是有人愿意在寒天里为你留一盏灯、一碗热汤。',
+ '能在最冷的地方把日子过热的人，去哪儿都不会怕冷。'
+ ],
+ match:'和呼和浩特、兰州型对脾气，都是嘴上硬心里热；和三亚型住一起容易为开不开窗吵架。'},
+B1:{emoji:'⛰️',city:'桂林',tag:'山水慢游型',
+ persona:'需要被山水包围，才觉得在生活',
+ kw:['好静','耐得住','爱自然'],
+ insight:[
+ '你会在周末骑车出城，骑到路两边全是山的时候停下来，什么也不做，只是坐着看。朋友说你无聊，你说这样才叫休息。回程的路上，你还会在路边买一把当地的青菜，拎回家慢慢做一顿饭。',
+ '你需要被自然包围，才能感觉到自己在生活。你对城市的繁华没有太多执念，反而在山水之间格外自在，你的耐心很好，愿意为了一段风景多绕几十公里路。你不太会为自己的选择辩解，也不羡慕别人朋友圈里的城市灯火，因为你知道自己要的是什么：一间能听见水声的房子，和一条可以慢慢走的路。',
+ '山不催你，水也不催你，你本来就不必赶。'
+ ],
+ match:'和大理、西宁型是同路人，都听得懂安静；和上海型在一起，你会想每周逃一次。'},
+B2:{emoji:'🌾',city:'大理',tag:'风花散人型',
+ persona:'不是没有方向，是把方向交给了风',
+ kw:['随性','浪漫','不设限'],
+ insight:[
+ '你会在午后坐在院子里，看云从山那边慢慢压过来，一会儿下雨一会儿出太阳，你都懒得进屋。你的行李箱里总有一件不合时宜的衣服，因为你出门从来不看天气预报，觉得计划会破坏惊喜。',
+ '你活得有点随性，不喜欢被安排，也很难长期忍受朝九晚五的规整。你相信人可以在不富裕的情况下过得体面，只要有阳光、有吃的、有几个能聊到半夜的人。你也有认真的时候，只是那份认真不摆给人看。你会把喜欢的事做得很久，却不愿意为一份不喜欢的工作熬到凌晨三点。',
+ '你不是没有方向，你只是把方向交给了风，而风一直都知道该往哪吹。'
+ ],
+ match:'和丽江不在榜上，但和西宁、桂林型最像；和深圳型相处，你会被对方的时间表逼疯。'},
+B3:{emoji:'🕊️',city:'拉萨',tag:'高原清心型',
+ persona:'需要在心里留一处不被打扰的地方',
+ kw:['安静','精神性','能独处'],
+ insight:[
+ '你在人多的地方会不自觉地安静下来，抬头看天，看很久。你身上常带着一件不起眼的小东西，摸一摸就心安。别人问你为什么总在发呆，你说没有，我在想事情，其实你什么也没想，只是需要那一段空白。',
+ '你需要一点精神性的东西来支撑日常，比起热闹，你更在意干净、真诚和有没有信念。你能熬得住孤独，也不怕日子简单，只要心里有一处地方，谁也进不来。你不太解释自己，也不急着让别人懂。你相信有些东西只能一个人走完，比如早起的那条路，比如心里那句还没说出口的话。',
+ '把生活调慢、调轻，你会听见自己一直在说的那句话。'
+ ],
+ match:'和西宁、大理型同一频率，不必解释；和长沙型待两天你会电量耗尽。'},
+C1:{emoji:'🍵',city:'成都',tag:'安逸泡茶型',
+ persona:'会生活的人，从不向谁解释',
+ kw:['松弛','爱家常','不内耗'],
+ insight:[
+ '你能在一家茶馆坐到打烊，茶续了五六次也不换地方。你出门吃饭不看攻略，只去那几家熟悉的小店，老板见你会多给一勺。你手机里存着好几个附近公园的位置，随时能过去躺一躺，晒一下午。',
+ '你有一种难得的松弛感，不急着证明什么，也不爱跟自己较劲。你把大部分精力都花在把今天过舒服上，这让你看起来不太上进，却很少真的焦虑，睡得也比别人好。你不爱做计划表，也不太回应别人的催促。你把时间用来煮一锅汤、睡一个午觉、和楼下的人聊两句，这些在别人看来没用，对你却最有用。',
+ '会生活的人，从来不需要向谁解释自己为什么过得这么舒服。'
+ ],
+ match:'和昆明、苏州型最合拍，都懂得慢慢来；和深圳型做同事，你会被催得抬不起头。'},
+C2:{emoji:'⚡',city:'深圳',tag:'效率追风型',
+ persona:'怕的不是累，是原地不动',
+ kw:['高效','有野心','抗压'],
+ insight:[
+ '你走在路上会比别人快半步，进电梯习惯性站右边。你的手机日历排得很满，连周末都给自己安排了一件事。刚落地一个陌生城市，你脑子里已经在排明天上午的顺序，连吃饭都算进了时间。',
+ '你享受那种被推着往前走的感觉，怕的不是累，而是原地不动。你喜欢和聪明、快的人待在一起，也愿意用几年的辛苦，去换一个更大的可能性，哪怕代价是暂时没有生活。你不太会为情绪停下来，难过也用工作盖过去。你相信只要一直往前，路就会自己变宽，所以你很少回头看，也不太允许自己后悔。',
+ '你跑得比很多人快，别忘了偶尔抬头看一眼路边的风景。'
+ ],
+ match:'和上海、北京型同频，说话不用解释；和昆明型同住，你会嫌对方太慢。'},
+C3:{emoji:'🪷',city:'苏州',tag:'精致慢活型',
+ persona:'用讲究，把琐碎收拾得体面',
+ kw:['细致','有审美','情绪稳定'],
+ insight:[
+ '你会为一杯茶挑对杯子，为一顿饭挑对馆子。家里的东西不多，但每一件都是认真挑的。你走路不快，喜欢在有水有树的地方拐弯，看见老墙上的青苔会停下来，掏出手机拍一张又删掉。',
+ '你讲究，但不炫耀，你把生活过得细致，是因为你受不了一点点粗糙。你情绪稳定，擅长把琐碎收拾得体面，你要的不是热闹，而是一种经得起日复一日的好看。你不太喜欢大声说话，也不爱在人群里抢位置。你把心思都放在细节上：一盏灯的亮度、一件衣服的手感、一顿饭的次序，这些别人看不见的地方，恰恰是你的讲究。',
+ '把日子做细的人，时间会替你把它好好保管。'
+ ],
+ match:'和杭州、成都型最能一起喝茶；和重庆型吃饭，你会被辣得说不出话。'},
+D1:{emoji:'🌃',city:'长沙',tag:'深夜热闹型',
+ persona:'你的热量，能把一整个夜晚煮开',
+ kw:['热情','爱社交','夜猫子'],
+ insight:[
+ '你到晚上十一点才真正醒过来，一条微信就能把人约出门。你能记住每条街上哪家店开到凌晨，也记得谁爱吃什么、谁不能吃辣。回家之前你还要再买一份带走，第二天当早饭，边吃边说明天要早睡。',
+ '你需要人气来给自己充电，一个人待在房间里久了会发闷。你不怕吵，反而在热闹里最放松，你对朋友的事比对自己的事上心，谁难过了，你第一个冲过去。你也不太会拒绝人，哪怕第二天要早起，朋友一句“就坐一会儿”你也会去。你把热闹当成一种养分，一个人待着的时候反而容易想太多。',
+ '你的热量，是能把一整个夜晚煮开的，别浪费在不喜欢的人身上。'
+ ],
+ match:'和重庆、泉州型是天生一对，越闹越亲近；和威海型同住，对方会想静静。'},
+D2:{emoji:'🏮',city:'泉州',tag:'古早烟火型',
+ persona:'人间烟火最养人，你一直懂',
+ kw:['念旧','有人情味','会过日子'],
+ insight:[
+ '你出门会特意绕进老巷子，看庙口的香、墙上的字、摊子上刚出锅的东西。你爱吃那些做了几十年的小店，老板一家你都认得。过节你会认真准备，哪怕只是买一束花回家插上，也算把这一天过出了样子。',
+ '你身上有一种旧派的温和，喜欢有来历的东西，也尊重那些被时间留下来的规矩。你不追求新，你觉得一个人愿意把一件小事做久，比什么潮流都动人。你不太会说漂亮话，但会记得别人的口味和忌口。你觉得一个人间值得住的地方，应该有几家开了很久的店，和几条走了很多年还不腻的路。',
+ '人间烟火最养人，而你一直懂得它的滋味，也愿意为它多走两条街。'
+ ],
+ match:'和长沙、重庆型吃得来，和苏州型聊得来；和深圳型逛街，你会嫌那儿太新。'},
+D3:{emoji:'🌶️',city:'重庆',tag:'江湖直爽型',
+ persona:'热烈是底色，真诚是通行证',
+ kw:['直脾气','讲义气','够劲'],
+ insight:[
+ '你说话直，声音也不小，朋友有事你二话不说就去。你认路的方式是记坡和台阶，从来不看地图。吃火锅你会主动点最辣的那一锅，最后一个人还在捞，一边冒汗一边说这才叫吃饭。',
+ '你脾气来得快去得也快，不记仇，也不装。你讨厌拐弯抹角，喜欢把关系和话都说清楚，你对生活的要求是够劲、够真，太平淡的日子对你来说反而是一种消耗。你不太会绕弯子，也不喜欢把情绪存起来。你对人热，对事直，偶尔得罪人也不后悔，因为你觉得藏着掖着才更累人。',
+ '热烈是你的底色，真诚是你的通行证，你走到哪里都有人愿意跟你一桌。'
+ ],
+ match:'和长沙、西安型一桌就能喝起来；和苏州型相处，对方会被你的音量吓一跳。'},
+E1:{emoji:'🏯',city:'西安',tag:'厚土旧梦型',
+ persona:'站得稳的人，才走得远',
+ kw:['沉稳','念旧','实在'],
+ insight:[
+ '你走到哪儿都爱看老建筑，会为一堵城墙停很久。你吃饭讲究实在，一大碗端上来心里就踏实。你喜欢听老人讲过去的事，也喜欢在旧书店里翻半天，最后只买一本，回家放在床头慢慢读。',
+ '你对有根这件事有执念，喜欢知道一个地方从哪儿来。你性格沉稳，不急不躁，认定的事会一直做下去，你不追逐新鲜，但你身上有一种别人没有的定力。你不太相信速成，也不羡慕那些一夜之间起来的东西。你更愿意把一件事做上十年，然后看着它慢慢有了样子，这种耐心是你最不显眼也最可靠的本事。',
+ '站得稳的人，才走得远，你看过的旧东西都会变成你的底气。'
+ ],
+ match:'和洛阳、北京型聊历史能聊一晚；和三亚型一起旅行，你会嫌对方太随意。'},
+E2:{emoji:'🌺',city:'洛阳',tag:'花间旧时型',
+ persona:'慢一点、小一点，也是一种辽阔',
+ kw:['不贪大','有分寸','爱旧物'],
+ insight:[
+ '你会在春天专门去看一次花，看完还要拍照发给家里人。你喜欢去人不多的小城住两天，吃当地早点，逛菜市场。你对老东西有耐心，一件旧家具能擦一个下午，擦完还要摆回原位看看顺不顺眼。',
+ '你不贪大，喜欢小而完整的日子。你对生活有一种旧式的审美，讲究分寸和体面，你不喜欢争抢，觉得守住自己的一小块地方，安安稳稳地过，就已经很好了。你不太会为自己争，也不太爱热闹的场合。你把日子过成一间小屋、一盏灯、一桌家常菜，别人觉得平淡，你却觉得踏实。',
+ '慢一点、小一点，也是一种辽阔，只是别人看不见而已。'
+ ],
+ match:'和西安、苏州型最舒服，都懂旧物的好；和深圳型聊未来，你会想早点回家。'},
+E3:{emoji:'🏺',city:'景德镇',tag:'手作慢工型',
+ persona:'把时间花在手上，才做出自己',
+ kw:['专注','手作','不随大流'],
+ insight:[
+ '你手上总有点事在做，捏、缝、画、磨，一抬头天就黑了。你会为一件做坏了的作品重来三次，也会把做好的那只碗留着自用。你平时不太爱说话，但聊起手艺能讲一整晚，眼睛都是亮的。',
+ '你需要看得见的成果来确认自己，喜欢从零到一的过程。你不怕慢，怕的是敷衍，你对亲手做成这件事有近乎固执的骄傲，也因此很少随大流，别人追什么你都不太在意。你也不太擅长推销自己，作品常常比人会说话。你相信手上的功夫不会骗人，做过的每一件东西，都会在某个时刻替你证明。',
+ '把时间花在手上，你终会做出一样只属于自己的东西。'
+ ],
+ match:'和大理、苏州型最容易成为朋友；和深圳型合作，你会被 deadline 追着跑。'},
+F1:{emoji:'🌊',city:'厦门',tag:'海风文艺型',
+ persona:'有海风吹着，就能把自己安顿好',
+ kw:['细腻','有审美','不争'],
+ insight:[
+ '你会在傍晚去海边走一圈，穿拖鞋，手里拿着喝的。你喜欢小店、旧书、手写的招牌，也喜欢在咖啡馆坐到店员都认识你。你的相册里有一半是海，另一半是猫，几乎没有一张正经自拍。',
+ '你敏感、细腻，容易被一点小事打动。你需要生活在有审美的环境里，太粗糙的地方会消耗你。你不太争，但很在意自己是不是活得舒服、活得好看、活得像个自己。你不太会跟人争，也不太会为自己争取。你把情绪收在心里，转身去海边走一圈，回来就又能笑着说话，这是你独有的修复方式。',
+ '有海风吹着，你就能慢慢把自己安顿好，不需要别人批准。'
+ ],
+ match:'和三亚、青岛型天生合得来；和北京型待一周，你会开始想念海的声音。'},
+F2:{emoji:'🍺',city:'青岛',tag:'红瓦微醺型',
+ persona:'人生不必太清醒，微醺时最像自己',
+ kw:['爽朗','有滋味','半松弛'],
+ insight:[
+ '你喜欢在下班后拐进一家小馆，点两样下酒菜，坐很久。你走路爱挑有坡、有老房子的路，看见好看的窗台会拍下来。夏天你会在街边买一袋啤酒，拎着慢慢走回家，路上还要拐去海边吹十分钟风。',
+ '你性格里有种爽朗的松弛，爱热闹也爱独处。你对生活的期待不是成功，而是有滋有味，你觉得日子应该有点酒意、有点风、有几个能随时叫出来的人。你不太爱计较，也不太会记仇。你把日子过得像一场不赶时间的聚会，谁来都欢迎，谁走也不勉强，这份松弛让你身边的人都很舒服。',
+ '人生不必太清醒，微醺的时候最像自己，也最敢说真话。'
+ ],
+ match:'和厦门、哈尔滨型最投缘，酒桌上一见如故；和上海型吃饭，你会觉得拘束。'},
+F3:{emoji:'🐚',city:'威海',tag:'干净安静型',
+ persona:'把生活过得干净，是高级的自由',
+ kw:['有界限','爱秩序','怕吵'],
+ insight:[
+ '你散步只走那几条干净的路，海边人少的时候你最喜欢。你的房间永远收拾得整齐，东西都有固定的位置。你不喜欢吵，能把一整天的声音控制在很小的范围里，连手机通知都关了大半。',
+ '你对秩序有种不易察觉的依赖，环境一乱，你的心就乱。你不需要太多刺激，反而在安静里恢复得最快，你待人温和又有界限，不喜欢麻烦别人，也不喜欢被打扰。你不太喜欢解释，也不爱欠人情。你把边界划得很清楚，看起来有点距离感，其实只是想让每一段关系都干净、长久、不必勉强。',
+ '把生活过得干净，是一种很高级的自由，不是谁都能守住。'
+ ],
+ match:'和苏州、西宁型同住最舒服，互不打扰；和重庆型做邻居，你会想搬家。'},
+G1:{emoji:'🏙️',city:'上海',tag:'精致都会型',
+ persona:'你值得被好好对待，包括被你自己',
+ kw:['体面','有效率','有分寸'],
+ insight:[
+ '你会为一场展览提前一周安排时间，也会在下班后去一家刚开的店试菜。你的衣柜不大，但搭配得很清楚。你走路快，说话有分寸，连点单都精确到几分糖，服务员都记得你的习惯。',
+ '你要的东西很明确：体面、效率，还有一点点讲究。你不排斥野心，也不掩饰自己对好东西的喜欢，你在人群里游刃有余，和谁都聊得来，却很少真的把自己交出去。你不太会示弱，也很少在人前抱怨。你把疲惫留在深夜，把体面带到白天，这不是虚荣，是你对生活的一种不肯将就的自我要求。',
+ '你值得被好好对待，包括被你自己，这一点不用等谁来提醒。'
+ ],
+ match:'和深圳、北京型能一起谈事；和大理型度假三天，你就开始想回城。'},
+G2:{emoji:'🧭',city:'北京',tag:'辽阔野心型',
+ persona:'你要的不是一座城，是一个舞台',
+ kw:['有野心','能熬','看长远'],
+ insight:[
+ '你习惯用很远的路程换一件事，单程一小时也不觉得亏。你会为一本书、一场讲座坐一下午，也会在深夜里认真想自己到底要去哪。你的朋友来自各行各业，聊天时你总能接上话。',
+ '你心里装着一件比生活更大的事，所以你愿意忍、愿意熬。你不怕辛苦，怕的是没有意义，你欣赏有本事、有见地的人，也逼着自己慢慢成为那样的人。你不太在意别人的评价，也不太会为舒服的日子停下来。你心里有一张地图，标着你想去的地方，哪怕路很长，你也愿意一步一步走过去。',
+ '你要的从来不是一座城，而是一个能配得上你这些年的舞台。'
+ ],
+ match:'和上海、深圳型互相欣赏；和威海型待久了，你会觉得自己在放假。'},
+G3:{emoji:'🍃',city:'杭州',tag:'湖山新派型',
+ persona:'不必在两种生活里选一个，你可以都要',
+ kw:['求平衡','有品','会调整'],
+ insight:[
+ '你会在工作日的午休去湖边绕一圈，回来时手里多一杯咖啡。你既想要城市的好，也舍不得山水的静，所以总在找那种下楼什么都有、抬头还有树的地方，为此愿意多付一点房租。',
+ '你追求一种平衡，既不肯彻底躺平，也不愿意活成机器。你对生活品质的要求不低，但不张扬，你相信努力和舒服可以同时拥有，并且一直在为这件事调整自己的节奏。你不太会走极端，也不喜欢把自己逼到墙角。你懂得留一点余量给生活，也懂得在该用力的时候不含糊，这种分寸感让你走得稳。',
+ '你不需要在两种生活里选一个，你可以都要，只是要花点心思安排。'
+ ],
+ match:'和苏州、成都型一起散步最合拍；和哈尔滨型过冬，你会嫌太冷太长。'},
+H1:{emoji:'🍜',city:'兰州',tag:'黄河豪气型',
+ persona:'把苦日子过出滋味，是你的本事',
+ kw:['实在','大方','能扛'],
+ insight:[
+ '你吃饭不挑环境，只挑实在，一碗面要加肉加蛋才算完整。你说话带点干脆的尾音，答应的事就办。你会在傍晚沿着河走很远，看水一直往东去，心里反而安静下来，走回家时天已经黑透。',
+ '你身上有股不装的豪气，对朋友大方，对自己将就。你能吃苦，也不太抱怨，你觉得日子就是一天一天过出来的，不必想太多，但该扛的时候绝不躲。你不太会说软话，也不太会为难过的事抱怨。你把情绪咽下去，第二天照样出门、照样把面吃干净，这种沉默的硬气，是你身上最扎实的部分。',
+ '把苦日子过出滋味，是你的本事，这份本事比什么都耐用。'
+ ],
+ match:'和呼和浩特、重庆型一桌就热闹；和上海型相处，你会嫌规矩太多。'},
+H2:{emoji:'🏔️',city:'西宁',tag:'旷野清修型',
+ persona:'往外走远一点，才离自己近一点',
+ kw:['耐得住','不物质','要辽阔'],
+ insight:[
+ '你出门不爱去商场，更愿意开车出城，走很久也见不到几个人。你习惯早睡，也习惯早起，屋里的东西少得可怜。你在高处待着会心跳加快，喘不上气，但你觉得那才是活着的感觉。',
+ '你不太需要人群来确认自己，独处对你来说是回血而不是消耗。你对物质要求很低，对内心要求很高，你喜欢辽阔、干净、说得少做得多的人和地方，也愿意为这种清净少赚一点钱。你不太在乎别人怎么看你，也不太需要被热闹证明。你把时间留给山、留给路、留给自己，日子过得清简，却一点都不空。',
+ '往外走远一点，你才离自己近一点，城市太挤的时候记得给自己留条路。'
+ ],
+ match:'和拉萨、大理型是同类，不用解释；和上海型一起逛商场，你会提前想回家。'},
+H3:{emoji:'🐎',city:'呼和浩特',tag:'草原放牧型',
+ persona:'你本来就属于更开阔的地方',
+ kw:['自由','重情义','受不了拘束'],
+ insight:[
+ '你会在周末把车开出城，一开就是一小时，停在看不见楼的地方。你喜欢大块吃肉、大口喝茶，喜欢天气和人都直接一点。你的朋友不多，但每一个都能聊到半夜，也都能在你需要时赶来。',
+ '你心里有一块想要奔跑的地方，受不了被关在格子间里太久。你看重自由，也看重情义，你能忍受孤独和不便，却受不了被安排得明明白白的人生。你不太喜欢被问“以后打算怎么办”，也不太会按别人的时间表活。你相信人只要还有一片能跑起来的空地，就永远不算走投无路。',
+ '你本来就属于更开阔的地方，别把自己困在太小的屋子里。'
+ ],
+ match:'和哈尔滨、兰州型一见如故；和苏州型谈恋爱，你会想带对方去看草原。'}
+};
+
+/* ============ 计分逻辑 ============ */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0) + 1;
+  });
+  var mx = 0, tied = [];
+  Object.keys(s).forEach(function(k){ if(s[k] > mx) mx = s[k]; });
+  Object.keys(s).forEach(function(k){ if(s[k] === mx) tied.push(k); });
+  var code;
+  if(tied.length === 1){
+    code = tied[0];
+  }else{
+    /* 平局兜底：从最后一题往前逐题比对，取第一个仍在并列中的结果；
+       都未命中时取编号靠前者。全程确定，不随机。 */
+    code = '';
+    for(var i = answers.length - 1; i >= 0; i--){
+      var c = QUESTIONS[i].options[answers[i]].code;
+      if(tied.indexOf(c) >= 0){ code = c; break; }
+    }
+    if(!code){ code = tied.sort()[0]; }
+  }
+  return { code:code, scores:s };
+}
+
+function dimScores(scores){
+  var d = {};
+  Object.keys(DIMS).forEach(function(k){ d[k] = 0; });
+  Object.keys(scores).forEach(function(k){
+    var dk = k.charAt(0);
+    d[dk] = (d[dk]||0) + scores[k];
+  });
+  return d;
+}
+
+/* ============ 答题流程 ============ */
+var answers = [], cur = 0, locked = false;
+
+function startQuiz(){
+  answers = []; cur = 0; locked = false;
+  show('quiz'); renderQ();
+}
+
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((cur)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o,i){
+    var d = document.createElement('div');
+    d.className = 'option';
+    d.innerHTML = '<span class="ol">' + o.key + '</span><span class="ot">' + o.text + '</span>';
+    d.addEventListener('click', function(){ pick(i, d); });
+    box.appendChild(d);
+  });
+  document.getElementById('backBtn').style.visibility = (cur === 0 ? 'hidden' : 'visible');
+  locked = false;
+}
+
+function pick(i, el){
+  if(locked) return;
+  locked = true;
+  answers[cur] = i;
+  el.classList.add('on');
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){ cur++; renderQ(); }
+    else { finish(); }
+  }, 240);
+}
+
+function finish(){
+  document.getElementById('progressFill').style.width = '100%';
+  var r = resolve(answers);
+  showResult(r.code, r.scores);
+}
+
+function showResult(code, scores){
+  var R = RESULTS[code];
+  document.getElementById('rEmoji').textContent = R.emoji;
+  document.getElementById('rCity').textContent = R.city;
+  document.getElementById('rTag').textContent = R.tag;
+  document.getElementById('rPersona').textContent = R.persona;
+  var kw = R.kw.map(function(k){ return '<span class="kw">' + k + '</span>'; }).join('');
+  document.getElementById('rKeywords').innerHTML = kw;
+  var ins = [
+    ['🖼️','你看到的一个画面', R.insight[0]],
+    ['🌱','这是这样的你', R.insight[1]]
+  ].map(function(x){
+    return '<div class="ins-sec"><div class="ins-h"><span class="em">' + x[0] + '</span>' + x[1] + '</div><p class="ins-p">' + x[2] + '</p></div>';
+  }).join('');
+  ins += '<div class="quote"><div class="ins-h" style="margin-bottom:6px"><span class="em">✨</span>一句话送给你</div><div class="qt">' + R.insight[2] + '</div></div>';
+  document.getElementById('rInsight').innerHTML = ins;
+  document.getElementById('rMatch').innerHTML = '<b>适配关系：</b>' + R.match;
+
+  var d = dimScores(scores);
+  var mx = 1;
+  Object.keys(d).forEach(function(k){ if(d[k] > mx) mx = d[k]; });
+  var html = Object.keys(DIMS).map(function(k){
+    var pct = Math.round(d[k]/mx*100);
+    return '<div class="dimrow"><div class="dimtop"><span>' + DIMS[k] + '</span><span>' + d[k] + '</span></div>' +
+           '<div class="dimtrack"><span class="dimfill" style="width:' + pct + '%"></span></div></div>';
+  }).join('');
+  document.getElementById('rDims').innerHTML = html;
+
+  window.__lastResult = { code:code, scores:scores };
+  show('result');
+}
+
+/* ============ Canvas 海报 ============ */
+var EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+
+var PUNCT_SET = '，。、；：！？）】》”’,.!?:;·…';
+
+function wrapText(c, text, x, y, maxW, lineH){
+  var lines = [], line = '';
+  for(var i = 0; i < text.length; i++){
+    var ch = text.charAt(i), test = line + ch;
+    if(c.measureText(test).width > maxW && line){
+      if(PUNCT_SET.indexOf(ch) >= 0){ line = test; }
+      else { lines.push(line); line = ch; }
+    }else{ line = test; }
+  }
+  if(line) lines.push(line);
+  lines.forEach(function(l){ c.fillText(l, x, y); y += lineH; });
+  return y;
+}
+
+function measureLines(c, text, maxW){
+  var n = 1, line = '';
+  for(var i = 0; i < text.length; i++){
+    var ch = text.charAt(i), test = line + ch;
+    if(c.measureText(test).width > maxW && line){
+      if(PUNCT_SET.indexOf(ch) >= 0){ line = test; }
+      else { n++; line = ch; }
+    }else{ line = test; }
+  }
+  return n;
+}
+
+function roundRect(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.arcTo(x+w, y, x+w, y+h, r);
+  c.arcTo(x+w, y+h, x, y+h, r);
+  c.arcTo(x, y+h, x, y, r);
+  c.arcTo(x, y, x+w, y, r);
+  c.closePath();
+}
+
+function buildPoster(){
+  var res = window.__lastResult;
+  if(!res) return;
+  var R = RESULTS[res.code];
+  var W = 750, H = 1500, PAD = 54, CW = W - PAD*2;
+  var SANS = ' -apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+
+  /* 统一的绘制流程：paint 只管从 top 开始往下排，返回结束位置 */
+  function paint(c, top){
+    var y = top;
+
+    c.textAlign = 'center';
+    c.fillStyle = '#7a8c84';
+    c.font = '22px' + SANS;
+    c.fillText('我 的 定 居 地 类 型', W/2, y + 24);
+    y += 24 + 40;
+
+    c.font = '82px ' + EMOJI_FONT;
+    c.fillStyle = '#2f8a71';
+    c.fillText(R.emoji, W/2, y + 62);
+    y += 62 + 24;
+
+    c.fillStyle = '#2f8a71';
+    c.font = '800 46px' + SANS;
+    c.fillText(R.city, W/2, y + 40);
+    y += 40 + 10;
+
+    c.font = '700 22px' + SANS;
+    var tagText = '· ' + R.tag + ' ·';
+    var tagW = c.measureText(tagText).width + 46;
+    c.fillStyle = '#4fa98c';
+    roundRect(c, W/2 - tagW/2, y, tagW, 42, 21);
+    c.fill();
+    c.fillStyle = '#ffffff';
+    c.fillText(tagText, W/2, y + 29);
+    y += 42 + 20;
+
+    c.textAlign = 'left';
+    c.fillStyle = '#39443f';
+    c.font = '24px' + SANS;
+    var pl = measureLines(c, R.persona, CW);
+    wrapText(c, R.persona, PAD, y + 24, CW, 36);
+    y += pl*36 + 14;
+
+    var kx = PAD;
+    c.font = '700 21px' + SANS;
+    R.kw.forEach(function(k){
+      var w = c.measureText(k).width + 34;
+      c.fillStyle = '#ddefe8';
+      roundRect(c, kx, y, w, 42, 21);
+      c.fill();
+      c.fillStyle = '#2f8a71';
+      c.fillText(k, kx + 17, y + 29);
+      kx += w + 14;
+    });
+    y += 42 + 26;
+
+    // 段一
+    c.fillStyle = '#2f8a71';
+    c.font = '700 24px ' + EMOJI_FONT;
+    c.fillText('🖼️ 你看到的一个画面', PAD, y + 22);
+    y += 34;
+    c.fillStyle = '#39443f';
+    c.font = '25px' + SANS;
+    var n1 = measureLines(c, R.insight[0], CW - 4);
+    wrapText(c, R.insight[0], PAD, y + 26, CW - 4, 38);
+    y += n1*38 + 12;
+
+    // 段二
+    c.fillStyle = '#2f8a71';
+    c.font = '700 24px ' + EMOJI_FONT;
+    c.fillText('🌱 这是这样的你', PAD, y + 22);
+    y += 34;
+    c.fillStyle = '#39443f';
+    c.font = '25px' + SANS;
+    var n2 = measureLines(c, R.insight[1], CW - 4);
+    wrapText(c, R.insight[1], PAD, y + 26, CW - 4, 38);
+    y += n2*38 + 14;
+
+    // 金句
+    c.font = '700 25px' + SANS;
+    var n3 = measureLines(c, R.insight[2], CW - 46);
+    var qx = PAD - 6, qw = CW + 12, qy = y;
+    var qh = 86 + (n3-1)*38 + 14;
+    var qg = c.createLinearGradient(qx, qy, qx + qw, qy + qh);
+    qg.addColorStop(0,'#e6f5ee'); qg.addColorStop(1,'#f8f2e3');
+    c.fillStyle = qg;
+    roundRect(c, qx, qy, qw, qh, 18);
+    c.fill();
+    c.fillStyle = '#2f8a71';
+    c.font = '700 20px ' + EMOJI_FONT;
+    c.fillText('✨ 一句话送给你', qx + 22, qy + 32);
+    c.fillStyle = '#28685a';
+    c.font = '700 26px' + SANS;
+    wrapText(c, R.insight[2], qx + 22, qy + 68, CW - 46, 38);
+    y = qy + qh + 28;
+
+    // 维度
+    c.fillStyle = '#7a8c84';
+    c.font = '700 22px ' + EMOJI_FONT;
+    c.fillText('📊 我的生活维度能量', PAD, y + 22);
+    y += 34;
+    var d = dimScores(res.scores), mx = 1;
+    Object.keys(d).forEach(function(k){ if(d[k] > mx) mx = d[k]; });
+    c.font = '19px' + SANS;
+    Object.keys(DIMS).forEach(function(k){
+      c.fillStyle = '#7a8c84';
+      c.textAlign = 'left';
+      c.fillText(DIMS[k], PAD, y + 18);
+      c.textAlign = 'right';
+      c.fillText(String(d[k]), W - PAD, y + 18);
+      var bx = PAD + 120, bw = CW - 165;
+      c.fillStyle = '#ddefe8';
+      roundRect(c, bx, y + 6, bw, 12, 6); c.fill();
+      c.fillStyle = '#4fa98c';
+      roundRect(c, bx, y + 6, Math.max(10, bw*d[k]/mx), 12, 6); c.fill();
+      y += 26;
+    });
+
+    y += 14;
+    c.textAlign = 'center';
+    c.fillStyle = '#6f7d76';
+    c.font = '700 21px' + SANS;
+    c.fillText('@ 那个你想到的人，一起测测你们适合哪座城', W/2, y + 22);
+    y += 22 + 32;
+
+    c.fillStyle = '#9aa8a1';
+    c.font = '16px' + SANS;
+    c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，', W/2, y + 18);
+    c.fillText('不构成任何搬迁、置业或人生规划建议。', W/2, y + 18 + 24);
+    return y + 18 + 24 + 10;
+  }
+
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+
+  var bg = c.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0,'#eaf7f1'); bg.addColorStop(.45,'#f8fbf6'); bg.addColorStop(1,'#fdf6e8');
+  c.fillStyle = bg; c.fillRect(0, 0, W, H);
+
+  // 先在离屏画布量出总高度，再整体垂直居中
+  var probe = document.createElement('canvas');
+  probe.width = W; probe.height = H;
+  var pc = probe.getContext('2d');
+  var total = paint(pc, 0);
+  window.__posterTotal = total;
+  var offset = (H - total) / 2;
+  if(offset < 24) offset = 24;
+  if(total > H - 40) offset = 24;
+  paint(c, offset);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  var dl = document.getElementById('posterDownload');
+  dl.href = dataURL;
+  dl.download = '我的定居地测试_' + R.city + '.png';
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 事件绑定 ============ */
+document.getElementById('startBtn').addEventListener('click', startQuiz);
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQ(); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){ show('home'); });
+document.getElementById('posterBtn').addEventListener('click', buildPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+</script>
+</body>
+</html>
