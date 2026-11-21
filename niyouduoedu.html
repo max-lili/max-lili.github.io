@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你有多恶毒 · 恶毒浓度测试</title>
+<style>
+  :root{
+    --bg:#0f0d10;
+    --card:#1c161b;
+    --card2:#241a21;
+    --line:#372833;
+    --ink:#f6eef2;
+    --ink-2:#c2a9b7;
+    --ink-3:#8d7683;
+    --pink:#ff5c8a;
+    --pink-deep:#ff2f6b;
+    --tox:#c6ff4a;
+    --shadow-sm:0 6px 22px rgba(0,0,0,.35);
+    --shadow:0 18px 50px rgba(0,0,0,.55);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);min-height:100vh;background:var(--bg)}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(900px 500px at 50% -6%, rgba(255,47,107,.20), transparent 72%),
+      radial-gradient(680px 460px at 96% 104%, rgba(198,255,74,.07), transparent 72%),
+      linear-gradient(160deg,#0f0d10 0%,#191219 55%,#0c0a0e 100%)}
+  .wrap{max-width:520px;margin:0 auto;padding:26px 20px 52px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* ===== 口令门控 ===== */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:rgba(10,8,11,.96);backdrop-filter:blur(10px)}
+  #gate.hide{display:none}
+  .gate-card{background:var(--card);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 28px 30px;width:100%;max-width:390px;text-align:center}
+  .gate-lock{font-size:44px;margin-bottom:6px;font-family:var(--emoji)}
+  .gate-card h2{font-size:20px;margin:0 0 8px;letter-spacing:1px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:13px 10px 13px 22px;border:2px solid var(--line);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#161116}
+  #passInput:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,92,138,.14)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:16px 0 0}
+
+  /* ===== 通用 ===== */
+  .btn{display:block;width:100%;border:0;border-radius:15px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),#e01a55);
+    box-shadow:0 10px 26px rgba(255,60,110,.28);cursor:pointer;font-family:inherit;margin-top:12px;letter-spacing:.5px}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1.5px solid var(--line);box-shadow:none}
+  .btn.tox{background:linear-gradient(135deg,#c6ff4a,#8fd41a);color:#16210a;box-shadow:0 10px 26px rgba(198,255,74,.22)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+    padding:22px;margin-bottom:16px}
+  h1{font-size:31px;line-height:1.32;margin:14px 0 12px;letter-spacing:.5px}
+  h1 .hl{color:var(--tox)}
+  h2{font-size:19px;line-height:1.5}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--tox);
+    background:rgba(198,255,74,.10);border:1px solid rgba(198,255,74,.28);padding:5px 12px;border-radius:999px;letter-spacing:.5px}
+  .progress-track{height:8px;background:#2a1e26;border-radius:99px;overflow:hidden;margin:0 0 10px}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--tox),var(--pink));transition:width .45s ease}
+  .qmeta{font-size:12.5px;color:var(--ink-3);margin:0 0 16px;letter-spacing:.5px}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border:1.5px solid var(--line);
+    border-radius:15px;margin-bottom:10px;cursor:pointer;background:#181318;transition:.18s;font-size:14.5px;line-height:1.6}
+  .option:hover{transform:translateY(-2px);border-color:rgba(255,92,138,.5);background:#1f171e}
+  .option.on{border-color:var(--tox);background:rgba(198,255,74,.07)}
+  .opt-key{flex:none;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:var(--pink);border:1px solid rgba(255,92,138,.45);margin-top:2px}
+  .type-emoji{font-size:60px;line-height:1;margin-bottom:6px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--tox);background:rgba(198,255,74,.08);
+    border:1px solid rgba(198,255,74,.24);padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .ins-sec{margin-top:16px}
+  .ins-h{font-size:12.5px;color:var(--ink-3);letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .ins-h .e{font-family:var(--emoji);font-size:14px}
+  .ins-p{font-size:15px;line-height:1.95;color:var(--ink-2);margin:0}
+  .ins-quote{margin-top:18px;padding:16px 18px;border-left:3px solid var(--tox);border-radius:0 14px 14px 0;
+    background:rgba(198,255,74,.06);font-size:16.5px;font-weight:800;line-height:1.75;color:var(--tox)}
+  .poison{display:flex;align-items:baseline;gap:8px;margin:2px 0 4px}
+  .poison b{font-size:44px;font-weight:900;color:var(--pink);letter-spacing:-1px;font-family:Georgia,serif}
+  .poison span{font-size:12.5px;color:var(--ink-3);letter-spacing:1px}
+  .bar-row{margin-top:10px}
+  .bar-row .lb{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-2);margin-bottom:5px}
+  .track{height:7px;background:#2a1e26;border-radius:99px;overflow:hidden}
+  .fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--tox));transition:width .9s ease}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px;padding:0 6px}
+  .hint{font-size:12.5px;color:var(--ink-3);line-height:1.8;margin:0}
+
+  /* ===== 海报 ===== */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(8,6,9,.82);
+    align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+  #posterModal.show{display:flex}
+  .poster-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px;max-width:390px;width:100%;text-align:center;max-height:94vh;overflow:auto}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  .poster-tip{font-size:11.5px;color:var(--ink-3);margin:10px 0 0}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(240,235,238,.94);color:#1a1418;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔒</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">🧪 黑暗人格趣味测试</span>
+    <h1>你有多<span class="hl">恶毒</span>？</h1>
+    <p class="gsub">18 道日常情景题，测出你的<b>恶毒浓度</b>和六种“毒型”。<br>别慌——这里说的恶毒，多半只是你保护自己的方式。</p>
+    <div class="card" style="padding:16px 18px">
+      <p class="hint">
+        · 18 题 / 约 3 分钟<br>
+        · 没有标准答案，凭第一反应选<br>
+        · 结果仅供娱乐，请勿当真
+      </p>
+    </div>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p class="qmeta" id="qIndex">第 1 / 18 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin:0 0 18px">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="view">
+    <div class="card">
+      <div class="type-emoji" id="rEmoji">🔥</div>
+      <h2 id="rName" style="margin:0 0 8px;font-size:22px">结果类型</h2>
+      <p class="gsub" id="rPersona" style="margin-bottom:14px">一句话人设</p>
+      <div id="rKeywords" style="margin-bottom:6px"></div>
+      <div class="poison"><b id="rPoison">0</b><span>毒 值 / 100</span></div>
+      <div id="rInsight"></div>
+    </div>
+
+    <div class="card">
+      <div class="ins-h" style="margin-bottom:12px"><span class="e">🧬</span> 六维毒型分布</div>
+      <div id="rDims"></div>
+    </div>
+
+    <button class="btn tox" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<!-- 海报弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn tox" id="posterDownload" href="#" download="我的恶毒浓度海报.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+    <p class="poster-tip">手机端可长按图片保存到相册</p>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+var PASSCODE = "6656"; // 4 位数字口令，可自行修改此处
+
+/* ============ 数据区 ============ */
+var DIMS = {
+  A:'毒舌火力', B:'反击姿态', C:'心机浓度',
+  D:'冷战方式', E:'伪装程度', F:'报复尺度'
+};
+
+var QUESTIONS = [
+  { title:"群里有人当众把你的功劳说成他的，你会？", options:[
+    {key:"A", code:"A1", text:"直接把截图甩进群，附一句“这版是我改的，谢谢”"},
+    {key:"B", code:"B1", text:"不吵不闹，当场把他上次的失误也“顺便”提一句"},
+    {key:"C", code:"C1", text:"压根没往心里去，只觉得这人挺好笑"},
+    {key:"D", code:"D1", text:"脸当场就垮了，一整天都写着“别来惹我”"}
+  ]},
+  { title:"亲戚在饭桌上当众调侃你“怎么还单着、怎么还没升职”，你会？", options:[
+    {key:"A", code:"B1", text:"笑着回一句“您这问题问得比我还急”，当场把话堵回去"},
+    {key:"B", code:"C1", text:"打个哈哈就过去了，脑子里已经在想饭后吃什么"},
+    {key:"C", code:"D1", text:"筷子一放，“能不能换个话题”，气氛直接冷到冰点"},
+    {key:"D", code:"E1", text:"脸上写满“我很烦”，连客套的笑都懒得给"}
+  ]},
+  { title:"朋友借了钱，一直说“忘了还”，你会？", options:[
+    {key:"A", code:"C1", text:"提过一次没结果就算了，反正钱不多"},
+    {key:"B", code:"D1", text:"直接在群里@他“钱的事什么时候方便”，我不憋"},
+    {key:"C", code:"E1", text:"见面第一句就是“我的钱呢”，绝不假装大方"},
+    {key:"D", code:"F1", text:"提醒两次后自己把这事翻篇，朋友比钱重要"}
+  ]},
+  { title:"外卖迟到了一小时，汤还洒了半盒，你会？", options:[
+    {key:"A", code:"D1", text:"开门就说了句“这也太离谱了吧”，情绪全写在脸上"},
+    {key:"B", code:"E1", text:"差评投诉一条龙，理由写得明明白白"},
+    {key:"C", code:"F1", text:"看小哥满头是汗，摆摆手说算了，下次不点这家"},
+    {key:"D", code:"A1", text:"嘴上吐槽一句“这包装是纸糊的吗”，然后该吃吃"}
+  ]},
+  { title:"朋友跟你说了个秘密，转头又告诉了别人，你会？", options:[
+    {key:"A", code:"E1", text:"直接问他“你是不是也跟别人说了”，摊开讲"},
+    {key:"B", code:"F1", text:"叹口气，觉得人都有嘴快的毛病，不追究"},
+    {key:"C", code:"A1", text:"“你嘴是真不严”，一句话说透，不留情面"},
+    {key:"D", code:"B1", text:"下次他再想打听什么，我就“刚好不知道”"}
+  ]},
+  { title:"合租室友总把公共区域搞得一团乱，你会？", options:[
+    {key:"A", code:"F1", text:"默默收拾了，觉得吵起来更累"},
+    {key:"B", code:"A1", text:"拉个群直接发照片“这是谁弄的，麻烦清一下”"},
+    {key:"C", code:"B1", text:"把他的东西也挪到他门口，让他自己体会"},
+    {key:"D", code:"C1", text:"不想搞心机，当面说一次，说完拉倒"}
+  ]},
+  { title:"上司在会议上否了你的方案，还说你“经验不足”，你会？", options:[
+    {key:"A", code:"A2", text:"笑着说“好的，那我按您的思路改”，语气礼貌到让他听出味儿"},
+    {key:"B", code:"B2", text:"点头记下，回去把每条意见存进备忘录，以后再说"},
+    {key:"C", code:"C2", text:"回去把每个被否的点逐条复盘，算清谁对谁错"},
+    {key:"D", code:"D2", text:"散会后一句话不说，他要的文件我也“稍后发”"}
+  ]},
+  { title:"朋友当众讲了个让你很尴尬的糗事，你会？", options:[
+    {key:"A", code:"B2", text:"当场陪着笑，回去默默把他所有糗事整理成库存"},
+    {key:"B", code:"C2", text:"笑着听完，心里已经在盘算下次怎么把话头引到他身上"},
+    {key:"C", code:"D2", text:"不接话也不笑，就那样看着他，让他自己尴尬"},
+    {key:"D", code:"E2", text:"笑得比谁都开心，第二天开始叫他糗事里的那个外号"}
+  ]},
+  { title:"有人在背后传你的闲话，还传到了你耳朵里，你会？", options:[
+    {key:"A", code:"C2", text:"先不表态，暗中把传话的链条捋清楚，找到源头"},
+    {key:"B", code:"D2", text:"从此对他客气三分，消息回得越来越慢"},
+    {key:"C", code:"E2", text:"见面照样热情打招呼，只是再没对他说过一句真话"},
+    {key:"D", code:"F2", text:"找机会把他的一件小秘密，也“无意间”传出去"}
+  ]},
+  { title:"伴侣或好友忘了你们的纪念日，你会？", options:[
+    {key:"A", code:"D2", text:"不提醒不生气，安安静静等他发现，看他能拖几天"},
+    {key:"B", code:"E2", text:"“没关系呀”，然后一整周都用特别礼貌的语气说话"},
+    {key:"C", code:"F2", text:"下次他生日我也“刚好忙忘了”，一模一样还回去"},
+    {key:"D", code:"A2", text:"“哦，今天原来是个日子啊”，语气轻飘飘，杀伤力拉满"}
+  ]},
+  { title:"有人插队，还理直气壮，你会？", options:[
+    {key:"A", code:"E2", text:"笑着站到他前面，“不好意思，我排在这儿的”"},
+    {key:"B", code:"F2", text:"不吵，但一定让他排到我后面去，一次都不让"},
+    {key:"C", code:"A2", text:"“您先您先，我不急，就是有点好奇您急什么”"},
+    {key:"D", code:"B2", text:"嘴上让了，回头记住这张脸，从此对他零耐心"}
+  ]},
+  { title:"团队里有人一直躺平，活儿全落到你身上，你会？", options:[
+    {key:"A", code:"F2", text:"他推一次我也推一次，“这部分归你”，说清楚"},
+    {key:"B", code:"A2", text:"“你最近是不是特别忙？那我这些也一起做了吧”，让他自己品"},
+    {key:"C", code:"B2", text:"不说，但把每一次都是我做的都记清楚，必要时拿出来"},
+    {key:"D", code:"C2", text:"不动声色把分工写进群里文档，谁做了什么一目了然"}
+  ]},
+  { title:"亲戚当众说“你这孩子就是太倔，将来要吃亏”，你会？", options:[
+    {key:"A", code:"A3", text:"笑眯眯点头“您说得对”，心里已经把这人归到“不必来往”那一栏"},
+    {key:"B", code:"B3", text:"“我去厨房帮个忙”，站起来就走，一句都不接"},
+    {key:"C", code:"C3", text:"顺着他往下聊，把他真正想说的摸清楚，然后一句不落地绕过去"},
+    {key:"D", code:"D3", text:"“谢谢提醒”，之后全程用最客气的方式跟他说话"}
+  ]},
+  { title:"小组作业有人全程不出力，最后还想署名，你会？", options:[
+    {key:"A", code:"B3", text:"不吵，把分工记录发群里，然后退了这个群"},
+    {key:"B", code:"C3", text:"早就在文档里留了版本记录，最后把时间线一摆，谁做的都清楚"},
+    {key:"C", code:"D3", text:"不撕破脸，但从此这个人的所有邀约我都“最近有点忙”"},
+    {key:"D", code:"E3", text:"表面替他说好话，让所有人都看见“我多大度”"}
+  ]},
+  { title:"有人三番两次占你小便宜，还觉得你不在意，你会？", options:[
+    {key:"A", code:"C3", text:"不急着翻脸，等一个他必须求我的时机，一次性把账算清"},
+    {key:"B", code:"D3", text:"从此对他客气到极致，边界清楚，一步都不让"},
+    {key:"C", code:"E3", text:"继续对他好，好到所有人都不理解，也让他自己心里发毛"},
+    {key:"D", code:"F3", text:"第三次开始，我让他占的便宜全部连本带利吐出来"}
+  ]},
+  { title:"有人在网上发帖含沙射影地内涵你，你会？", options:[
+    {key:"A", code:"D3", text:"不回应不点赞，把他从所有列表里静音"},
+    {key:"B", code:"E3", text:"发一条更体面的动态，让所有人看到我根本没受影响"},
+    {key:"C", code:"F3", text:"把他说过的话原封不动整理出来，一次发全"},
+    {key:"D", code:"A3", text:"看一眼就关掉，心里给这人定了性，从此不再多说一个字"}
+  ]},
+  { title:"朋友在你面前夸别人，还顺带一句“你要是有他一半就好了”，你会？", options:[
+    {key:"A", code:"E3", text:"“他确实挺好的”，笑着附和，脸上一点波澜都没有"},
+    {key:"B", code:"F3", text:"“是吗，那你多跟他处处”，一句话递回去"},
+    {key:"C", code:"A3", text:"笑着点头，心里把这句话记一辈子"},
+    {key:"D", code:"B3", text:"不解释，端起杯子去别处，之后不再跟他聊这些"}
+  ]},
+  { title:"多年好友做了一件让你彻底失望的事，你会？", options:[
+    {key:"A", code:"F3", text:"我会让他也体验一次被最信任的人辜负的滋味"},
+    {key:"B", code:"A3", text:"不吵不问，心里直接把他从“朋友”移到“认识的人”"},
+    {key:"C", code:"B3", text:"安静地退出他的生活，不解释，不告别"},
+    {key:"D", code:"C3", text:"先不动，把该收的东西、该断的线，一件件收干净再走"}
+  ]}
+];
+
+var RESULTS = {
+  A1:{emoji:"🔥", name:"开麦直球型", persona:"有话当场说完，绝不让委屈在心里过夜",
+    kw:["明枪","一句到位","当场澄清"],
+    insight:[
+      "群里有人把你熬夜改的方案顺手说成自己的，你没憋着：截图、时间线、原版文件，一条条甩进工作群，末尾还补一句“下次记得把我的名字带上”。对方装死，你又@了他一次，语气礼貌，内容毫不含糊。你不是爱吵架，你只是受不了那种当面含糊、背后默认的暧昧。",
+      "你的毒长在明处。你不绕弯，也不肯把委屈腌在心里发酸，你认定话说清楚了关系才干净：宁可当下难听三秒，也不要憋着内伤三个月，最后还在深夜反复回放那天的场景。你骂人的时候其实很清醒，句句都落在事实上，不给对方留模糊地带。",
+      "嘴上不饶人，是因为你不肯让自己被人悄悄吃掉。"
+    ]},
+  A2:{emoji:"🪡", name:"软刀子型", persona:"话说得比谁都客气，刀藏得比谁都深",
+    kw:["反讽","笑着扎人","留三分"],
+    insight:[
+      "上司当众否了你的方案，说你经验不足。你笑着回一句“好的，那我按您的思路改”，语气软得挑不出错，可那半秒的停顿、那个眼神，让对方自己先乱了阵脚。散会后你还顺手把他的意见整理成文档发过去，一条不落地执行，结果每个漏洞都摊在明面上。",
+      "你的毒藏在礼貌里。你从不正面开火，习惯把话留三分余地，可那三分里全是刀。你懂得让人自己品、自己想、自己难受，比直接骂出来更让人记得住。你很少失态，因为你知道，谁先急了谁就输了，慢一步的人反而赢。",
+      "你笑着说的每句话都留了后手，所以没人敢真试探你的底线。"
+    ]},
+  A3:{emoji:"⚖️", name:"心里判官型", persona:"嘴上永远客气，心里早已结案",
+    kw:["沉默","内心量刑","不再多说"],
+    insight:[
+      "亲戚当众说你太倔、将来要吃亏。你笑眯眯地点头，“您说得对”，还给他添了杯茶。可就在那几秒里，你已经在心里把这个人归到“不必再来往”的那一栏，从此他说的每句话你只回“嗯嗯”。你不辩、不解释、不生气，只是悄悄把他从你的名单里划掉了。",
+      "你的毒不出口，只在心里判。你有一套自己的量刑标准：谁轻谁重、该留该断，全在心里那册账上写得清清楚楚。你不吵不闹，是因为你觉得不值得浪费口舌，不是因为没脾气。被你判过的人甚至不知道自己被判过，这才是最狠的地方。",
+      "你从不当场发作，但你的判决从不撤回。"
+    ]},
+  B1:{emoji:"⚡", name:"当场回击型", persona:"吃什么都行，就是不能吃亏",
+    kw:["即时反击","不隔夜","顶回去"],
+    insight:[
+      "有人当众把锅甩给你，说这活儿本来就归你。你没等散场，当场把他上次的失误也一并“顺便”提了一句，语气随意得像闲聊，桌上所有人安静了三秒。你心跳得厉害，手心也发汗，但你还是把那句话顶了回去，一句都没少。",
+      "你的毒是即时反应型的。你信奉“当下不还手就等于默认”，所以宁可当场手抖，也不要事后在脑子里演练一百遍“我当时应该说”。你记不住仇，但你受不了一次当面的难堪，那股劲儿上来，谁劝都没用。事后你也会复盘，想着是不是太冲，可下次还是会先护住自己。",
+      "你可以输，但不能当场输，这是你唯一不肯让步的骄傲。"
+    ]},
+  B2:{emoji:"📒", name:"小本本型", persona:"当场不说话，回家记一笔",
+    kw:["记账","不动声色","秋后结算"],
+    insight:[
+      "有人插队还理直气壮，你嘴上让了，甚至帮他把掉在地上的包递了过去。转身你就记住了这张脸、这句话、这个时间，从此他在你这儿的信用额度清零，一句多余的客气都没有了。再见面你依然笑，只是那份笑里已经没有温度。",
+      "你的毒是记账式的。你不当场爆，也不装作没事，你只是把每一笔都收进那本只有自己看得见的账。你不急着结算，因为你知道总有那么一天，账会自己找上门来。你的沉默不是忍，是存档。你把人情往来看成一笔笔进出，谁多给了、谁少给了，心里那张表从来没糊涂过。",
+      "你不吵，你只是记得比谁都清楚。"
+    ]},
+  B3:{emoji:"🚪", name:"体面退场型", persona:"不吵不闹，直接把门关上",
+    kw:["划界限","不解释","退场"],
+    insight:[
+      "小组作业有人全程不出力，最后还想署名。你没吵，把分工记录发进群里，附一句“大家看下有没有要补充的”，然后安静地退了那个群。没有一句难听话，可所有人都知道发生了什么。你连告别都省了，动作干净得像从没来过。",
+      "你的毒是撤退式的。你不撕破脸，也不给人留把柄，你的方式是直接把人从你的世界里请出去。你觉得争辩是浪费情绪，划清界限才是一步到位。你走的时候不摔门，但门从此对他关着。你不解释，是因为解释像在求理解，而你早就决定不需要他的理解了。",
+      "你不动声色地走开，就是最重的判决。"
+    ]},
+  C1:{emoji:"🍃", name:"没心机型", persona:"不是不会算计，是懒得算计",
+    kw:["不算计","反应慢半拍","笑笑就过"],
+    insight:[
+      "朋友借了钱一直“忘了还”，你提过一次没结果，就自己把这事翻过去了。转头你还在帮他挑生日礼物，脑子里压根没把那笔钱和这个人联系在一起。别人在你这里耍的那些小心眼，你往往要过很久才反应过来，然后也只是笑笑。",
+      "你的毒基本为零。准确说，你连“毒”这个概念都懒得研究：不算计、不布局、不留后手。你不是傻，你只是觉得把心思花在这些地方太累，宁愿把力气用在让自己开心的事上。所以你看起来最好欺负，也最不容易被真正伤到，坏事落不到你心上，第二天照样吃好睡好。",
+      "不是你不会，是你觉得不值得。"
+    ]},
+  C2:{emoji:"🧮", name:"算得清楚型", persona:"不动情绪，只算结果",
+    kw:["复盘","精算","看得通透"],
+    insight:[
+      "有人在背后传你的闲话，还传到了你耳朵里。你先不表态，笑着听完，回头把传话的链条一层层捋清楚：从谁开始、经过谁、添了什么料。等全部想明白了，你才在源头那儿轻轻放了一句，说完就不再提，好像什么都没发生过。",
+      "你的毒是精算的。你不动情绪，只算结果：这句话值不值得说、这个人值不值得翻脸、现在动手还是再等等。你看起来最好说话，其实每一步都算好了成本和收益。你不轻易出手，因为你要的不是痛快，是准确。你偶尔也羡慕那些当场就骂出来的人，但你更信一句话：算清楚，才不用后悔。",
+      "你不出手的时候，比出手更让人不安。"
+    ]},
+  C3:{emoji:"♟️", name:"布局大师型", persona:"愿意等，也等得起",
+    kw:["长线","耐得住","一次算清"],
+    insight:[
+      "有人三番两次占你小便宜，还觉得你不在意。你没翻脸，甚至对他更好了，只是在等，等他某天必须求到你头上的那个时刻。那天你笑着帮了他，顺手把所有账一次算清，他到最后都不知道自己是怎么被算进去的，顺带还替他把善后做了。",
+      "你的毒是高阶的。你看得比别人远几步，忍得住一时的气，也受得了一时的亏，因为你知道那些都不是终局。你的耐心不是软弱，是把棋盘铺完的从容。你不喜欢赢一局，你要的是整盘，而整盘从来不看谁先动手。你忍的时候并不憋屈，因为你知道那不是忍，是等。",
+      "你从不急着赢这一局，你要的是整盘。"
+    ]},
+  D1:{emoji:"🌋", name:"写脸上型", persona:"开心就笑，不爽就沉脸，绝不演",
+    kw:["情绪外放","明火","不装"],
+    insight:[
+      "外卖迟了一小时还洒了半盒，你开门就说“这也太离谱了吧”，声音不算大，但那张脸已经把话都说完了。一整天你的情绪都挂在外面，谁靠近都得先看脸色，同事路过你工位都放轻了脚步，午饭都没人敢叫你。",
+      "你的毒是明火型的。你不会藏，也不想藏，开心就笑，不爽就沉脸。别人说你情绪化，其实你只是懒得演：你觉得把情绪写在脸上，比让人猜来猜去更坦诚。你的怒气来得快，去得也快，通常一杯奶茶就能灭火。你气来气去，最后自己先笑场；别人怕你，其实你比谁都心软，只是嘴上不肯认。",
+      "你从不用暗器，你的火都烧在明处。"
+    ]},
+  D2:{emoji:"🧊", name:"已读不回型", persona:"不吼不闹，只把温度调低",
+    kw:["冷处理","慢半拍","无声施压"],
+    insight:[
+      "上司在会上否了你的方案，散会后你一句话没说。他要的文件你说“稍后发”，然后那个稍后拉得很长。你照常上班、照常打招呼、照常把工作做完，只是所有回应都慢了半拍，让他每一次都在等，等到自己先坐不住。",
+      "你的毒是低温型的。你不吼不闹，只是把温度一点点降下去：消息回得慢了，笑容客气了，问题也不再多问一句。你让人慢慢感觉到冷，却抓不到任何把柄。这种冷不是一天形成的，是被反复消耗之后，你自己关掉了阀门。你不是不想说，你是说了太多次没人接住，于是学会了省着力气。",
+      "你不吵架，你只是让空气变冷。"
+    ]},
+  D3:{emoji:"❄️", name:"礼貌冰墙型", persona:"客气到极致，就是最远的距离",
+    kw:["边界","得体","谁都进不来"],
+    insight:[
+      "亲戚说你这孩子太倔、将来要吃亏，你回一句“谢谢提醒”，之后全程用最标准的客气跟他说话：您先坐、您慢用、您说得对。每个字都没问题，可他越听越冷，最后自己找了个借口先走了，走之前还夸你有礼貌。",
+      "你的毒是礼貌做的。你把边界修得整整齐齐，谁都挑不出错，也谁都进不来。你不解释、不争吵、不示弱，只用最得体的方式，把人和人之间的距离重新量好。别人还在等你发火，你已经把关系处理成了一个干净的结案。你不是冷，你只是把热度留给值得的人，剩下的都用礼貌请出门。",
+      "你的客气不是亲近，是一堵没有门的围墙。"
+    ]},
+  E1:{emoji:"🫧", name:"一眼见底型", persona:"喜欢和嫌弃，都写在第一秒",
+    kw:["透明","不演","直给"],
+    insight:[
+      "亲戚在饭桌上调侃你怎么还单着，你脸上写满“我很烦”，连客套的笑都懒得给。筷子一放，“能不能换个话题”，桌上气氛瞬间安静，长辈们交换了一下眼神。你也没觉得尴尬，低头继续吃你的菜。",
+      "你的毒藏不住，也不想藏。你学不会那种“心里骂得很脏、脸上笑得很好”的本事，喜欢和嫌弃都写在第一秒。有人觉得你冲，更多人因此知道跟你相处不用猜。你身上有种粗糙的坦诚，让人放心，也让人不敢轻慢。你从不为难别人，也不让别人为难受你，这份直给的坦率，本身就是一种底气。",
+      "你透明得让人安心，也锋利得让人不敢轻慢。"
+    ]},
+  E2:{emoji:"😊", name:"笑面型", persona:"笑得越温柔，话里的分量越重",
+    kw:["糖衣","笑着扎","绵长"],
+    insight:[
+      "朋友当众讲了你的糗事，你笑得比谁都开心。第二天开始，你自然而然地叫他那个糗事里的外号，语气亲昵，对象是他。他张了张嘴，最后什么也没说，只是从此再没在饭桌上提过你半个字，那个外号也没从他身上撕下来。",
+      "你的毒裹着糖。你的脸上永远是晴天，说话永远温和，可你的每句话都摆得恰到好处，让人笑着笑着就笑不出来了。你不喜欢撕破脸，你更喜欢让对方自己想明白，毕竟当场翻脸太难看，慢慢难受才记得久。你说过的每句软话，事后都会在对方心里长成一根小刺，而你始终笑得出来。",
+      "你笑得越温柔，话里的分量越重。"
+    ]},
+  E3:{emoji:"🎭", name:"舞台人设型", persona:"情绪收进后台，从容演到人前",
+    kw:["体面","形象管理","不失控"],
+    insight:[
+      "有人在网上含沙射影地内涵你，你没回应。第二天你发了一条更体面的动态：该做的事做完了、该见的人见过了、心情很好，配图是窗外的天色。评论区一片夸，只有你知道那条是给谁看的，也只有你知道，那一晚你其实没睡好。",
+      "你的毒是体面的。你极其在意自己呈现出来的样子，所以再气也不会在公共场合失态。你把情绪收进后台，把从容演到人前，让人只见你的好，猜不到你的锋利。你耗的力气不比别人少，只是都花在了别人看不见的地方。你要的从来不是赢，是体面地站着，让所有想看你笑话的人都失望。",
+      "你最好的报复，是活得让他挑不出错。"
+    ]},
+  F1:{emoji:"🕊️", name:"翻篇型", persona:"不是没脾气，是觉得生气太亏",
+    kw:["放下","不结怨","心大"],
+    insight:[
+      "朋友借了钱一直忘了还，你提醒两次没结果，就自己把这事翻过去了。后来他遇到难处，你还是第一个转钱过去的人。你不是忘了，你只是觉得朋友比那点钱重要，也算过账——为这点钱生一场气，太亏。",
+      "你的毒几乎为零。你不是没脾气，你是把脾气留给了更值得的事。你把心力留给喜欢的人，把不值得的都轻轻放下，所以你的世界干净、轻松、少结怨。别人以为你好欺负，其实你只是不想把自己活成一本账本。心大不是天生的，是自己选的：把不值得的人放过去，才有空间装下值得的人。",
+      "你放过的不是别人，是自己。"
+    ]},
+  F2:{emoji:"🔁", name:"等量回敬型", persona:"你怎么对我，我就怎么对你，分毫不差",
+    kw:["对等","讲规矩","不吃亏"],
+    insight:[
+      "伴侣忘了你们的纪念日，你没提醒也没生气。等到他生日那天，你也“刚好忙忘了”，一模一样的语气、一模一样的理由。他愣住的那一刻，你心里那口气终于平了，然后你才慢悠悠地把蛋糕从冰箱里拿出来。",
+      "你的毒是讲规矩的。你不占人便宜，也绝不吃亏，别人怎么对你，你就怎么还回去，分毫不差。你不追求更狠，只要那个天平摆正，你就愿意把这事放下。你的公平感很强，强到有时候显得有点记仇。但你还完这一笔，也就真的放下了；要的从来不是报复，是那份被摆正的分量。",
+      "你的原则很简单：你怎么对我，我就怎么对你。"
+    ]},
+  F3:{emoji:"💥", name:"加倍奉还型", persona:"善良要有牙齿，宽容要有底线",
+    kw:["连本带利","有底线","不纵容"],
+    insight:[
+      "有人第三次占你小便宜，还笑着说“你不介意的对吧”。你没笑，把前两次的账一条条摆出来，连本带利要了回来。对方说你变了，你说“我只是一直在等第三次”。你不喜欢翻旧账，但有些账必须一次算干净，算干净了，你才肯把这件事放下。",
+      "你的毒是加倍的。你给过机会，也给过暗示，可一旦确认对方不打算收敛，你就不会再留余地。你觉得善良要有牙齿，宽容要有底线，否则那只是纵容。你的狠不是天生的，是一次次退让被当成默认之后长出来的，你不是天生带刺，是学会了把刺朝向该朝的方向。",
+      "你可以原谅一次，但不会原谅第三次。"
+    ]}
+};
+
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){ var code = QUESTIONS[i].options[ch].code; s[code] = (s[code]||0)+1; });
+  var keys = Object.keys(s);
+  var mx = Math.max.apply(null, keys.map(function(k){ return s[k]; }));
+  var tied = keys.filter(function(k){ return s[k] === mx; });
+  var code;
+  if(tied.length === 1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[answers.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last) >= 0) code = last;
+    else if(tied.indexOf(first) >= 0) code = first;
+    else code = tied.slice().sort()[0];
+  }
+  return { code:code, scores:s };
+}
+
+function dimStats(answers){
+  var st = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    var d = code.charAt(0), n = parseInt(code.charAt(1),10);
+    if(!st[d]) st[d] = {1:0,2:0,3:0};
+    st[d][n] += 1;
+  });
+  var out = [];
+  Object.keys(DIMS).forEach(function(d){
+    var c = st[d] || {1:0,2:0,3:0};
+    var best = 1;
+    [1,2,3].forEach(function(n){ if(c[n] >= c[best]) best = n; });
+    out.push({ key:d, name:DIMS[d], level:best, pct:Math.round(best/3*100) });
+  });
+  return out;
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    var el = document.getElementById(v);
+    if(el) el.classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+
+/* ============ 口令门控 ============ */
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 答题 ============ */
+var answers = [];
+var cur = 0;
+var lastResultCode = null;
+var lastDims = null;
+
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = Math.round((cur+1)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o, idx){
+    var d = document.createElement('div');
+    d.className = 'option' + (answers[cur] === idx ? ' on' : '');
+    d.innerHTML = '<div class="opt-key">' + o.key + '</div><div>' + o.text + '</div>';
+    d.addEventListener('click', function(){ pick(idx); });
+    box.appendChild(d);
+  });
+  document.getElementById('backBtn').style.visibility = cur === 0 ? 'hidden' : 'visible';
+}
+
+function pick(idx){
+  answers[cur] = idx;
+  var nodes = document.querySelectorAll('#options .option');
+  for(var i=0;i<nodes.length;i++){ nodes[i].classList.toggle('on', i === idx); }
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){ cur++; renderQ(); }
+    else { finish(); }
+  }, 260);
+}
+
+function finish(){
+  document.getElementById('progressFill').style.width = '100%';
+  lastResultCode = resolve(answers).code;
+  lastDims = dimStats(answers);
+  renderResult();
+  show('result');
+}
+
+function renderResult(){
+  var r = RESULTS[lastResultCode];
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  var kwBox = document.getElementById('rKeywords');
+  kwBox.innerHTML = r.kw.map(function(k){ return '<span class="kw">' + k + '</span>'; }).join('');
+
+  var avg = lastDims.reduce(function(a,b){ return a + b.level; }, 0) / lastDims.length;
+  var poison = Math.round(avg / 3 * 100);
+  document.getElementById('rPoison').textContent = poison;
+
+  var heads = ['👀 有个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  var html = '';
+  r.insight.forEach(function(txt, i){
+    if(i === 2){
+      html += '<div class="ins-quote">' + txt + '</div>';
+    }else{
+      html += '<div class="ins-sec"><div class="ins-h"><span class="e">' + heads[i].slice(0,2) + '</span>' + heads[i].slice(2) + '</div>' +
+              '<p class="ins-p">' + txt + '</p></div>';
+    }
+  });
+  document.getElementById('rInsight').innerHTML = html;
+
+  var dimBox = document.getElementById('rDims');
+  dimBox.innerHTML = lastDims.map(function(d){
+    return '<div class="bar-row"><div class="lb"><span>' + d.name + '</span><span>' + d.pct + '%</span></div>' +
+           '<div class="track"><span class="fill" style="width:' + d.pct + '%"></span></div></div>';
+  }).join('');
+}
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = []; cur = 0; renderQ(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQ(); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  answers = []; cur = 0; show('home');
+});
+
+/* ============ 海报 ============ */
+function rr(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '', i, ch;
+  for(i=0;i<text.length;i++){
+    ch = text.charAt(i);
+    if(c.measureText(line + ch).width > maxW && line !== ''){
+      c.fillText(line, x, y);
+      y += lineH;
+      line = ch;
+    }else{
+      line += ch;
+    }
+  }
+  if(line !== ''){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function makePoster(){
+  var r = RESULTS[lastResultCode];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var EMOJI = '"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+  var SF = '"PingFang SC","Microsoft YaHei",sans-serif';
+
+  var g = c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#12100f'); g.addColorStop(0.45,'#241522'); g.addColorStop(1,'#0d0b0f');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  var rg = c.createRadialGradient(360,-60,0,360,-60,560);
+  rg.addColorStop(0,'rgba(255,47,107,.38)'); rg.addColorStop(1,'rgba(255,47,107,0)');
+  c.fillStyle = rg; c.fillRect(0,0,W,H*0.55);
+
+  var rg2 = c.createRadialGradient(700,H,0,700,H,600);
+  rg2.addColorStop(0,'rgba(198,255,74,.12)'); rg2.addColorStop(1,'rgba(198,255,74,0)');
+  c.fillStyle = rg2; c.fillRect(0,H*0.55,W,H*0.45);
+
+  var PAD = 56, CW = W - PAD*2;
+  var y = 0;
+
+  c.textAlign = 'center';
+  y = 96;
+  c.fillStyle = '#9d8794';
+  c.font = '22px ' + SF;
+  c.fillText('我 的 恶 毒 浓 度', W/2, y);
+
+  y = 176;
+  c.font = '44px ' + SF;
+  c.fillStyle = '#ff5c8a';
+  c.fillText('毒值 ' + document.getElementById('rPoison').textContent + ' / 100', W/2, y);
+
+  y = 274;
+  c.font = '96px ' + EMOJI;
+  c.fillText(r.emoji, W/2, y);
+
+  y = 350;
+  c.font = '800 46px ' + SF;
+  c.fillStyle = '#c6ff4a';
+  c.fillText(r.name, W/2, y);
+
+  c.textAlign = 'left';
+  y = 404;
+  c.fillStyle = '#c2a9b7';
+  c.font = '23px ' + SF;
+  y = wrapText(c, r.persona, PAD, y, CW, 34);
+  c.textAlign = 'center';
+
+  // 关键词胶囊
+  y = Math.max(y + 26, 470);
+  var kws = r.kw;
+  c.font = '21px ' + SF;
+  var widths = kws.map(function(k){ return c.measureText(k).width + 34; });
+  var totalW = widths.reduce(function(a,b){return a+b;},0) + 14*(kws.length-1);
+  var kx = (W - totalW) / 2;
+  kws.forEach(function(k, i){
+    c.fillStyle = 'rgba(198,255,74,.10)';
+    rr(c, kx, y - 26, widths[i], 38, 19);
+    c.fill();
+    c.strokeStyle = 'rgba(198,255,74,.35)';
+    c.lineWidth = 1.5;
+    rr(c, kx, y - 26, widths[i], 38, 19);
+    c.stroke();
+    c.fillStyle = '#c6ff4a';
+    c.textAlign = 'center';
+    c.fillText(k, kx + widths[i]/2, y);
+    kx += widths[i] + 14;
+  });
+
+  // 三段解读
+  c.textAlign = 'left';
+  var heads = ['👀  有个画面','🌱  这是这样的你','✨  一句话送给你'];
+  y = Math.max(y + 62, 560);
+  r.insight.forEach(function(txt, i){
+    if(i === 2){
+      c.font = '800 24px ' + SF;
+      c.fillStyle = '#c6ff4a';
+      var qy = wrapText(c, txt, PAD, y + 8, CW, 40);
+      c.fillStyle = 'rgba(198,255,74,.72)';
+      c.fillRect(PAD, y - 30, 4, qy - y + 10);
+      y = qy + 18;
+    }else{
+      c.font = '20px ' + SF;
+      c.fillStyle = '#8d7683';
+      c.fillText(heads[i], PAD, y);
+      y += 36;
+      c.font = '23px ' + SF;
+      c.fillStyle = '#e2d2db';
+      y = wrapText(c, txt, PAD, y, CW, 38);
+      y += 14;
+    }
+  });
+
+  // 六维条
+  y += 18;
+  c.font = '18px ' + SF;
+  c.fillStyle = '#9d8794';
+  c.textAlign = 'left';
+  c.fillText('六 维 毒 型 分 布', PAD, y);
+  y += 30;
+  var barW = CW - 108;
+  lastDims.forEach(function(d){
+    c.font = '20px ' + SF;
+    c.fillStyle = '#c2a9b7';
+    c.fillText(d.name, PAD, y + 14);
+    c.fillStyle = '#2a1e26';
+    rr(c, PAD + 104, y, barW, 12, 6); c.fill();
+    var fg = c.createLinearGradient(PAD + 104, 0, PAD + 104 + barW, 0);
+    fg.addColorStop(0,'#ff2f6b'); fg.addColorStop(1,'#c6ff4a');
+    c.fillStyle = fg;
+    rr(c, PAD + 104, y, Math.max(12, barW * d.pct / 100), 12, 6); c.fill();
+    y += 40;
+  });
+
+  // 引导 + 免责
+  c.textAlign = 'center';
+  y = Math.max(y + 26, H - 96);
+  c.font = '22px ' + SF;
+  c.fillStyle = '#c2a9b7';
+  c.fillText('@ 那个你第一时间想到的人，一起测测', W/2, y);
+  c.font = '16px ' + SF;
+  c.fillStyle = '#6f5b69';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考。', W/2, H - 34);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  var dl = document.getElementById('posterDownload');
+  dl.href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+document.getElementById('posterBtn').addEventListener('click', function(){
+  try{ makePoster(); }catch(e){ toast('海报生成失败，请重试'); }
+});
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+</script>
+</body>
+</html>
