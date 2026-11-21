@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>什么样的美甲更适合你 · 趣味测试</title>
+<style>
+  :root{
+    --pink:#F6B6C4; --pink-deep:#D98A9E; --pink-soft:#FBE1E7;
+    --cream:#FFF8F4; --caramel:#C89A76; --caramel-soft:#F3E5DA;
+    --ink:#4A3B45; --ink-2:#7C6974; --ink-3:#A8929C;
+    --line:#F2E2E7; --shadow-sm:0 4px 18px rgba(217,138,158,.12);
+    --shadow:0 12px 40px rgba(217,138,158,.20);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#FFF3F6 0%,#FFF8F4 45%,#FDF2EA 100%);
+    color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:520px;margin:0 auto;padding:26px 20px 46px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(160deg,rgba(255,243,246,.98),rgba(253,242,234,.98))}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:36px 28px 30px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:44px;margin-bottom:6px;font-family:var(--emoji)}
+  .gate-card h2{font-size:20px;margin:0 0 8px;letter-spacing:.5px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 20px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:13px 12px 13px 22px;border:2px solid var(--pink-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#FFFAFC}
+  #passInput::placeholder{font-size:15px;letter-spacing:1px;color:#C9B4BD;font-weight:600}
+  #passInput:focus{border-color:var(--pink-deep);box-shadow:0 0 0 4px rgba(246,182,196,.18)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--pink-deep);margin:6px 0 10px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:16px 0 0;line-height:1.6}
+
+  /* 通用 */
+  .btn{display:block;width:100%;border:0;border-radius:16px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--pink),var(--pink-deep));
+    box-shadow:0 8px 22px rgba(217,138,158,.24);cursor:pointer;font-family:inherit;margin-top:12px;
+    transition:transform .18s}
+  .btn:active{transform:scale(.98)}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1.5px solid var(--pink-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+    padding:22px 20px;margin-bottom:16px}
+  h1{font-size:27px;line-height:1.38;margin:10px 0 12px;letter-spacing:.3px}
+  h1 .hl{color:var(--pink-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--pink-deep);
+    background:var(--pink-soft);padding:5px 12px;border-radius:999px;letter-spacing:.4px}
+  .lead{font-size:14.5px;color:var(--ink-2);line-height:1.85;margin:0 0 6px}
+  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 4px}
+  .chip{font-size:12.5px;color:var(--ink-2);background:#FFF4F7;border:1px solid var(--line);
+    padding:5px 11px;border-radius:999px}
+  .progress-track{height:8px;background:var(--pink-soft);border-radius:99px;overflow:hidden;margin:2px 0 10px}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--pink),var(--pink-deep));transition:width .5s ease}
+  .qhead{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:var(--ink-3)}
+  #qTitle{font-size:18px;line-height:1.65;margin:16px 0 18px;font-weight:800}
+  .option{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;border:1.5px solid var(--line);
+    border-radius:15px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;
+    font-size:14.5px;line-height:1.6;color:var(--ink)}
+  .option:hover{transform:translateY(-2px);border-color:var(--pink-soft);background:#FFFCFD}
+  .option.on{border-color:var(--pink-deep);background:#FFF5F8}
+  .opt-tag{flex:0 0 24px;height:24px;border-radius:50%;background:#FFF0F4;color:var(--pink-deep);
+    font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .option.on .opt-tag{background:var(--pink-deep);color:#fff}
+  .type-emoji{font-size:52px;line-height:1;margin-bottom:6px;font-family:var(--emoji)}
+  .rname{font-size:25px;font-weight:800;margin:0 0 8px;letter-spacing:.5px}
+  .kw{display:inline-block;font-size:12px;color:var(--pink-deep);background:var(--pink-soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .sec-h{font-size:13px;font-weight:800;color:var(--pink-deep);letter-spacing:1px;margin:20px 0 8px}
+  .insight p{margin:0 0 8px;font-size:14.5px;line-height:1.9;color:var(--ink)}
+  .insight p:first-child{margin-top:0}
+  .insight .lbl{font-weight:800;color:var(--ink-2);margin-right:4px}
+  .quote{background:linear-gradient(135deg,#FFF4F7,#FDF1E9);border-left:3px solid var(--pink-deep);
+    border-radius:0 12px 12px 0;padding:13px 15px;font-size:15px;font-weight:800;line-height:1.75;
+    color:#8E4C60;margin:10px 0 0}
+  .row{display:flex;gap:12px;padding:11px 0;border-top:1px dashed var(--line);font-size:14px;line-height:1.75}
+  .row-k{flex:0 0 52px;color:var(--ink-3);font-size:12.5px;padding-top:2px}
+  .row-v{flex:1;color:var(--ink)}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(74,59,69,.62);
+    align-items:center;justify-content:center;padding:18px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:14px;max-width:420px;width:100%;
+    text-align:center;max-height:92vh;overflow:auto}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(74,59,69,.94);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～<br>12 道题，约 2 分钟，测出长在你手上的那套甲。</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">✨ 美甲风格 · 趣味测试</span>
+    <h1>什么样的美甲<br><span class="hl">更适合你</span></h1>
+    <p class="lead">不用再在色卡前站二十分钟。12 道生活场景题，测出"长在你手上"的那套甲——甜软、净透、浓郁，还是玩趣。</p>
+    <div class="meta">
+      <span class="chip">12 道题</span>
+      <span class="chip">约 2 分钟</span>
+      <span class="chip">12 种结果</span>
+      <span class="chip">可保存海报</span>
+    </div>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <div class="card" style="margin-top:20px">
+      <div class="sec-h" style="margin-top:0">你会得到</div>
+      <div class="row" style="border-top:0;padding-top:2px"><div class="row-k">风格</div><div class="row-v">属于你的那套甲，配上甲型、配色与场合</div></div>
+      <div class="row"><div class="row-k">解读</div><div class="row-v">一个画面、一层性格、一句话送给你</div></div>
+      <div class="row"><div class="row-k">海报</div><div class="row-v">竖版结果卡，直接截图给美甲师看</div></div>
+    </div>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果仅供娱乐与审美参考。</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <div class="qhead"><span id="qIndex">第 1 / 12 题</span><span id="qPct">8%</span></div>
+    <div class="card" style="margin-top:12px">
+      <div class="type-emoji" style="font-size:26px;margin-bottom:2px" id="qEmoji">💅</div>
+      <h2 id="qTitle">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="view">
+    <div class="card">
+      <div class="type-emoji" id="rEmoji">💅</div>
+      <h2 class="rname" id="rName">结果类型</h2>
+      <p class="lead" id="rPersona" style="margin-bottom:10px">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div class="sec-h">你的甲，是这样</div>
+      <div id="rStyle"></div>
+      <div class="sec-h">读懂你</div>
+      <div class="insight" id="rInsight"></div>
+      <div class="quote" id="rQuote"></div>
+      <div class="sec-h">同款场景 · 适配关系</div>
+      <div class="row" style="border-top:0;padding-top:0"><div class="row-k">场景</div><div class="row-v" id="rScene"></div></div>
+      <div class="row"><div class="row-k">合拍</div><div class="row-v" id="rMatch"></div></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐与审美参考，不构成任何专业建议。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的美甲风格海报.png">⬇️ 保存图片（手机可长按）</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "7426"; // ← 4 位数字口令，改这一行即可
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+  document.getElementById('gateMsg').classList.remove('on');
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 数据 ============ */
+var DIMS = {
+  A:{key:'A', name:'甜软系', desc:'把温柔做成颜色'},
+  B:{key:'B', name:'净透系', desc:'干净就是社交礼仪'},
+  C:{key:'C', name:'浓郁系', desc:'光藏在深处'},
+  D:{key:'D', name:'玩趣系', desc:'把日子过成彩色'}
+};
+
+var QUESTIONS = [
+  {emoji:'🎨', text:'走进美甲店，色卡摊开在你面前，你先被哪一排吸引？', options:[
+    {c:'A1', t:'奶白里透一点草莓粉，像化了一半的草莓牛奶'},
+    {c:'B2', t:'燕麦、奶咖、灰粉，说不清名字的那一类'},
+    {c:'C3', t:'深到发黑的紫棕，表面撒一层细碎的光'},
+    {c:'D1', t:'两边颜色不一样，荧光粉配亮橘'}
+  ]},
+  {emoji:'✋', text:'指甲表面你想要什么“手感”？', options:[
+    {c:'D3', t:'冷硬的镜面，能照出人影'},
+    {c:'A2', t:'果冻一样软，按一下会陷进去'},
+    {c:'B3', t:'光滑透明，像什么都没涂'},
+    {c:'C1', t:'厚实有重量感，像上过油的老木器'}
+  ]},
+  {emoji:'✨', text:'如果指甲上只能留一个装饰，你选哪个？', options:[
+    {c:'C2', t:'一束流动的光，像含在琥珀里'},
+    {c:'D2', t:'指甲尖端一排小小的花'},
+    {c:'A3', t:'揉开的一团浅紫和奶白，边界模糊'},
+    {c:'B1', t:'什么都不加，只在光下有一点珠光的呼吸'}
+  ]},
+  {emoji:'💅', text:'甲型你更愿意留？', options:[
+    {c:'B2', t:'短短的、圆圆的，边缘磨得很平'},
+    {c:'C3', t:'略方，有棱角，长度到能敲桌子'},
+    {c:'D1', t:'短方甲，方便我涂成一格一格'},
+    {c:'A1', t:'椭圆偏尖，显得手指又长又软'}
+  ]},
+  {emoji:'💌', text:'约会那天，你想让指甲替你说什么？', options:[
+    {c:'A2', t:'“我今天很开心，别问我为什么”'},
+    {c:'B3', t:'“我不用解释，你看着舒服就行”'},
+    {c:'C1', t:'“我记得很多事，也懒得说”'},
+    {c:'D3', t:'“别靠太近”'}
+  ]},
+  {emoji:'👀', text:'手一伸出来，你希望别人先注意到什么？', options:[
+    {c:'D2', t:'细节，凑近才发现的小心思'},
+    {c:'A3', t:'整体的软，像一团雾'},
+    {c:'B1', t:'干净，手指本身的形状'},
+    {c:'C2', t:'颜色，深得让人想多看两眼'}
+  ]},
+  {emoji:'🧾', text:'做一套甲，你最在意哪一点？', options:[
+    {c:'C3', t:'耐用，一周后还是干净的'},
+    {c:'D1', t:'一眼有记忆点'},
+    {c:'A1', t:'显白显嫩'},
+    {c:'B2', t:'低调，跟我的手不打架'}
+  ]},
+  {emoji:'🍂', text:'换季了，你会怎么换手上的颜色？', options:[
+    {c:'B3', t:'换一个更淡的色号，别人几乎看不出'},
+    {c:'C1', t:'换更沉的色，天一冷就该压得住'},
+    {c:'D3', t:'换冷调，越冷越有精神'},
+    {c:'A2', t:'换更甜的果色，天一凉就想暖一点'}
+  ]},
+  {emoji:'📷', text:'朋友圈发手部特写，你挑哪一张？', options:[
+    {c:'A3', t:'阳光斜进来，指甲边上一圈毛茸茸的光'},
+    {c:'B1', t:'白墙前，手自然垂着，什么都没修'},
+    {c:'C2', t:'咖啡杯旁边，深色指甲衬着杯沿'},
+    {c:'D2', t:'花店门口，指甲和花瓣一起出镜'}
+  ]},
+  {emoji:'🖊️', text:'给你一支笔，在甲面上画一笔，你画什么？', options:[
+    {c:'D1', t:'一个圆点，然后再点一排'},
+    {c:'A1', t:'一颗歪歪的小爱心'},
+    {c:'B2', t:'什么都不画，留白'},
+    {c:'C3', t:'一道细线，从头划到尾'}
+  ]},
+  {emoji:'📍', text:'你这套甲，最想出现在哪里？', options:[
+    {c:'C1', t:'老式咖啡馆的深色木桌'},
+    {c:'D3', t:'夜里商场冷白的灯下'},
+    {c:'A2', t:'甜品店，面前一杯粉色的东西'},
+    {c:'B3', t:'会议室、地铁，任何没有装饰的地方'}
+  ]},
+  {emoji:'🚪', text:'做完指甲走出店门，你最想做的事？', options:[
+    {c:'B1', t:'把手放在方向盘上，看它在自然光里的样子'},
+    {c:'C2', t:'顺手拍一张，配一句没什么意义的话'},
+    {c:'D2', t:'立刻去买一杯花里胡哨的饮料'},
+    {c:'A3', t:'什么也不做，回家，手指在被子上蹭一蹭'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{name:'奶莓团子', emoji:'🍓', dim:'A', persona:'把温柔磨成了圆边',
+    kws:['软糯','显白','不争抢'],
+    style:['短圆甲','奶白打底、草莓粉渐变','通勤、见朋友'],
+    scene:'早八的地铁里，自己低头看一眼手指',
+    match:'最合：云朵软糖｜最容易被你嫌：黑曜碎光',
+    insight:[
+      '你去做指甲从来不做决定，先把手指伸过去：“你看着办，别太夸张。”最后选的永远是奶白里透一点草莓粉的那支。做完你不急着走，把手翻过来，在店里那盏顶灯下看三遍，出了门又在玻璃橱窗的反光里再看一遍。',
+      '你要的不是“被看见”，是“被喜欢”。软、圆、留一点白的粉，是你对世界的态度：不抢、不吵，但一定让人想靠近。你对温度很敏感，别人一句话的语气，你能记一整天；你也清楚，自己难看的脸只有最亲的人见过。',
+      '温柔不是没有棱角，是你把棱角都磨成了圆边。'
+    ]},
+  A2:{name:'蜜桃果冻', emoji:'🍑', dim:'A', persona:'情绪写在颜色上',
+    kws:['鲜活','果感','直给'],
+    style:['椭圆甲','蜜桃橘粉果冻胶加细闪','约会、拍照'],
+    scene:'甜品店窗边的午后，光穿过杯子落在手上',
+    match:'最合：奶莓团子｜最容易被你嫌：一线留白',
+    insight:[
+      '你的心情是写在手上的。今天开心，就换蜜桃橘粉；今天烦，就换成更橘一点的蜜桃橘粉。做完那套果冻胶，你会在奶茶店排队时把手举起来，让光穿过指甲，看里面那点细闪怎么动；被隔壁的人多看一眼，你也不心虚。',
+      '你情绪直给，不擅长憋着，也不喜欢别人猜。开心就笑出声，不爽会当场沉下脸，但气消得也快。你要的从来不是“高级”，是“活着的感觉”——颜色甜一点、亮一点，你才觉得今天没白过。你活得比大多数人都坦荡。',
+      '你今天开心，就有权让所有人都知道。'
+    ]},
+  A3:{name:'云朵软糖', emoji:'🧁', dim:'A', persona:'边界模糊，心很清醒',
+    kws:['柔雾','幻想','好相处'],
+    style:['短圆或杏仁甲','奶白晕染浅紫浅蓝','周末、度假'],
+    scene:'阳光斜进来的下午，窗外的云在飘',
+    match:'最合：奶咖雾面｜最容易被你嫌：金属冷调',
+    insight:[
+      '你说不清自己想要什么颜色，只能说“要那种，很轻的”。最后落在奶白揉了浅紫和浅蓝的晕染上，边界是糊的，像被水泡过的糖。你把十根手指排开，去找哪一根的颜色最淡。你会盯着它发呆，觉得它像某天下午窗外的云；店员说这叫晕染，你说不像，像天气。',
+      '你看起来最好说话，其实心里有一整套自己的秩序。别人以为你没主意，你只是懒得争；真到要紧的事，你比谁都清醒。你擅长把尖锐的东西包一层软的，这不是软弱，是技术——很多人一辈子都学不会，你早就学会了。',
+      '你软，但不是谁都能捏的。'
+    ]},
+  B1:{name:'月白裸杏', emoji:'🌙', dim:'B', persona:'干净是你的社交礼仪',
+    kws:['克制','高级','有距离'],
+    style:['方圆形中长甲','裸杏珠光、微法式','面试、见家长'],
+    scene:'白墙前，手自然垂着，什么都没修',
+    match:'最合：一线留白｜最容易被你嫌：波点糖果',
+    insight:[
+      '你只伸出一根手指，说“就这种，看不出来做过的那种”。裸杏色加一点珠光，做完同事问你今天是不是没做，你说做了，她凑近看三秒才点头。你把手收回来，心里那口气才放下——对了，就是这种刚好的程度。',
+      '你的体面是内置的。你不需要靠颜色说话，你相信干净本身就是一种表达。你不太解释自己，也不太参与热闹，但你在的场合，秩序会莫名好起来。你怕的不是不好看，是不得体；这两件事在你这，从来不是一回事。',
+      '你什么都没说，但没人敢轻看你。'
+    ]},
+  B2:{name:'奶咖雾面', emoji:'☕', dim:'B', persona:'低调得刚刚好',
+    kws:['稳','耐看','不解释'],
+    style:['短方甲','燕麦奶咖雾面封层','办公室、秋冬'],
+    scene:'写字楼午休的电梯里，指尖跟袖口一个颜色',
+    match:'最合：云朵软糖｜最容易被你嫌：黑曜碎光',
+    insight:[
+      '你在色卡上挑了最不起眼的那一格，燕麦色，雾面的。做完你把手放在桌上，看它跟毛衣袖口的颜色几乎一样，心里就踏实了。你不喜欢指甲比你先说话，也不喜欢别人先注意你的手，再抬头看你这个人。做完你还会特意把袖口拉长一点，让颜色只露出一点点。',
+      '你是那种“看起来很好相处，其实标准很高”的人。你能把情绪收得很稳，把场面处理得很平，别人以为你没什么主张，其实你早就筛过一遍了。你讨厌夸张，也讨厌敷衍，这两种东西在你眼里是同一种不认真。',
+      '不发光的东西，反而最经得住看。'
+    ]},
+  B3:{name:'一线留白', emoji:'🤍', dim:'B', persona:'少即是你的态度',
+    kws:['极简','利落','审美自洽'],
+    style:['中长椭圆','透明底加一条极细银线','极简穿搭、看展'],
+    scene:'美术馆白墙前的长椅，手放在膝上',
+    match:'最合：月白裸杏｜最容易被你嫌：法式小花',
+    insight:[
+      '你只要一条线。透明的底，一根极细的银线，从甲根划到甲尖，别的什么都不要。美甲师问要不要加点钻，你说不用。她说这种最难做，一笔歪了就得重来，你听完点了点头，觉得这才合理。做完你会把手举到白墙前，看那条线在光里断了一下又续上，然后觉得这一整天的杂音都退下去了。',
+      '你的审美先于你的语言。你说不出为什么好看，但你知道什么不对。你能在一堆热闹里精准挑出那个“多余”的部分，然后删掉。你不是冷淡，你只是不允许自己将就；将就这件事，比孤独更让你难受。',
+      '你留下的空白，比谁都满。'
+    ]},
+  C1:{name:'砖红旧梦', emoji:'🧱', dim:'C', persona:'你身上有旧时代的骨相',
+    kws:['复古','压场','有故事'],
+    style:['短方甲','砖红棕哑光','秋冬、复古穿搭'],
+    scene:'老式咖啡馆的深色木桌，一杯没加糖的咖啡',
+    match:'最合：琥珀含光｜最容易被你嫌：奶莓团子',
+    insight:[
+      '你不要粉，不要裸，你要那种“深到发棕”的红。做完是哑光的，厚实，像上过油的老木器。你会挑一个下午，穿深色毛衣，坐在老式咖啡馆里，把手放在深色木桌上，什么都不干，就看着光从窗子那边一点点挪过来。',
+      '你身上有旧时代的骨相。你偏爱有时间感的东西：老歌、旧书、用出包浆的物件。你不追新，因为你知道什么经得住。你说话慢，但一句算一句；你不轻易表态，表了就不会改。你身上有一种年轻人少有的定。',
+      '时间是你的化妆师，不是你的敌人。'
+    ]},
+  C2:{name:'琥珀含光', emoji:'🍯', dim:'C', persona:'把光藏在深处',
+    kws:['氛围','温吞','耐品'],
+    style:['中长杏仁甲','焦糖猫眼琥珀','咖啡馆、晚餐'],
+    scene:'暖光下的玻璃杯旁，光从甲根滑到甲尖',
+    match:'最合：砖红旧梦｜最容易被你嫌：一线留白',
+    insight:[
+      '你选的是焦糖猫眼，光被吸在里面，随角度慢慢移。你会在灯下反复转手腕，看那束光从甲根滑到甲尖。旁边的人问你在看什么，你说没什么，然后又转了一次手腕。你说不清为什么喜欢，只知道别的颜色在你手上，都像借来的。',
+      '你的好看是耐看型的，第一眼不炸，越看越有东西。你不急着让别人懂你，你相信时间会替你说。你有点慢热，但一旦认了，就很难改。你喜欢的从来不是“亮”，是“深”；浅的东西来得快，也去得快。',
+      '你不是不亮，你只是不轻易亮。'
+    ]},
+  C3:{name:'黑曜碎光', emoji:'🖤', dim:'C', persona:'礼貌，但不好惹',
+    kws:['冷艳','界限感','反差'],
+    style:['略方长甲','深紫棕底加碎钻点缀','夜晚、派对'],
+    scene:'夜里商场冷白的灯下，几颗钻自己亮起来',
+    match:'最合：金属冷调｜最容易被你嫌：云朵软糖',
+    insight:[
+      '你选了深紫棕打底，在上面点几颗碎钻，不多不少。做完你伸出手，别人第一反应是“有点凶”，第二反应是“好看”。你会挑夜里出门，商场冷白的灯下，那几颗钻会自己亮起来，像有人在替你说话。别人问起这套甲，你只说“习惯了”，然后把话题岔开。',
+      '你礼貌，但你有界线。你可以笑着说没关系，同时在心里把这个人归了类。你不喜欢被靠近得太快，也不喜欢被当成好欺负。你的温柔是有门槛的，跨过去的人不多，但都留得很久；你把筛选做得安静，不伤人。',
+      '你的温柔要预约，不是谁都配。'
+    ]},
+  D1:{name:'波点糖果', emoji:'🍬', dim:'D', persona:'把日子过成彩色的',
+    kws:['跳脱','记忆点','会玩'],
+    style:['短方甲','撞色波点','音乐节、市集'],
+    scene:'夜市摊前的塑料凳，十根手指伸开拍照',
+    match:'最合：法式小花｜最容易被你嫌：月白裸杏',
+    insight:[
+      '你要撞色。荧光粉配亮橘，一格一格地点上去，短方甲，像小时候水果糖的包装纸。做完你会伸开十根手指拍照，拍完立刻发出去，配一句“今天心情是橘子味的”。有人评论说太艳，你回一句“对，就是艳”。',
+      '你是把日子过成彩色的人。你不怕显眼，你怕无聊。你的能量高，恢复也快，摔一跤能自己笑出来。别人觉得你闹，其实你只是不愿意把生活过成灰色。你身上有种很少见的、不怕被看见的天真，这种东西比审美贵。',
+      '你的快乐不需要配色方案。'
+    ]},
+  D2:{name:'法式小花', emoji:'🌸', dim:'D', persona:'心思都藏在细节里',
+    kws:['细腻','甜野','有分寸'],
+    style:['短圆甲','奶白法式边加小碎花','春游、花店'],
+    scene:'花店门口的石阶，指甲和花瓣一起出镜',
+    match:'最合：波点糖果｜最容易被你嫌：黑曜碎光',
+    insight:[
+      '你要法式边，然后在边上加一排很小的花。别人不凑近看不出来，凑近了会“哇”一声。你不解释，只把手伸出去让她看，等她问“这是画的还是贴的”，你才慢慢说“手绘的，做了快两个小时”。做完你会把手放在包带上，走两步看一眼，遇到镜子也要停一下。',
+      '你的心思都在细节里。你不喊，但你什么都准备了：礼物会包装，消息会回得刚好，连生气都挑场合。你甜，但甜得有分寸；你野，也只在安全的地方野。你要的不多，只要有人真的看见，并且愿意多看一眼。',
+      '你从不喊，但总被看见。'
+    ]},
+  D3:{name:'冷调镜面', emoji:'💎', dim:'D', persona:'别靠太近，会照见你',
+    kws:['冷调','锋利','未来感'],
+    style:['中长方甲','银灰冷紫镜面加金属线','看展、夜场'],
+    scene:'商场冷白光下的玻璃门前，指甲里跑过一排灯',
+    match:'最合：黑曜碎光｜最容易被你嫌：蜜桃果冻',
+    insight:[
+      '你要银灰，要镜面，要一条冷的金属线。做完手一伸出去，能照见对面人的脸。你会挑夜里出门，在商场玻璃门前站一下，看指甲里的灯一排排过去。有人问你不觉得太冷吗，你说正好，我本来也不热。你不喜欢被追问“为什么做这么冷”，那问题本身就很热。',
+      '你有很强的自我边界，也有很强的审美主张。你不喜欢解释，因为解释会削弱锋利。你对“被喜欢”没什么执念，你更在意“被记住”。你冷，但你冷得干净，不阴阳、不迁怒；这一点，很多人一辈子学不来。',
+      '你不需要被喜欢，你只需要被记住。'
+    ]}
+};
+
+/* ============ 计分 ============ */
+var answers = [];
+var cur = 0;
+
+function resolve(){
+  var scores = {};
+  answers.forEach(function(c){ scores[c] = (scores[c]||0) + 1; });
+  var best = 0, top = [];
+  Object.keys(scores).forEach(function(k){
+    if(scores[k] > best){ best = scores[k]; top = [k]; }
+    else if(scores[k] === best){ top.push(k); }
+  });
+  if(top.length > 1){
+    // 倒序回溯：最后一题所选中，属于并列集合者胜出
+    for(var i = answers.length - 1; i >= 0; i--){
+      if(top.indexOf(answers[i]) > -1) return answers[i];
+    }
+    top.sort();
+    return top[0];
+  }
+  return top[0];
+}
+
+/* ============ 渲染 ============ */
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qEmoji').textContent = q.emoji;
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('qPct').textContent = Math.round((cur)/QUESTIONS.length*100) + '%';
+  document.getElementById('progressFill').style.width = ((cur)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = q.text;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  var tags = ['A','B','C','D'];
+  q.options.forEach(function(o, i){
+    var el = document.createElement('div');
+    el.className = 'option' + (answers[cur] === o.c ? ' on' : '');
+    el.innerHTML = '<span class="opt-tag">' + tags[i] + '</span><span>' + o.t + '</span>';
+    el.addEventListener('click', function(){
+      answers[cur] = o.c;
+      answers.length = cur + 1;
+      if(cur < QUESTIONS.length - 1){ cur++; renderQ(); }
+      else { showResult(); }
+    });
+    box.appendChild(el);
+  });
+  document.getElementById('backBtn').style.display = cur === 0 ? 'none' : 'block';
+}
+
+function showResult(){
+  var code = resolve();
+  var r = RESULTS[code];
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  document.getElementById('rKeywords').innerHTML = r.kws.map(function(k){
+    return '<span class="kw">' + k + '</span>';
+  }).join('');
+  var rows = [
+    ['甲型', r.style[0]], ['配色', r.style[1]], ['场合', r.style[2]]
+  ];
+  document.getElementById('rStyle').innerHTML = rows.map(function(x){
+    return '<div class="row"><div class="row-k">' + x[0] + '</div><div class="row-v">' + x[1] + '</div></div>';
+  }).join('');
+  document.getElementById('rInsight').innerHTML =
+    '<p><span class="lbl">👀</span>' + r.insight[0] + '</p>' +
+    '<p><span class="lbl">🌱</span>' + r.insight[1] + '</p>';
+  document.getElementById('rQuote').textContent = '✨ ' + r.insight[2];
+  document.getElementById('rScene').textContent = r.scene;
+  document.getElementById('rMatch').textContent = r.match;
+  window.__code = code;
+  document.getElementById('posterDownload').removeAttribute('href');
+  show('result');
+}
+
+/* ============ 海报 ============ */
+function rr(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x+r, y); c.arcTo(x+w, y, x+w, y+h, r); c.arcTo(x+w, y+h, x, y+h, r);
+  c.arcTo(x, y+h, x, y, r); c.arcTo(x, y, x+w, y, r); c.closePath();
+}
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '', lines = [];
+  for(var i=0;i<text.length;i++){
+    var test = line + text[i];
+    if(c.measureText(test).width > maxW && line){ lines.push(line); line = text[i]; }
+    else line = test;
+  }
+  if(line) lines.push(line);
+  lines.forEach(function(l, i){
+    c.fillText(l, x, y + i*lineH);
+  });
+  return y + lines.length * lineH;
+}
+
+function textBlock(c, r, tx, tw, y){
+  c.textAlign = 'left';
+  // 甲型/配色/场合
+  c.fillStyle = '#D98A9E'; c.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('你的甲', tx, y); y += 34;
+  c.fillStyle = '#4A3B45'; c.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+  y = wrapText(c, '甲型：' + r.style[0] + '　配色：' + r.style[1], tx, y, tw, 34);
+  y = wrapText(c, '场合：' + r.style[2], tx, y, tw, 34);
+  y += 14;
+  c.strokeStyle = '#F2E2E7'; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(tx, y); c.lineTo(tx + tw, y); c.stroke();
+  y += 38;
+
+  // 三段
+  var labels = ['👀', '🌱', '✨'];
+  var emojiFont = '26px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  for(var i = 0; i < 3; i++){
+    c.font = emojiFont; c.fillStyle = '#B0788C';
+    c.fillText(labels[i], tx, y + 2);
+    c.fillStyle = i === 2 ? '#B0566E' : '#4A3B45';
+    c.font = (i === 2 ? '700 ' : '') + '21px "PingFang SC","Microsoft YaHei",sans-serif';
+    y = wrapText(c, r.insight[i], tx + 34, y, tw - 34, 34);
+    y += 12;
+  }
+
+  // 同款场景
+  c.fillStyle = '#A8929C'; c.font = '19px "PingFang SC","Microsoft YaHei",sans-serif';
+  y = wrapText(c, '同款场景：' + r.scene, tx, y, tw, 30);
+  return y;
+}
+
+function buildPoster(){
+  var code = window.__code || 'A1';
+  var r = RESULTS[code];
+  var W = 750, PAD = 60, CW = W - PAD*2, cardY = 470, tx = PAD + 10, tw = CW - 20;
+
+  // 先量一遍，按文案长度动态定画布高度
+  var scratch = document.createElement('canvas');
+  scratch.width = W; scratch.height = 2400;
+  var s = scratch.getContext('2d');
+  var contentEnd = textBlock(s, r, tx, tw, cardY + 56);
+  var cardH = Math.max(320, Math.round(contentEnd - cardY + 46));
+  var cardBottom = cardY + cardH;
+  var H = cardBottom + 200;
+
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+
+  var g = c.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#FFF0F4'); g.addColorStop(.45, '#FFF7F2'); g.addColorStop(1, '#FDF0E6');
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+
+  // 装饰
+  c.fillStyle = 'rgba(246,182,196,.28)';
+  c.beginPath(); c.arc(640, 90, 120, 0, Math.PI*2); c.fill();
+  c.fillStyle = 'rgba(200,154,118,.16)';
+  c.beginPath(); c.arc(90, H - 110, 150, 0, Math.PI*2); c.fill();
+
+  c.textAlign = 'center';
+  c.fillStyle = '#B0788C';
+  c.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('我的美甲风格 · 趣味测试', W/2, 92);
+
+  c.font = '96px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.fillText(r.emoji, W/2, 210);
+
+  c.fillStyle = '#C0808F';
+  c.font = '19px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('「' + DIMS[r.dim].name + '」· ' + DIMS[r.dim].desc, W/2, 258);
+
+  c.fillStyle = '#4A3B45';
+  c.font = '800 54px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(r.name, W/2, 330);
+
+  c.fillStyle = '#7C6974';
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(r.persona, W/2, 374);
+
+  // 关键词胶囊
+  var kwW = [];
+  c.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+  r.kws.forEach(function(k){ kwW.push(c.measureText(k).width + 40); });
+  var total = kwW.reduce(function(a,b){return a+b;},0) + 14*(kwW.length-1);
+  var kx = (W - total)/2, ky = 400;
+  r.kws.forEach(function(k, i){
+    c.fillStyle = '#FBE1E7';
+    rr(c, kx, ky, kwW[i], 42, 21); c.fill();
+    c.fillStyle = '#B0788C'; c.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(k, kx + kwW[i]/2, ky + 29);
+    kx += kwW[i] + 14;
+  });
+
+  // 白卡片
+  c.fillStyle = 'rgba(255,255,255,.94)';
+  rr(c, PAD-14, cardY, CW+28, cardH, 28); c.fill();
+  c.strokeStyle = '#F2E2E7'; c.lineWidth = 2; c.stroke();
+
+  textBlock(c, r, tx, tw, cardY + 56);
+
+  // 引导
+  c.textAlign = 'center';
+  c.fillStyle = '#D98A9E'; c.font = '700 24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('@那个陪你做指甲的人，一起测测', W/2, cardBottom + 84);
+
+  c.fillStyle = '#A8929C'; c.font = '17px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐与审美参考', W/2, cardBottom + 134);
+  c.fillText('不构成任何专业建议', W/2, cardBottom + 162);
+
+  var url = cv.toDataURL('image/png');
+  document.getElementById('posterImg').setAttribute('src', url);
+  var dl = document.getElementById('posterDownload');
+  dl.setAttribute('href', url);
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 事件 ============ */
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = []; cur = 0; renderQ(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQ(); }
+});
+document.getElementById('posterBtn').addEventListener('click', buildPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  answers = []; cur = 0; show('home');
+});
+</script>
+</body>
+</html>
