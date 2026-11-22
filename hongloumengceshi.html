@@ -340,7 +340,7 @@ function renderQ(){
   var q = QUESTIONS[cur];
   document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
   document.getElementById('qHint').textContent = cur < QUESTIONS.length-1 ? '凭第一反应选' : '最后一题啦';
-  document.getElementById('qTitle').textContent = q.t;
+  document.getElementById('qTitle').textContent = q.title;
   document.getElementById('progressFill').style.width = ((cur+1)/QUESTIONS.length*100) + '%';
   var box = document.getElementById('options');
   box.innerHTML = '';
