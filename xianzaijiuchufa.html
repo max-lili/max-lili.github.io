@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你会是《现在就出发》里的谁</title>
+<style>
+  :root{
+    --orange:#F7B267; --orange-deep:#E8893A; --red:#E8736A;
+    --blue:#7FA8C9; --green:#8FCB9B;
+    --cream:#FFF6EC; --ink:#3A322E; --ink-2:#7C6A60; --ink-3:#B5A49A;
+    --line:#F3E4D6; --soft:#FCEBD8;
+    --shadow-sm:0 4px 18px rgba(232,137,58,.14);
+    --shadow:0 12px 40px rgba(232,137,58,.20);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#FFF6EC,#FDEFE0);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(255,246,236,.97),rgba(253,239,224,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#fffaf4}
+  #passInput:focus{border-color:var(--orange);box-shadow:0 0 0 4px rgba(247,178,103,.18)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--red);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--orange),var(--orange-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn.ghost{background:#fff;color:var(--orange-deep);border:1.5px solid var(--soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:27px;line-height:1.3;margin:6px 0 14px}
+  h1 .hl{color:var(--orange-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--orange-deep);
+    background:var(--soft);padding:4px 11px;border-radius:999px}
+  .progress-track{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:14px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--orange),var(--orange-deep));transition:width .5s ease}
+  .option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s}
+  .option:hover{transform:translateY(-2px);border-color:var(--soft)}
+  .option.on{border-color:var(--orange);background:#fff7ee}
+  .opt-key{flex:none;width:28px;height:28px;border-radius:50%;background:var(--soft);color:var(--orange-deep);
+    font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .opt-text{font-size:15px;line-height:1.5}
+  .type-emoji{font-size:56px;line-height:1;margin-bottom:8px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--orange-deep);background:var(--soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.6;text-align:center;margin-top:24px}
+  .cover-art{width:100%;height:auto;border-radius:20px;margin-bottom:16px}
+  .result-art{width:100%;max-width:240px;height:auto;margin:0 auto 10px;display:block}
+  .insight-p{font-size:14.5px;line-height:1.75;color:var(--ink);margin:12px 0}
+  .insight-p .tag{font-family:var(--emoji);margin-right:6px}
+  .gold{font-size:16px;font-weight:800;color:var(--orange-deep);background:var(--soft);
+    border-radius:14px;padding:14px 16px;line-height:1.7;margin:14px 0}
+  .meta-row{font-size:13px;color:var(--ink-2);line-height:1.7;margin:8px 0}
+  .meta-row b{color:var(--ink)}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(58,50,46,.6);
+    align-items:center;justify-content:center;padding:20px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:16px;max-width:400px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(58,50,46,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <div id="homeArt"></div>
+    <span class="eyebrow">✨ 趣味娱乐测试</span>
+    <h1>你会是《现在就出发》<br>里的<span class="hl">哪一位</span>？</h1>
+    <p class="gsub">8 道旅行相处场景题，测出你在第四季出发家族里的人格担当：喜剧大哥、显眼包、脑力派还是温柔贴心？凭第一直觉选就行。</p>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考。</p>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="gsub">第 1 / 8 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin-top:0;font-size:19px;line-height:1.5">题干</h2>
+      <div id="options"><!-- 选项由 JS 渲染 --></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div id="rArt"></div>
+      <div class="type-emoji" id="rEmoji">🎀</div>
+      <h2 id="rName" style="margin:0 0 6px">结果类型</h2>
+      <p class="gsub" id="rPersona">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div class="meta-row" id="rScene"></div>
+      <div id="rInsight"></div>
+      <div class="meta-row" id="rMatch"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的出发家族人格海报.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "2612"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 数据区 ============ */
+var DIMS = {
+  A:'松弛幽默', B:'热闹外放', C:'清醒内敛', D:'温柔共情'
+};
+
+var QUESTIONS = [
+  { title:'周末朋友突然约你出门，你的第一反应是？', options:[
+    {key:'A', code:'A1', text:'嘴上瘫着吐槽"能不能别折腾"，结果还是第一个到场'},
+    {key:'B', code:'A2', text:'乐呵呵张罗全场，谁落单就拉谁一把'},
+    {key:'C', code:'B1', text:'哪里热闹往哪冲，自我介绍先搞怪一遍'},
+    {key:'D', code:'B2', text:'拎包带队开路，有体力也有担当'}
+  ]},
+  { title:'一群人长途相处，你最让人放心的一点是？', options:[
+    {key:'A', code:'C1', text:'脑子转得快，游戏规则一眼看透'},
+    {key:'B', code:'C2', text:'漂亮但不端着，天然呆得很讨喜'},
+    {key:'C', code:'D1', text:'直来直去，喜欢就大声说出来'},
+    {key:'D', code:'D2', text:'默默记住每个人的忌口和小习惯'}
+  ]},
+  { title:'团队里出了点小状况，你通常会？', options:[
+    {key:'A', code:'B1', text:'跟着起哄玩梗，先把气氛稳住'},
+    {key:'B', code:'B2', text:'说干就干，困难当前先上再说'},
+    {key:'C', code:'C1', text:'冷静复盘，找出问题出在哪'},
+    {key:'D', code:'C2', text:'外表松弛，偶尔慢半拍反而萌翻全场'}
+  ]},
+  { title:'团队里有新人加入，你会？', options:[
+    {key:'A', code:'D1', text:'直白真诚，主动上前搭话'},
+    {key:'B', code:'D2', text:'照顾新人，温和有耐心'},
+    {key:'C', code:'A1', text:'玩笑不断，是团队的开心果'},
+    {key:'D', code:'A2', text:'憨厚实在，答应的事一定办到'}
+  ]},
+  { title:'被大家一起调侃时，你会？', options:[
+    {key:'A', code:'A2', text:'宽厚不恼，还顺手帮对方圆场'},
+    {key:'B', code:'B2', text:'干脆利落，不往心里去'},
+    {key:'C', code:'C2', text:'反应慢半拍，常常语出惊人'},
+    {key:'D', code:'D2', text:'细心观察，谁情绪不对就悄悄照顾'}
+  ]},
+  { title:'玩团队游戏时，你的画风是？', options:[
+    {key:'A', code:'A1', text:'佛系随缘，输赢都能笑出声'},
+    {key:'B', code:'B1', text:'活泼跳脱，镜头前最放得开'},
+    {key:'C', code:'C1', text:'思路清晰，关键时刻拿主意'},
+    {key:'D', code:'D1', text:'少年气十足，对世界充满好奇'}
+  ]},
+  { title:'朋友遇到难处来找你，你通常？', options:[
+    {key:'A', code:'C2', text:'软萌回应，认真听对方讲完'},
+    {key:'B', code:'D2', text:'温柔兜底，给人稳稳的依靠'},
+    {key:'C', code:'A1', text:'自嘲两句先把人逗笑'},
+    {key:'D', code:'B1', text:'仗义出头，能帮就帮到底'}
+  ]},
+  { title:'一次说走就走的短途出行，你的状态是？', options:[
+    {key:'A', code:'A2', text:'实在靠谱，把琐事都安排妥当'},
+    {key:'B', code:'B2', text:'雷厉风行，说走就走'},
+    {key:'C', code:'C1', text:'冷静理性，行前把计划列清楚'},
+    {key:'D', code:'D1', text:'元气满满，精力用不完'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'😂', name:'沈腾 · 松弛喜剧大哥', dim:'A', persona:'嘴上吐槽不停，身体最诚实的团队开心果',
+    kw:['松弛','自嘲','治愈'], scene:'长途巴士上靠在窗边讲段子，把大家逗到笑出眼泪',
+    match:'最搭 D2 · 王安宇（温柔贴心）',
+    insight:[
+      '一群人气氛安静下来的时候，你总能慢悠悠抛出一句吐槽，把所有人逗笑；明明嘴上说着"好累不想动"，最后收拾行李、照顾落后的人，你一件都没落下。旅途中你习惯把紧张藏在玩笑后面，看到谁落单了、谁情绪不高，你先用一句俏皮话把人拉回队伍，自己累了也先让大家开心。',
+      '你骨子里松弛又仗义，看得透场面上的尴尬，却从不较真输赢。你用自嘲化解压力，用幽默托住身边人的情绪，很少把负面情绪摆到台面上。跟你待在一起的人，会不自觉放松下来，觉得什么难题都能笑着聊过去，你自带降温效果。',
+      '你的幽默是一种温柔，把风雨都笑成风景。'
+    ]},
+  A2:{ emoji:'🧸', name:'贾冰 · 憨直老大哥', dim:'A', persona:'话不多但事事兜底，让人踏实的暖男',
+    kw:['实在','宽厚','可靠'], scene:'聚餐时默默把单买了，还记着谁不吃辣',
+    match:'最搭 B2 · 黄景瑜（飒爽行动派）',
+    insight:[
+      '团队里有人落单、有人忘带东西，你总是默默补上；聚餐时你记着谁不吃辣、谁酒量不好，嘴上不说什么，动作却先到位。别人抢着表现的时候，你在后面把没照应到的角落一件件兜住：车门替人扶着，重活先揽过来，谁身体不舒服你第一个留意到，却从不声张自己做了什么。',
+      '你宽厚实在，答应的事就放在心上，不习惯把关心挂在嘴边。你的安全感来自行动而非言语，朋友跟你在一起，总觉得背后有个人稳稳托着。你不爱出风头，也不斤斤计较，别人对你的好你记很久，你对别人的好却觉得理所当然。',
+      '沉默的兜底，是你最动人的担当。'
+    ]},
+  B1:{ emoji:'🎉', name:'范丞丞 · 闹腾显眼包', dim:'B', persona:'镜头前最放得开，综艺感拉满',
+    kw:['活泼','跳脱','有趣'], scene:'一上车就带动全车唱歌，气氛全靠你点燃',
+    match:'最搭 A1 · 沈腾（松弛喜剧大哥）',
+    insight:[
+      '刚上车你就开始张罗唱歌、玩游戏，自我介绍先来一段搞怪；冷场是你最见不得的事，哪里气氛低下来，你就往哪里凑。你不怕出糗，越多人看越来劲，把热闹当成自己的任务。看到有人害羞拘束，你会主动把对方拉进话题里，宁可自己多扮一个鬼脸，也不让任何人站在角落。',
+      '你热情外放、反应快，天生带着感染力，能把陌生人也带进气氛里。你的跳脱背后是真诚的热忱，不是爱出风头，而是真心想让大家都开心。你情绪来得快去得也快，不记仇也不端着，团队里有你在，笑声就不会断档。',
+      '你走过的地方，气氛永远不会冷下来。'
+    ]},
+  B2:{ emoji:'🧭', name:'黄景瑜 · 飒爽行动派', dim:'B', persona:'说干就干，重活累活先扛的体力担当',
+    kw:['干练','担当','利落'], scene:'拎起所有人的背包就开路，迷路也不慌',
+    match:'最搭 A2 · 贾冰（憨直老大哥）',
+    insight:[
+      '问路、搬行李、订路线，你习惯先把体力活揽到自己身上；方向乱了别人还在商量，你已经背着包走到前面探路。你不爱抱怨条件苦，累了歇一口继续走，脚步始终朝前。遇到突发状况你也不慌，先把能做的事做完，再回头安抚大家的情绪，是队伍里让人安心的那道主心骨。',
+      '你干练利落、有担当，情绪不拖泥带水，遇到问题先解决再吐槽。你的可靠不是口号，而是一次次把事扛下来的行动，让人跟着你就心里有底。你不喜欢说漂亮话，答应下来的事就一定办到，肩膀宽厚，也愿意把别人的重量接过来。',
+      '路再远，你也是那个先走出去的人。'
+    ]},
+  C1:{ emoji:'💡', name:'白敬亭 · 清冷机智脑力派', dim:'C', persona:'话少但思路清晰，关键时刻拿主意',
+    kw:['冷静','聪明','有主见'], scene:'大家乱作一团时，你已经把方案列成了清单',
+    match:'最搭 C2 · 王楚然（反差甜妹）',
+    insight:[
+      '七嘴八舌拿不定主意的时候，你往往安静听着，然后条理清楚地把选项、利弊和下一步说出来；游戏规则看一遍就摸透，行程漏洞你也能提前发现。你不抢话，但开口通常就是结论。别人都在凭感觉吵的时候，你已经把关键信息理成了清单，谁漏考虑了什么，你也能温和地补一句提醒。',
+      '你冷静清醒、有自己的判断，不容易被情绪带着走。你把聪明用在替大家理清局面上，话不多却常常是团队里定方向的那个人。你看得明白但不刻薄，有主意也会尊重别人的选择，这种稳重大方，让身边人愿意把重要的决定交给你参考。',
+      '喧嚣之中，你的清醒最让人安心。'
+    ]},
+  C2:{ emoji:'🐰', name:'王楚然 · 反差甜妹', dim:'C', persona:'外形甜美松弛，慢半拍的天然呆反差',
+    kw:['软萌','反差','讨喜'], scene:'认真讲错一句话，自己后知后觉红了脸',
+    match:'最搭 C1 · 白敬亭（清冷机智脑力派）',
+    insight:[
+      '你常常认真地理解错一件事，反应过来自己先红了脸；说话软软的，偶尔慢半拍，却在关键时刻冒出一句很亮眼的话。你不刻意讨好，那份天然的反差反而让大家愿意靠近你。别人开玩笑你会认真听完，然后一脸茫然地接话，逗得全场大笑，而你自己还不知道笑点在哪，这份憨直招人疼。',
+      '你柔和讨喜，外表松弛内心单纯，不端着也不设防。你的可爱不是经营出来的人设，而是真实的慢半拍，让人忍不住想护着你、陪你把事情弄明白。你情绪简单，喜欢和不喜欢都写在脸上，相处起来没有弯弯绕绕，跟你做朋友觉得很轻松。',
+      '慢一点也没关系，你的反差自有光芒。'
+    ]},
+  D1:{ emoji:'⚡', name:'胡先煦 · 直球少年', dim:'D', persona:'直白真诚不绕弯，少年气满满',
+    kw:['真诚','元气','坦率'], scene:'喜欢就大声说在意，情绪全写在脸上',
+    match:'最搭 D2 · 王安宇（温柔贴心）',
+    insight:[
+      '喜欢就直接说在意，开心和不开心都写在脸上；你不爱猜来猜去，有想法当场讲清楚，朋友情绪不对你也第一个察觉。你像个永远有劲的少年，对世界保持好奇和热忱。遇到好玩的事你会大声分享，看到朋友受委屈你也直话直说，不藏着掖着，也不会为了面子勉强自己附和。',
+      '你坦率真诚、元气饱满，不藏心机也不搞迂回，这种直来直去让人觉得珍贵。你的少年气不是幼稚，而是愿意把真心直接递到别人面前。你精力旺盛，对新鲜事物永远有热情，也愿意拉着身边的人一起尝试，跟你在一起总觉得日子很有奔头。',
+      '保持这份坦率，你走到哪里都发光。'
+    ]},
+  D2:{ emoji:'🧣', name:'王安宇 · 温柔贴心', dim:'D', persona:'默默记住每个人的小习惯与情绪',
+    kw:['细心','温和','体贴'], scene:'行程里悄悄给怕冷的人多备一件外套',
+    match:'最搭 D1 · 胡先煦（直球少年）',
+    insight:[
+      '谁怕冷、谁忌口、谁今天情绪不高，你都悄悄记在心里；行程里你多备一件外套、多留一份吃的，不动声色照顾到每个人。你很少争镜头，却把细腻留给了身边所有人。同行的人随口提过一句的偏好，你下次还能记得；谁状态不太对，你不会当众追问，而是默默递上一杯热水、留点安静空间。',
+      '你温和体贴、心思细密，习惯用细节表达在意。你的温柔不是软弱，而是一种看得见他人的能力，被你记挂着的人，都会觉得被好好对待。你做事周到不张扬，照顾别人时自然得像呼吸，从不求感谢和夸奖，这份妥帖让人长久记在心里。',
+      '你的温柔藏在细节里，最经得起长久。'
+    ]}
+};
+
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0)+1;
+  });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){return s[k];}));
+  var tied = Object.keys(s).filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length===1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0) code = last;
+    else if(tied.indexOf(first)>=0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code:code, scores:s };
+}
+/* ============ 视图切换 ============ */
+
+/* ============ 角色图案（内联 SVG） ============ */
+function artFor(code){
+  var cfg = {
+    A1:{body:'#F7B267', bg:['#FFF3E6','#FFE0CC'], prop:'fruit'},
+    A2:{body:'#E8A87C', bg:['#FFF1E4','#FBD9C0'], prop:'pot'},
+    B1:{body:'#E8736A', bg:['#FFF0EE','#FFDCD6'], prop:'flag'},
+    B2:{body:'#D96A5F', bg:['#FFF1EE','#FBD8D2'], prop:'pack'},
+    C1:{body:'#7FA8C9', bg:['#EEF5FA','#D9EAF3'], prop:'map'},
+    C2:{body:'#9BBEDD', bg:['#F3F8FC','#E4EEF7'], prop:'bunny'},
+    D1:{body:'#8FCB9B', bg:['#F3FAF4','#E2F1E5'], prop:'bolt'},
+    D2:{body:'#7CBD8E', bg:['#F4FAF5','#E3F2E7'], prop:'coat'}
+  }[code];
+  var g = 'g'+code;
+  var prop = '';
+  if(cfg.prop==='fruit'){ prop = '<circle cx="150" cy="120" r="12" fill="#E8736A"/><rect x="148" y="104" width="4" height="10" rx="2" fill="#7CBD8E"/>'; }
+  if(cfg.prop==='pot'){ prop = '<rect x="132" y="108" width="34" height="26" rx="8" fill="#F2E9E4"/><rect x="140" y="100" width="18" height="8" rx="3" fill="#F2E9E4"/>'; }
+  if(cfg.prop==='flag'){ prop = '<rect x="146" y="70" width="4" height="46" rx="2" fill="#7C6A60"/><path d="M150 70 L176 78 L150 88 Z" fill="#F7B267"/>'; }
+  if(cfg.prop==='pack'){ prop = '<rect x="126" y="104" width="26" height="30" rx="8" fill="#7C6A60"/><rect x="150" y="112" width="20" height="24" rx="8" fill="#F2E9E4"/>'; }
+  if(cfg.prop==='map'){ prop = '<rect x="120" y="112" width="44" height="26" rx="4" fill="#EAF2F8" transform="rotate(-8 142 125)"/><circle cx="148" cy="124" r="3" fill="#7FA8C9"/>'; }
+  if(cfg.prop==='bunny'){ prop = '<circle cx="150" cy="118" r="13" fill="#F6EEF4"/><circle cx="146" cy="114" r="3" fill="#7C6A60"/><circle cx="154" cy="114" r="3" fill="#7C6A60"/>'; }
+  if(cfg.prop==='bolt'){ prop = '<path d="M150 84 L138 108 L148 108 L142 128 L160 100 L150 100 Z" fill="#F7B267"/>'; }
+  if(cfg.prop==='coat'){ prop = '<rect x="126" y="110" width="38" height="28" rx="8" fill="#F1F7F2"/><rect x="143" y="110" width="4" height="28" fill="#8FCB9B"/>'; }
+  return '<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" width="100%" height="auto">'
+    + '<defs><linearGradient id="'+g+'" x1="0" y1="0" x2="1" y2="1">'
+    + '<stop offset="0" stop-color="'+cfg.bg[0]+'"/><stop offset="1" stop-color="'+cfg.bg[1]+'"/></linearGradient></defs>'
+    + '<rect x="0" y="0" width="200" height="200" rx="28" fill="url(#'+g+')"/>'
+    + '<circle cx="100" cy="112" r="46" fill="'+cfg.body+'"/>'
+    + '<circle cx="84" cy="104" r="6" fill="#3A322E"/><circle cx="116" cy="104" r="6" fill="#3A322E"/>'
+    + '<path d="M90 124 Q100 132 110 124" stroke="#3A322E" stroke-width="4" fill="none" stroke-linecap="round"/>'
+    + '<circle cx="78" cy="118" r="6" fill="rgba(255,255,255,.4)"/>'
+    + prop
+    + '<circle cx="56" cy="56" r="5" fill="rgba(255,255,255,.55)"/><circle cx="150" cy="48" r="4" fill="rgba(255,255,255,.45)"/>'
+    + '</svg>';
+}
+
+function coverArt(){
+  return '<svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet" width="100%" height="auto">'
+    + '<defs><linearGradient id="coverG" x1="0" y1="0" x2="1" y2="1">'
+    + '<stop offset="0" stop-color="#FFF6EC"/><stop offset="1" stop-color="#FFE8D2"/></linearGradient></defs>'
+    + '<rect x="0" y="0" width="300" height="400" rx="32" fill="url(#coverG)"/>'
+    + '<path d="M60 90 L240 90" stroke="#F7B267" stroke-width="3" stroke-linecap="round"/>'
+    + '<path d="M70 90 L70 118 L94 104 Z" fill="#E8736A"/><path d="M110 90 L110 118 L134 104 Z" fill="#F7B267"/><path d="M150 90 L150 118 L174 104 Z" fill="#7FA8C9"/><path d="M190 90 L190 118 L214 104 Z" fill="#8FCB9B"/>'
+    + '<circle cx="96" cy="200" r="38" fill="#F7B267"/><circle cx="204" cy="200" r="38" fill="#E8736A"/>'
+    + '<circle cx="96" cy="276" r="38" fill="#7FA8C9"/><circle cx="204" cy="276" r="38" fill="#8FCB9B"/>'
+    + '<circle cx="84" cy="194" r="5" fill="#3A322E"/><circle cx="108" cy="194" r="5" fill="#3A322E"/><path d="M88 208 Q96 214 104 208" stroke="#3A322E" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    + '<circle cx="192" cy="194" r="5" fill="#3A322E"/><circle cx="216" cy="194" r="5" fill="#3A322E"/><path d="M196 208 Q204 214 212 208" stroke="#3A322E" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    + '<circle cx="84" cy="270" r="5" fill="#3A322E"/><circle cx="108" cy="270" r="5" fill="#3A322E"/><path d="M88 284 Q96 290 104 284" stroke="#3A322E" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    + '<circle cx="192" cy="270" r="5" fill="#3A322E"/><circle cx="216" cy="270" r="5" fill="#3A322E"/><path d="M196 284 Q204 290 212 284" stroke="#3A322E" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    + '<ellipse cx="150" cy="340" rx="70" ry="16" fill="#F2E9E4"/>'
+    + '<circle cx="52" cy="150" r="5" fill="rgba(255,255,255,.6)"/><circle cx="252" cy="150" r="5" fill="rgba(255,255,255,.6)"/>'
+    + '</svg>';
+}
+
+/* ============ 答题流程 ============ */
+var state = { idx:0, answers:[] };
+
+function renderQuestion(){
+  var q = QUESTIONS[state.idx];
+  document.getElementById('qIndex').textContent = '第 '+(state.idx+1)+' / '+QUESTIONS.length+' 题';
+  document.getElementById('progressFill').style.width = (state.idx/QUESTIONS.length*100)+'%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o, i){
+    var div = document.createElement('div');
+    div.className = 'option';
+    div.innerHTML = '<span class="opt-key">'+o.key+'</span><span class="opt-text"></span>';
+    div.querySelector('.opt-text').textContent = optionText(state.idx, i);
+    div.addEventListener('click', function(){ pick(i); });
+    box.appendChild(div);
+  });
+  document.getElementById('backBtn').style.visibility = state.idx===0 ? 'hidden' : 'visible';
+}
+
+function optionText(qi, oi){
+  return QUESTIONS[qi].options[oi].text || QUESTIONS[qi].options[oi].label || '';
+}
+
+function pick(i){
+  state.answers[state.idx] = i;
+  if(state.idx < QUESTIONS.length-1){
+    state.idx++;
+    renderQuestion();
+  }else{
+    finish();
+  }
+}
+
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(state.idx>0){ state.idx--; renderQuestion(); }
+});
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  state.idx = 0; state.answers = [];
+  show('quiz'); renderQuestion();
+});
+
+var lastResultCode = null;
+
+function finish(){
+  var res = resolve(state.answers);
+  lastResultCode = res.code;
+  var r = RESULTS[res.code];
+  document.getElementById('rArt').innerHTML = '<div class="result-art">'+artFor(res.code)+'</div>';
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  document.getElementById('rScene').innerHTML = '<b>同款场景：</b>'+r.scene;
+  document.getElementById('rMatch').innerHTML = '💞 '+r.match;
+  var kwBox = document.getElementById('rKeywords');
+  kwBox.innerHTML = '';
+  r.kw.forEach(function(k){
+    var s = document.createElement('span'); s.className='kw'; s.textContent=k; kwBox.appendChild(s);
+  });
+  var ins = document.getElementById('rInsight');
+  ins.innerHTML = '';
+  var tags = ['👀','🌱','✨'];
+  r.insight.forEach(function(t, i){
+    var p = document.createElement('p');
+    p.className = i===2 ? 'gold' : 'insight-p';
+    p.innerHTML = '<span class="tag">'+tags[i]+'</span>'+escapeHtml(t);
+    ins.appendChild(p);
+  });
+  show('result');
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, function(m){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+}
+
+document.getElementById('againBtn').addEventListener('click', function(){
+  state.idx = 0; state.answers = [];
+  show('home');
+});
+
+/* ============ 海报生成 ============ */
+var posterDataURL = null;
+
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(c.measureText(line+ch).width > maxW && line.length>0){
+      c.fillText(line, x, y); y += lineH; line = ch;
+    }else{ line += ch; }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function countLines(c, text, maxW, lineH){
+  var line = '', lines = 1;
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(c.measureText(line+ch).width > maxW && line.length>0){
+      lines++; line = ch;
+    }else{ line += ch; }
+  }
+  return lines;
+}
+
+function wrapTextCenter(c, text, cx, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text[i];
+    if(c.measureText(line+ch).width > maxW && line.length>0){
+      c.fillText(line, cx, y); y += lineH; line = ch;
+    }else{ line += ch; }
+  }
+  if(line){ c.fillText(line, cx, y); y += lineH; }
+  return y;
+}
+
+function genPoster(){
+  var code = lastResultCode;
+  var r = RESULTS[code];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var PAD = 54, CW = W - PAD*2, y = 0;
+
+  var g = c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#FFF3E6'); g.addColorStop(1,'#FFE8D2');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  c.textAlign = 'center';
+  c.fillStyle = '#B5A49A'; c.font = '24px sans-serif';
+  y = 72; c.fillText('我的出发家族人格', W/2, y);
+
+  y += 76;
+  c.font = '72px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.fillText(r.emoji, W/2, y);
+
+  y += 54;
+  c.fillStyle = '#FCEBD8';
+  roundRect(c, W/2-150, y-30, 300, 44, 22); c.fill();
+  c.fillStyle = '#E8893A'; c.font = '24px sans-serif';
+  c.fillText(DIMS[r.dim]+' · 出发家族', W/2, y+1);
+
+  y += 62;
+  c.textAlign = 'center';
+  c.fillStyle = '#3A322E'; c.font = 'bold 34px sans-serif';
+  y = wrapTextCenter(c, r.name, W/2, y, CW, 44);
+
+  y += 12;
+  c.fillStyle = '#7C6A60'; c.font = '25px sans-serif';
+  y = wrapTextCenter(c, r.persona, W/2, y, CW, 36);
+
+  y += 18;
+  c.textAlign = 'left';
+  var kx = PAD;
+  c.font = '24px sans-serif';
+  r.kw.forEach(function(k){
+    var w = c.measureText(k).width + 36;
+    c.fillStyle = '#FCEBD8'; roundRect(c, kx, y-26, w, 38, 19); c.fill();
+    c.fillStyle = '#E8893A'; c.fillText(k, kx+18, y);
+    kx += w + 14;
+  });
+  y += 52;
+
+  var tags = ['👀','🌱','✨'];
+  r.insight.forEach(function(t, i){
+    var isGold = (i===2);
+    var textMaxW = CW-44;
+    if(isGold){
+      c.font = 'bold 25px sans-serif';
+      var lines = countLines(c, t, textMaxW, 36);
+      var cardH = 28 + lines*36;
+      c.fillStyle = '#FFF6EC';
+      roundRect(c, PAD, y-12, CW, cardH, 18); c.fill();
+      c.fillStyle = '#E8893A';
+    }else{
+      c.fillStyle = '#3A322E';
+    }
+    y += 14;
+    c.textAlign = 'left';
+    c.font = '24px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+    c.fillText(tags[i], PAD, y+24);
+    c.font = (isGold?'bold 25px':'25px')+' sans-serif';
+    y = wrapText(c, t, PAD+44, y+24, textMaxW, 36);
+    y += 20;
+  });
+
+  y += 12;
+  c.textAlign = 'center';
+  c.fillStyle = '#7C6A60'; c.font = '24px sans-serif';
+  c.fillText('@那个你想到的朋友，一起来测测谁和你最搭', W/2, y);
+
+  c.fillStyle = '#B5A49A'; c.font = '18px sans-serif';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。', W/2, H-56);
+
+  posterDataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = posterDataURL;
+  document.getElementById('posterDownload').href = posterDataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+function roundRect(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.arcTo(x+w, y, x+w, y+h, r);
+  c.arcTo(x+w, y+h, x, y+h, r);
+  c.arcTo(x, y+h, x, y, r);
+  c.arcTo(x, y, x+w, y, r);
+  c.closePath();
+}
+
+document.getElementById('posterBtn').addEventListener('click', genPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+
+/* 首页封面 */
+document.getElementById('homeArt').innerHTML = '<div class="cover-art">'+coverArt()+'</div>';
+</script>
+</body>
+</html>
