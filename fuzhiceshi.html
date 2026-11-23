@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你到底是什么肤质 · 18题肤质档案测试</title>
+<style>
+  :root{
+    --main:#5FAE9B; --main-deep:#3E8E80; --main-soft:#E3F3EF;
+    --blue:#6FA8C9; --blue-soft:#E8F3FA;
+    --cream:#F8FBFA; --ink:#26403C; --ink-2:#5C7773; --ink-3:#93A9A5;
+    --line:#DCEBE7; --white:#fff;
+    --shadow-sm:0 4px 18px rgba(62,142,128,.10);
+    --shadow:0 14px 40px rgba(62,142,128,.16);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#F2FAF7 0%,#F6FBFD 45%,#FAFCFB 100%);
+    color:var(--ink);min-height:100vh;line-height:1.7}
+  .wrap{max-width:520px;margin:0 auto;padding:26px 20px 52px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .45s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* ===== 口令门控 ===== */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(160deg,rgba(242,250,247,.98),rgba(246,251,253,.98))}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 28px 30px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:44px;margin-bottom:6px;font-family:var(--emoji)}
+  .gate-card h2{font-size:20px;margin:0 0 8px;letter-spacing:.5px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 20px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--main-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#F9FDFC}
+  #passInput:focus{border-color:var(--main);box-shadow:0 0 0 4px rgba(95,174,155,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:#D9737F;margin:8px 0 10px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:16px 0 0}
+
+  /* ===== 通用 ===== */
+  .btn{display:block;width:100%;border:0;border-radius:15px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--main),var(--main-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px;letter-spacing:.5px}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:#fff;color:var(--main-deep);border:1.5px solid var(--line);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+    padding:22px 20px;margin-bottom:16px}
+  h1{font-size:27px;line-height:1.35;margin:8px 0 12px;letter-spacing:.5px}
+  h1 .hl{color:var(--main-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--main-deep);
+    background:var(--main-soft);padding:5px 12px;border-radius:999px;letter-spacing:.5px}
+  .progress-track{height:8px;background:var(--main-soft);border-radius:99px;overflow:hidden;margin:14px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--main),var(--blue));transition:width .5s ease}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border:1.5px solid var(--line);
+    border-radius:15px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s;font-size:14.5px}
+  .option:hover{transform:translateY(-2px);border-color:var(--main-soft)}
+  .option.on{border-color:var(--main);background:#F1FAF7}
+  .opt-key{flex:0 0 22px;height:22px;line-height:22px;text-align:center;border-radius:50%;
+    background:var(--main-soft);color:var(--main-deep);font-size:12px;font-weight:800;margin-top:2px}
+  .type-emoji{font-size:40px;line-height:1;font-family:var(--emoji);display:inline-block}
+  .kw{display:inline-block;font-size:12px;color:var(--main-deep);background:var(--main-soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px;padding:0 8px}
+  .art{width:100%;height:auto;display:block;border-radius:18px}
+  .sec-title{font-size:13px;font-weight:800;color:var(--main-deep);letter-spacing:1px;margin:18px 0 8px}
+  .hint{font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:10px}
+
+  /* ===== 首页 ===== */
+  .cover{margin:0 0 18px}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+  .meta-chip{font-size:12px;color:var(--ink-2);background:#F1F8F6;border:1px solid var(--line);
+    padding:5px 10px;border-radius:999px}
+
+  /* ===== 结果页 ===== */
+  .res-head{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+  .res-name{font-size:23px;font-weight:800;letter-spacing:.5px;margin:12px 0 4px}
+  .coord{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px}
+  .coord span{font-size:11.5px;color:#3E6B62;background:#EDF7F4;border:1px dashed #C9E4DC;
+    padding:4px 9px;border-radius:6px}
+  .insight p{margin:0 0 10px;font-size:14.5px;color:#33514C}
+  .insight .lead{font-size:15px;font-weight:700;color:var(--main-deep)}
+  .quote{margin:14px 0 4px;padding:16px 18px;border-radius:16px;
+    background:linear-gradient(135deg,#EAF7F3,#F3F9FE);border-left:3px solid var(--main);
+    font-size:16px;font-weight:800;color:#2C5A51;letter-spacing:.5px}
+  .bars{margin-top:6px}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12.5px;color:var(--ink-2)}
+  .bar-row .lb{flex:0 0 74px}
+  .bar-track{flex:1;height:9px;background:#EEF5F3;border-radius:99px;overflow:hidden}
+  .bar-in{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--main),var(--blue));transition:width .7s ease}
+  .bar-row .vl{flex:0 0 40px;text-align:right;font-weight:700;color:var(--main-deep)}
+  .care li{font-size:14px;color:#33514C;margin-bottom:7px;padding-left:2px}
+  .care{padding-left:18px;margin:6px 0 0}
+  .warn{font-size:13px;color:#B06A56;background:#FDF3EE;border:1px solid #F5DFD5;
+    border-radius:12px;padding:11px 13px;margin-top:12px}
+  .basis{font-size:11.5px;color:var(--ink-3);margin-top:10px;line-height:1.6}
+  .match{font-size:13.5px;color:var(--ink-2);margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+
+  /* ===== 海报弹层 / toast ===== */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(38,64,60,.62);
+    align-items:center;justify-content:center;padding:18px;overflow:auto}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:14px;max-width:400px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block;margin-bottom:4px}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(38,64,60,.94);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～<br>这是一个纯本地的肤质自测，不联网、不上传。</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 首页 -->
+  <section id="home" class="view">
+    <div class="cover" id="coverArt"></div>
+    <span class="eyebrow">🧪 18 题 · 文献版肤质档案</span>
+    <h1>你到底<br>是<span class="hl">什么肤质</span>？</h1>
+    <p class="gsub">不猜“干皮油皮混合皮”，而是把你拆成四条轴：<b>油水平衡、耐受度、色素倾向、紧致度</b>，再落到一份能直接照着做的护肤方案。</p>
+    <div class="meta-row">
+      <span class="meta-chip">18 道场景题</span>
+      <span class="meta-chip">约 3 分钟</span>
+      <span class="meta-chip">18 份肤质档案</span>
+      <span class="meta-chip">可存结果海报</span>
+    </div>
+    <button class="btn" id="startBtn">开始测我的肤质 →</button>
+    <p class="hint">题目依据 Baumann 肤质四分法（BSTI）、《中国敏感性皮肤临床诊疗指南（2024）》等公开文献设计</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="gsub" style="margin:0 0 6px">第 1 / 18 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin:0 0 16px;font-size:18px;line-height:1.5">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+    <p class="hint">选最接近你真实状态的那一项，别选“希望自己是”的那一项</p>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div id="rArt"></div>
+      <div class="res-head" style="margin-top:14px">
+        <span class="type-emoji" id="rEmoji">🧴</span>
+        <span style="font-size:12px;color:var(--ink-3);letter-spacing:1px">你的肤质档案</span>
+      </div>
+      <div class="res-name" id="rName">结果类型</div>
+      <p class="gsub" id="rPersona" style="margin:0 0 4px">一句话人设</p>
+      <div class="coord" id="rCoord"></div>
+      <div id="rKeywords"></div>
+      <div class="sec-title">四维肤质坐标</div>
+      <div class="bars" id="rBars"></div>
+      <div class="insight" id="rInsight"></div>
+      <div class="sec-title">照着做就好：三件事</div>
+      <ul class="care" id="rCare"></ul>
+      <div class="warn" id="rWarn"></div>
+      <div class="basis" id="rBasis"></div>
+      <div class="match" id="rMatch"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的肤质海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为科普向趣味自测，结果由算法依据公开文献的维度框架生成，仅供护肤参考，不构成医学诊断或治疗建议；如有持续泛红、反复爆痘、色斑突变等情况，请就医面诊。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="肤质结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的肤质档案.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+    <p class="hint">手机端可长按图片保存</p>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ================= 口令门控 ================= */
+var PASSCODE = "6629"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ================= 数据区 ================= */
+var DIMS = {
+  A:'油水平衡', B:'耐受度', C:'色素倾向', D:'紧致度', E:'痘与毛孔', F:'状态波动'
+};
+
+var QUESTIONS = [
+  { title:'洗完脸，什么都不涂，静静等 20 分钟，你的脸是？', options:[
+    {key:'A', code:'A1', text:'整张脸很快回油，摸上去一层亮的'},
+    {key:'B', code:'A2', text:'整张脸发紧，甚至有点白屑'},
+    {key:'C', code:'B1', text:'两颊开始发热、泛红'},
+    {key:'D', code:'B2', text:'基本没变化，不红也不紧'}
+  ]},
+  { title:'在户外通勤加午休晒了一周，最明显的变化是？', options:[
+    {key:'A', code:'A3', text:'T 区油得更快，两颊没什么动静'},
+    {key:'B', code:'A1', text:'整张脸都油了，妆也顶不住了'},
+    {key:'C', code:'C1', text:'颧骨冒出几颗淡淡的小斑点'},
+    {key:'D', code:'C2', text:'只是红了一阵，没留下东西'}
+  ]},
+  { title:'冬天洗完脸照镜子，你第一眼注意到的是？', options:[
+    {key:'A', code:'A2', text:'脸颊发亮发紧，像糊了一层浆'},
+    {key:'B', code:'A3', text:'额头鼻翼油亮，两颊却干'},
+    {key:'C', code:'D1', text:'眼下、嘴角有细小的干纹'},
+    {key:'D', code:'D2', text:'皮肤还是饱满的，捏起来有弹性'}
+  ]},
+  { title:'化完妆两小时后，镜子里发生了什么？', options:[
+    {key:'A', code:'A1', text:'底妆被油顶起来，鼻翼那里滑了'},
+    {key:'B', code:'A2', text:'粉卡在干纹和起皮的地方'},
+    {key:'C', code:'E1', text:'昨天那颗痘又红了，好像还更大'},
+    {key:'D', code:'E2', text:'鼻子两侧的小坑小点更明显了'}
+  ]},
+  { title:'入秋第一周，你的脸通常是？', options:[
+    {key:'A', code:'A3', text:'T 区照旧油，两颊开始起皮'},
+    {key:'B', code:'A1', text:'还是全脸出油，几乎没变化'},
+    {key:'C', code:'F1', text:'油光下面还觉得干，涂厚闷、涂薄绷'},
+    {key:'D', code:'F2', text:'一到冬天就变干皮，夏天再变回油皮'}
+  ]},
+  { title:'新换一支精华，连用三天，你的反应是？', options:[
+    {key:'A', code:'B1', text:'刺痛、泛红，赶紧停了'},
+    {key:'B', code:'B3', text:'这次没事，等到换季才闹'},
+    {key:'C', code:'C1', text:'没红，但肤色好像暗了一块'},
+    {key:'D', code:'C3', text:'用后有点发炎，留下更深的印子'}
+  ]},
+  { title:'连续熬了一周夜，脸上最先出现的是？', options:[
+    {key:'A', code:'B2', text:'除了黑眼圈，皮肤基本没反应'},
+    {key:'B', code:'B3', text:'两颊开始痒，有点泛红'},
+    {key:'C', code:'D1', text:'眼下和法令纹处的细纹更深了'},
+    {key:'D', code:'D3', text:'脸有点“垮”，轮廓往下坠'}
+  ]},
+  { title:'换了一支防晒，或者连戴几天口罩，你的脸？', options:[
+    {key:'A', code:'B1', text:'闷出红和痒，局部刺痛'},
+    {key:'B', code:'B2', text:'没感觉，什么都扛得住'},
+    {key:'C', code:'E1', text:'下巴和脸颊开始冒红肿痘'},
+    {key:'D', code:'E3', text:'脸红烫，像一直在发烧'}
+  ]},
+  { title:'出差一周：空调房、晚睡、换水土，你的皮肤？', options:[
+    {key:'A', code:'B3', text:'前几天还好，第四天开始泛红发痒'},
+    {key:'B', code:'B1', text:'一到就翻车，刺痛、起小疹'},
+    {key:'C', code:'F3', text:'又油又暗，状态忽好忽坏'},
+    {key:'D', code:'F1', text:'又油又干，怎么涂都不对'}
+  ]},
+  { title:'翻出三年前的照片对比，你更明显的变化是？', options:[
+    {key:'A', code:'C2', text:'肤色几乎没变，也没长斑'},
+    {key:'B', code:'C3', text:'痘印、旧印一堆，深浅不一'},
+    {key:'C', code:'D2', text:'轮廓和苹果肌还在，没怎么下垂'},
+    {key:'D', code:'D3', text:'下颌线模糊了，脸看起来往下走'}
+  ]},
+  { title:'一颗痘终于瘪下去了，接下来通常？', options:[
+    {key:'A', code:'C1', text:'留下一个褐色的印，好久不退'},
+    {key:'B', code:'C2', text:'一两周就淡了，几乎看不出来'},
+    {key:'C', code:'E3', text:'痘周围一直红着，摸着还有点烫'},
+    {key:'D', code:'E2', text:'那块变成闭口，摸起来一颗小疙瘩'}
+  ]},
+  { title:'夏天去海边玩了三天，回来你的脸？', options:[
+    {key:'A', code:'C3', text:'之前的痘印、旧印都变深了'},
+    {key:'B', code:'C1', text:'颧骨多了几颗边界清楚的小斑点'},
+    {key:'C', code:'F2', text:'出油猛增，T 区油到反光'},
+    {key:'D', code:'F3', text:'又油又暗，还冒了几颗痘'}
+  ]},
+  { title:'25 岁以后，你最先发现的皮肤变化是？', options:[
+    {key:'A', code:'D1', text:'笑起来眼角、嘴角有细纹了'},
+    {key:'B', code:'D2', text:'皮肤还是紧的，只是没以前亮'},
+    {key:'C', code:'E1', text:'痘痘从偶尔变成反复'},
+    {key:'D', code:'E2', text:'毛孔和闭口比以前明显'}
+  ]},
+  { title:'连续加班一个月，你的脸会变成？', options:[
+    {key:'A', code:'D3', text:'脸垮、眼下凹，轮廓松了'},
+    {key:'B', code:'D1', text:'干纹细纹一下子全冒出来'},
+    {key:'C', code:'F1', text:'外油内干更明显，油光下面全是干'},
+    {key:'D', code:'F2', text:'季节一换，整张脸跟着变'}
+  ]},
+  { title:'压力最大的那段日子，皮肤最典型的表现是？', options:[
+    {key:'A', code:'E3', text:'动不动就红烫，心里一急更红'},
+    {key:'B', code:'E1', text:'红肿痘一颗接一颗'},
+    {key:'C', code:'F3', text:'状态一天一个样，没法预判'},
+    {key:'D', code:'F1', text:'出油和紧绷同时找上门'}
+  ]},
+  { title:'洗完澡，用毛巾把脸擦干，你觉得？', options:[
+    {key:'A', code:'A2', text:'立刻发紧，得赶紧涂东西'},
+    {key:'B', code:'A3', text:'额头鼻翼已经油了，两颊还干'},
+    {key:'C', code:'B2', text:'什么都没发生，很平静'},
+    {key:'D', code:'B3', text:'有点发红发痒，得缓一会儿'}
+  ]},
+  { title:'和同龄朋友合照时，你最在意自己哪一点？', options:[
+    {key:'A', code:'C2', text:'肤色匀不匀（我还算匀）'},
+    {key:'B', code:'C3', text:'脸上的印子和色差'},
+    {key:'C', code:'D2', text:'脸垮不垮（我还撑得住）'},
+    {key:'D', code:'D3', text:'下颌线和整体轮廓'}
+  ]},
+  { title:'快来例假前一周，你的脸通常会？', options:[
+    {key:'A', code:'E2', text:'下巴的闭口和毛孔变明显'},
+    {key:'B', code:'E3', text:'容易泛红、发热'},
+    {key:'C', code:'F2', text:'出油突然变多，或者突然变干'},
+    {key:'D', code:'F3', text:'又暗又油还冒痘，整个人状态差'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'💦', name:'大油田本油', persona:'早八洗完脸，中午自带高光', coord:['油性','耐受偏强','毛孔显形'],
+    kw:['全天反光','毛孔可见','妆面不持久'],
+    insight:[
+      '早上洗完脸出门，走到地铁口鼻梁就亮了一层；下午三点随手一抹，指腹上是一层清亮的油，刘海黏在额角，粉底在鼻翼两边悄悄滑走。纸巾按上去，会留下一片清清楚楚的油印，夏天更明显。',
+      '这不是你洗得不干净，是皮脂腺太勤快。文献里把这类记作皮脂分泌旺盛：皮脂本身就是一层天然保湿膜，所以你的屏障往往更结实、更能扛，别人泛红刺痛你先不慌；代价是毛孔容易显形、妆面难持久、夏天更容易闷，午后的油还会把防晒一起带走。',
+      '所以你要的不是把油控到干，而是让油“有序”：温和清洁、少叠涂、防晒做薄做勤。'
+    
+    ],
+    care:['早晚各一次温和氨基酸洁面，别用皂基搓到发涩','保湿选清爽凝露或乳液，油皮也需要补水','防晒挑清爽质地，用量要够、2–3 小时补一次'],
+    warn:'别用高酒精的收敛水猛控油，越控越反、屏障越薄。',
+    basis:'依据：BSTI 油/干维度 + 皮脂分泌与 TEWL 相关指标',
+    match:'和你最搭的是「沙漠干皮」：一个控油一个补脂，互相抄作业刚好互补。',
+    c:'#4E9E93', n:1 },
+
+  A2:{ emoji:'🏜️', name:'沙漠干皮', persona:'洗完脸三分钟不涂东西，脸就开始绷', coord:['干性','耐受中等','易起皮'],
+    kw:['紧绷起皮','洗脸后发亮','冬天更明显'],
+    insight:[
+      '洗完脸还没走出浴室，两颊已经开始发紧；冬天嘴角会起小白屑，粉底一上就卡在鼻翼和脸颊的干纹里，笑一下像要裂开。眼下的粉底会积成一小条白线，喷完喷雾只能舒服两三分钟。',
+      '角质层含水量低、经表皮失水偏高，是干皮的核心：砖墙结构里的脂质——神经酰胺、胆固醇、脂肪酸——不够，水就留不住。这跟“油不油”是两件事，出油少不等于屏障一定差，但干皮更容易被外界刺激趁虚而入，暖气房和冷风都会放大这种感觉，所以你更需要主动补脂。',
+      '干皮的关键词不是“补水”，而是“补脂加锁水”：先给屏障补砖，再盖一层霜。'
+    
+    ],
+    care:['洗脸水偏温，洁面选无泡或氨基酸型','保湿要“补脂”：神经酰胺、角鲨烷类面霜','室内加湿，冬天别用太热的水洗脸'],
+    warn:'别只喷矿泉水或喷雾补水，不锁水只会更干。',
+    basis:'依据：BSTI 油/干维度 + 角质层含水量与 TEWL',
+    match:'配「大油田本油」：一个补脂一个控油，同一套流程各取一半。',
+    c:'#8FBEAE', n:2 },
+
+  A3:{ emoji:'🌗', name:'T 区油田两颊干', persona:'一张脸，两套肤质', coord:['混合性','T 区偏油','分区管理'],
+    kw:['分区护理','T 区油亮','两颊发干'],
+    insight:[
+      '额头和鼻子到中午就泛油光，两颊却干得起皮；一瓶面霜涂全脸，T 区闷出闭口，两颊还是绷。到了下午，T 区的油能印在吸油纸上，两颊却紧得发麻，像两个人拼在一张脸上。夏天更明显：T 区反光，两颊起皮。',
+      '这是混合性皮肤，文献里分成“T 区型”和“季节性”两类：不同区域皮脂腺活跃度不一样，屏障状态也不同。所以你才会很矛盾——既怕闷痘，又怕起皮，一套流程永远照顾不到两边，分区护理不是讲究，是必须——不然总有一半在受罪。',
+      '分区护理是混合皮唯一高效的做法：油的地方轻薄，干的地方补脂。'
+    
+    ],
+    care:['分区涂：T 区清爽凝露，两颊滋润面霜','洁面只重点洗 T 区，两颊带过就够','防晒选不闷的乳液型，全脸薄涂'],
+    warn:'别为了 T 区的油，把整张脸都当油皮对待。',
+    basis:'依据：混合性皮肤 T 区型分类（Cosmetics 2023 综述）',
+    match:'和「季节型」最聊得来：一个分区、一个分季，都是“分场景护肤”的人。',
+    c:'#5FAE9B', n:3 },
+
+  B1:{ emoji:'🩹', name:'屏障很薄的敏感皮', persona:'换一支新精华，脸先替你抗议', coord:['敏感性','屏障偏弱','泛红明显'],
+    kw:['一碰就红','刺痛灼热','屏障告急'],
+    insight:[
+      '新买的面膜敷上三分钟，脸颊开始发热发痒；用化妆棉擦两下，颧骨那片红久久退不下去；冬天从室外走进暖气房，脸烫得像刚跑完步。偶尔还会起一层细小的疹子，痒得想挠又不敢挠。',
+      '文献把这种状态叫敏感性皮肤：屏障受损、神经血管反应增强、免疫炎症，三件事互相推着走。TEWL 升高、角质层含水量下降、皮肤 pH 偏高，都是它的客观脚印。国内女性自报敏感的比例约三成到近五成，你并不孤单，但也不该硬扛，这些都能在皮肤镜和无创检测里看到。',
+      '先把“刺激”从生活里减掉，再谈功效；屏障修好了，皮肤自己会亮。'
+    
+    ],
+    care:['护肤做减法：停酸、停磨砂、停功效叠涂','修护优先：神经酰胺＋泛醇＋胆固醇类产品','防晒走物理路线，帽子口罩这类硬防晒优先'],
+    warn:'泛红灼热持续不退，先看医生，别自己长期抹激素类药膏。',
+    basis:'依据：BSTI 敏感/耐受维度 +《中国敏感性皮肤临床诊疗指南（2024）》',
+    match:'和「换季不稳」是同族：都在修屏障，只是一个常年、一个周期性。',
+    c:'#D98B9C', n:1 },
+
+  B2:{ emoji:'🛡️', name:'厚皮耐受党', persona:'别人过敏，你只担心“用了没效果”', coord:['耐受性强','屏障完整','吸收偏慢'],
+    kw:['不红不痒','能扛猛药','见效偏慢'],
+    insight:[
+      '朋友用一次就翻车的酸，你连用一周也没事；换季、熬夜、换护肤品，你的脸几乎没发过脾气；唯一的问题是——好像涂什么都“进不去”，一瓶精华用完，效果慢悠悠，像在等一封迟迟不来的回信。',
+      '这是耐受型皮肤：角质层致密完整、炎症倾向低，所以不容易红、不容易刺痛，也不容易被小刺激惊动。好处是稳定；代价是有效成分更难渗透，温和浓度的产品在你脸上常常“不够看”，需要更高浓度或更好的促渗配方，所以功效型产品对你反而更值得投资。',
+      '你的底气是稳定，不是无敌：耐受不等于可以糟蹋，猛药也要有节奏。'
+    
+    ],
+    care:['可以上功效，但一次只加一个新成分','酸类、A 醇从低浓度低频起步','别把“不过敏”当成“可以随便造”'],
+    warn:'耐受不代表不用防晒，光老化照样在你脸上累积。',
+    basis:'依据：BSTI 敏感/耐受维度（耐受型无独立分值）',
+    match:'配「屏障很薄的敏感皮」：你是她的“耐受参照组”，她是你该学的“减法老师”。',
+    c:'#C98C9C', n:2 },
+
+  B3:{ emoji:'🍃', name:'换季不稳型', persona:'春天一到，脸比日历还准', coord:['间歇敏感','屏障余量不足','周期性泛红'],
+    kw:['换季翻车','时好时坏','周期性泛红'],
+    insight:[
+      '每年三月和十月，你的脸都比日历准：先是干，再是痒，接着两颊冒出细小的红，偶尔还带一点脱屑；等天气稳下来，它又自己好了，像什么都没发生过。所以你总在换季前后反复确认：到底是不是自己太敏感。',
+      '这类皮肤的屏障平时“够用”，但余量不多。温度、湿度、风、紫外线一变，经表皮失水跟着波动，神经末梢被反复惊动，于是出现周期性泛红刺痛。它更像“屏障储备不足”，而不是一直敏感，所以平时看着好好的，一换季就露馅，这也是为什么“一套护肤用到底”对你没用。',
+      '换季前两周就开始做减法：少一样新产品，多一层修护霜。'
+    
+    ],
+    care:['换季前两周开始减产品，别在这时尝新','常备一支修护霜，泛红时只涂它','室内外温差大时，用围巾或口罩挡一挡'],
+    warn:'换季期别刷酸、别做清洁面膜，那是往伤口上撒盐。',
+    basis:'依据：《中国敏感性皮肤临床诊疗指南（2024）》内外因素与屏障波动',
+    match:'和「屏障很薄的敏感皮」同族，你更像“周期版”的她。',
+    c:'#E5A0AC', n:3 },
+
+  C1:{ emoji:'🌞', name:'晒一下就留印', persona:'别人的夏天是晒黑，你的是晒出地图', coord:['色素易感','颧骨先中招','防晒刚需'],
+    kw:['斑点易感','越晒越花','边界清楚'],
+    insight:[
+      '一个夏天过去，别人只是深了一个色号，你颧骨上多了几颗边界清楚的小斑点；痘消了、破了、挠了，最后都留下一块比周围深的印子，几个月都不肯散。翻旧照片会发现，这些印子基本都长在同样的位置，化妆时得用遮瑕单独盖。',
+      '这属于色素易感：黑色素细胞对紫外线和炎症的反应更积极。它和“白不白”关系不大，关键在于受刺激后容易过量产黑；而且长波紫外线能穿透玻璃，室内靠窗也在累积，阴天和冬天一样算数，所以你要盯的是“少刺激”而不是“变白”。',
+      '对你来说，防晒是唯一不能省的一步；淡斑是慢功夫，先止住“继续变黑”。'
+    
+    ],
+    care:['每天防晒，室内靠窗也要涂','用 VC、烟酰胺、传明酸类成分做日常维护','新长的斑点先拍照记录，观察 4–8 周'],
+    warn:'别把美白猛药叠着上，发炎之后反而更黑。',
+    basis:'依据：BSTI 色素/非色素维度（P/N）与黑色素指数',
+    match:'配「痘印久久不退」：你们同属色素轴，防晒功课可以一起抄。',
+    c:'#D2A350', n:1 },
+
+  C2:{ emoji:'🤍', name:'匀净不易黑', persona:'晒了会红，但很少留下东西', coord:['色素稳定','代谢较快','肤色均匀'],
+    kw:['色号稳定','痘印退得快','不容易花'],
+    insight:[
+      '夏天晒完会红两天，脱一层皮就恢复；痘印一般两三周就淡了；同样熬夜，别人的脸发黄发灰，你的肤色还算匀。朋友总说你“晒不黑”，其实你也会红、也会暗，只是恢复得比别人快一点，素颜出门也不至于气色差。',
+      '你的黑色素细胞“反应适度”：受刺激会产黑，但代谢跟得上，不容易形成持久色沉。这不是可以随便晒的通行证——光老化是累积的，胶原的流失、斑点的出现，只是你更晚看到账单，而不是不会来，所以你的功夫该花在“维持”上：防晒、抗氧化、别熬夜。',
+      '天生匀净是优势，把它守住，比事后补救便宜得多。'
+    
+    ],
+    care:['把防晒当日常，不是夏天才做','晒后及时降温保湿，减少炎症','保持匀净比追求更白更划算'],
+    warn:'别因为“不容易黑”就把防晒省掉。',
+    basis:'依据：BSTI 色素/非色素维度（N 侧）',
+    match:'你最该认识「晒一下就留印」：她需要的自律，你天生就有。',
+    c:'#E0BE7A', n:2 },
+
+  C3:{ emoji:'🟤', name:'痘印久久不退', persona:'痘好了，印还在替你记事', coord:['炎症后色沉','印比痘久','越抠越深'],
+    kw:['炎症后色沉','新旧印叠加','越抠越深'],
+    insight:[
+      '那颗痘一周就平了，留下的褐色印子却陪了你三个月；手一闲就去抠，抠完颜色更深一层；脸颊上旧印新印叠着，像一张没擦干净的草稿。上妆时你得用遮瑕一点点盖，光线一斜还是看得出来，你甚至会怀疑是不是自己体质特殊。',
+      '这叫炎症后色素沉着：痘痘的炎症刺激黑色素细胞加班，炎症越久、抠得越狠、晒得越多，颜色就越深。亚洲皮肤的黑色素更容易“留在原地”，所以同样的痘，你的印子往往比别人的痘更难缠，而且越晒越深。',
+      '对痘印最有效的动作是——不抠、早消炎、防晒，然后给它八周。别急，它只是慢。'
+    
+    ],
+    care:['痘印期严格防晒，紫外线会把印子钉住','痘痘早消炎，别抠、别挤','烟酰胺、壬二酸、传明酸可以接力用'],
+    warn:'抠痘等于把印子刻深，忍住。',
+    basis:'依据：炎症后色素沉着（PIH）机制 + BSTI 色素维度',
+    match:'和「晒一下就留印」一组：一个怕晒、一个怕抠，都归防晒管。',
+    c:'#C08B57', n:3 },
+
+  D1:{ emoji:'🪞', name:'细纹领先同龄', persona:'素颜一笑，眼角先出卖年龄', coord:['皱纹倾向','干纹为主','表情纹明显'],
+    kw:['干纹细纹','上妆卡纹','表情纹'],
+    insight:[
+      '同样是熬夜，你的眼下第二天就多出一条细线；笑起来眼尾有细细的褶，粉底爱卡在法令纹和眼下；拍照时下意识想抬眼、想张嘴把纹拉平。早上化妆，遮瑕最先用在眼下和嘴角这两处，连自拍都要挑角度。',
+      '这属于皱纹倾向：胶原与弹性蛋白从二十五岁后逐年减少，加上紫外线这个最主要的外因，再叠上糖化和干燥，纹路就先出现在动得最多的地方。好消息是，它更多由后天习惯决定，所以也真的可以干预，防晒、保湿、A 醇，顺序别乱。',
+      '抗老不是等纹出来再补，而是从今天的防晒和保湿开始记复利，今天开始不算晚。'
+    
+    ],
+    care:['防晒是抗老第一步，全年无休','保湿到位，干纹会浅一半','A 醇、胜肽按耐受度慢慢上'],
+    warn:'别在干燥起皮时硬上高浓度 A 醇，那是自找泛红。',
+    basis:'依据：BSTI 皱纹/紧致维度 + 光老化与胶原流失',
+    match:'配「胶原在线」：一个在补、一个在存，抗老话题聊得到一起。',
+    c:'#948CC7', n:1 },
+
+  D2:{ emoji:'🎈', name:'胶原在线', persona:'素颜也撑得住，轮廓还在', coord:['紧致度高','真皮较厚','恢复快'],
+    kw:['紧致有弹性','苹果肌饱满','恢复快'],
+    insight:[
+      '素颜照镜子，脸颊还是鼓的；熬一夜，补两觉就回来了；别人开始研究法令纹，你更关心的是“还能撑几年”。同样一张合照，你的下颌线是清楚的那一个，苹果肌也还稳稳在原位，这是很多人羡慕不来的底子。',
+      '你的真皮还厚、弹性还好，文献里对应的指标就是皮肤紧致度与弹性（R0、R2 一类）。它跟基因有关，但更多被防晒、睡眠、糖摄入影响——所以你现在的状态，其实是过去几年习惯存下来的定期存款，所以别急着上猛药，你更需要“守住”。',
+      '你现在在“存钱”，别把它花在熬夜和暴晒上，它经不起折腾。'
+    
+    ],
+    care:['保持现在的防晒与作息，别提前透支','加一点抗氧化（VC、绿茶多酚）做日常维护','控制糖摄入，减少糖化'],
+    warn:'紧致是存量，熬夜和暴晒都在花你的存款。',
+    basis:'依据：BSTI 皱纹/紧致维度 + Cutometer 弹性参数',
+    match:'和「细纹领先同龄」互补：你是她的“未来参照”，她是你的“预警系统”。',
+    c:'#A79FCF', n:2 },
+
+  D3:{ emoji:'📉', name:'轮廓往下走', persona:'体重没变，脸的“位置”变了', coord:['松弛型','轮廓模糊','显疲惫'],
+    kw:['轮廓模糊','下颌线变软','显疲惫'],
+    insight:[
+      '体重几乎没变，但从侧面看下颌线不如两年前清楚；早上起床脸有点“坠”，笑的时候苹果肌往下走，照片里总像没睡醒。化妆时你会不自觉地把修容打重一点，好像那样脸就能被提回去，笑起来也少了点精神。',
+      '这是松弛型老化：不只是细纹，而是支撑结构整体下降——胶原、弹力纤维、脂肪垫一起往下走，加上重力与光老化，轮廓先松、纹后到。它跟胖瘦不是一回事，所以减肥减不掉，节食反而会让脸更凹，所以只靠面霜很难拉回去。',
+      '松弛不是“胖”，别靠减肥解决；把防晒、睡眠、抗老成分排进日程，越早开始越好。'
+    
+    ],
+    care:['防晒加睡眠是底盘，先补上','抗老成分（A 醇、胜肽）坚持 8–12 周再看','别用快速减肥去解决“垮”'],
+    warn:'松弛短期明显加重，建议就医评估，别全靠护肤品硬撑。',
+    basis:'依据：BSTI 皱纹维度 + 真皮密度与弹性下降',
+    match:'配「胶原在线」：她还没到这一步，你可以把踩过的坑讲给她听。',
+    c:'#8A83BF', n:3 },
+
+  E1:{ emoji:'🔴', name:'反复红肿痘', persona:'这颗还没消，下一颗已经报到', coord:['痤疮型','红肿硬结','周期发作'],
+    kw:['红肿痘','下巴集中','留硬结'],
+    insight:[
+      '下巴和脸颊轮着长，一颗刚瘪下去，旁边又鼓起来一个红硬的包；压力大、快来例假、吃了甜的，第二天必有一颗在等着。你甚至能提前预判：这周要是熬夜，周末一定得还债，你甚至能记住每颗痘的“作息”。',
+      '痘痘是毛囊、皮脂、炎症三者合谋：油脂多、毛孔堵、痤疮丙酸杆菌繁殖，再加炎症反应。激素波动、高糖高奶、熬夜都会添柴。在敏感性皮肤的亚型里，它对应“痤疮型”，共同点就是炎症，所以越急越红，所以别只盯着洗脸。',
+      '痘要“治”不要“挤”：红肿硬结几周不退、或反复发作，去看皮肤科比在镜子前折腾快。'
+    
+    ],
+    care:['别挤别抠，红肿期用温和抗炎护理','高糖高奶少一点，作息尽量规律','反复发作或硬结不退，去皮肤科'],
+    warn:'别长期自行用激素类药膏压痘，会反跳。',
+    basis:'依据：敏感性皮肤痤疮亚型 + 毛囊皮脂腺炎症机制',
+    match:'和「闭口毛孔星人」同属痘肌阵营，一个发炎一个堵塞。',
+    c:'#DE8A5E', n:1 },
+
+  E2:{ emoji:'🕳️', name:'闭口毛孔星人', persona:'摸起来一片小疙瘩，看起来一片小坑', coord:['毛孔堵塞型','闭口为主','毛孔显形'],
+    kw:['闭口粉刺','毛孔明显','上妆不服帖'],
+    insight:[
+      '光线下侧面一看，额头和下巴一片细小的凸起，摸上去像砂纸；鼻翼两侧的毛孔清清楚楚，粉底填进去反而更明显。你最怕斜着来的那道光，因为它会把每一颗闭口都标出来，所以拍照总爱正面、爱开美颜。',
+      '这是毛孔堵塞型：角质代谢变慢，加上皮脂多，毛孔口被角质和油封住，就形成闭口；长期撑大之后，毛孔很难回到从前。它不太发炎，却非常顽固，靠搓、靠撕拉面膜都只能清爽几天，所以别指望一支洁面解决问题。',
+      '对付闭口靠“疏通”不靠“搓”：规律去角质，别用手抠，它需要的是长期规律，而不是一次猛攻，别急。'
+    
+    ],
+    care:['规律温和去角质（水杨酸、果酸），别天天搓','卸妆彻底，别带妆睡觉','毛孔一旦撑大只能改善，不能“消失”'],
+    warn:'别用撕拉面膜和磨砂膏硬清闭口，毛孔会更松。',
+    basis:'依据：角质代谢与毛囊角化异常 + 敏感性皮肤痤疮亚型',
+    match:'配「反复红肿痘」：你负责疏通，她负责消炎。',
+    c:'#E3A182', n:2 },
+
+  E3:{ emoji:'🌡️', name:'泛红灼热型', persona:'脸常年自带腮红，热一点就“烧”', coord:['血管反应高','持续泛红','遇热加重'],
+    kw:['持续泛红','灼热感','红血丝'],
+    insight:[
+      '冬天进暖气房、吃一顿火锅、开个会紧张一下，脸就开始烧，颧骨和鼻翼红得明显，还伴着细细的红血丝；用冷水敷一下才舒服点。别人以为你害羞，其实你只是在忍那股热，所以你学会了随身带小风扇。',
+      '文献把这一类归到玫瑰痤疮型敏感：血管反应性高、屏障受损、炎症反复。它和普通敏感的区别是“持续性红斑加灼热感”，需要医生鉴别，不要自己长期用激素类药膏去压，压下去还会反弹，所以“退红”不能靠蛮力。',
+      '你的护肤要“降温”：避热、避刺激、避酒精；泛红持续不退请先就诊，把刺激源一条条划掉，别急着换产品。'
+    
+    ],
+    care:['避热、避酒精、避辛辣与情绪激动','修护屏障，选精简温和的产品','持续泛红请就诊，明确是否为玫瑰痤疮'],
+    warn:'别自行长期用激素药膏“退红”，会越退越麻烦。',
+    basis:'依据：敏感性皮肤玫瑰痤疮亚型 +《中国敏感性皮肤临床诊疗指南（2024）》',
+    match:'和「屏障很薄的敏感皮」同族：你比她多一条“遇热加重”。',
+    c:'#D97B62', n:3 },
+
+  F1:{ emoji:'🌀', name:'外油内干', persona:'一边出油，一边紧绷，最难伺候', coord:['假性油皮','屏障缺水','越洗越干'],
+    kw:['假性油皮','油光下紧绷','越洗越干'],
+    insight:[
+      '中午鼻头油得能反光，可两颊又紧又干，涂厚了闷、涂薄了绷；洗完脸那十分钟最舒服，过后立刻又油又干。你一直以为自己是油皮，于是一直在控油，结果越控越糟，吸油纸一天能用掉好几张。',
+      '这是典型的外油内干：皮脂够，但角质层含水量和屏障脂质不够——油是表面现象，缺水缺脂才是底层问题。过度清洁和控油会让屏障更薄，皮脂反而出得更多，于是你陷进“越洗越油、越油越洗”的循环，所以你越努力越像在原地打转。',
+      '先修屏障，再谈控油；把“洗得干净”换成“洗得刚好”，先把“温和”这两个字做到，别急着换产品。'
+    
+    ],
+    care:['把“控油”换成“修屏障”：温和清洁加补脂','保湿选清爽但有油相的乳液','别一天洗三次脸'],
+    warn:'越洗越油是信号，不是你“没洗干净”。',
+    basis:'依据：皮脂与角质层含水量分离 + 混合性皮肤分类',
+    match:'和「T 区油田两颊干」同族，你是她的“升级版”。',
+    c:'#74A8BE', n:1 },
+
+  F2:{ emoji:'🍂', name:'季节型', persona:'冬天的你和夏天的你，是两种肤质', coord:['混合性','随气候切换','换季必调'],
+    kw:['冬干夏油','随气候切换','换季必调'],
+    insight:[
+      '夏天 T 区油到能煎蛋，冬天两颊干到起皮；同一瓶面霜，八月嫌闷、十二月嫌不够；每年换季你都要重新试一遍护肤品，梳妆台上永远有几瓶只用了一半的“季节限定”，朋友都以为你在换肤质。',
+      '文献把混合性皮肤分出“季节性”这一类：皮脂分泌和屏障状态都会随温度、湿度变化。夏天皮脂多、冬天屏障脂质少，于是同一个人在两季呈现两种肤质，这不是你的错觉，也不是产品不行，是需求在变，所以你每年的护肤预算都在重复交学费。',
+      '别用一套护肤打全年，跟着季节换质地，比换品牌有用，提前一个月换更稳。'
+    
+    ],
+    care:['按季节换质地：夏天凝露、冬天面霜','换季过渡期减产品、加修护','记录每年“翻车月份”，提前两周预防'],
+    warn:'别一套产品硬扛四季，那不是省钱，是折腾脸。',
+    basis:'依据：混合性皮肤季节性分类（Cosmetics 2023 综述）',
+    match:'配「T 区油田两颊干」：一个分区、一个分季，都是“分场景”的人。',
+    c:'#86B7C6', n:2 },
+
+  F3:{ emoji:'🌙', name:'熬夜压力型', persona:'睡不好，第二天全写在脸上', coord:['状态型','压力敏感','波动大'],
+    kw:['熬夜发灰','压力泛红','状态飘忽'],
+    insight:[
+      '连续加班那周，脸又暗又油，下巴冒痘、眼下浮；项目结束睡够三天，皮肤像被人重新擦过一遍，同事都问你是不是做了项目。你自己最清楚：什么都没换，只是睡够了，连粉底都盖不住那股疲态。',
+      '压力和熬夜会抬高皮质醇：皮脂分泌上升、屏障修复下降、炎症水平上升，三个方向一起把皮肤推向“不稳”。它不是某一种固定肤质，而是状态型波动，所以你才会时好时坏，连自己都测不准，所以你需要的不是急救，是休息。',
+      '你最有效的护肤品是睡眠；把作息调回来，比叠加精华见效快，皮肤只是最先喊累的那个器官。'
+    
+    ],
+    care:['先把睡眠补回来，护肤品只能兜底','压力大时简化流程：清洁＋保湿＋防晒','补一点抗氧化，减少熬夜带来的暗沉'],
+    warn:'别靠猛药“急救”，状态差的时候皮肤更脆。',
+    basis:'依据：皮质醇与屏障修复、皮脂分泌的相关研究',
+    match:'和「换季不稳」同族：一个被气候推，一个被压力推。',
+    c:'#9CC0CD', n:3 }
+};
+
+var ARTCOL = {A:'#4E9E93', B:'#D98B9C', C:'#D2A350', D:'#948CC7', E:'#DE8A5E', F:'#74A8BE'};
+
+function iconFor(dim,n,col){
+  var s = '<circle cx="152" cy="150" r="27" fill="#fff" stroke="'+col+'" stroke-width="3" stroke-opacity=".5"/>';
+  if(dim==='A'){
+    if(n===1){ s+='<path d="M152 137 q11 13 0 22 q-11 -9 0 -22" fill="'+col+'" fill-opacity=".75" stroke="'+col+'" stroke-width="2"/>'; }
+    if(n===2){ s+='<path d="M142 145 l5 6 l-2 8 M152 141 l4 7 l-2 9 M161 146 l4 6" stroke="'+col+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>'; }
+    if(n===3){ s+='<path d="M140 158 a13 13 0 0 1 26 0 z" fill="'+col+'" fill-opacity=".35"/><path d="M140 158 a13 13 0 0 0 26 0 z" fill="'+col+'" fill-opacity=".8"/>'; }
+  }
+  if(dim==='B'){
+    s+='<path d="M152 138 l11 5 v9 c0 8 -5 12 -11 15 c-6 -3 -11 -7 -11 -15 v-9 z" fill="'+col+'" fill-opacity="'+(n===1?'.35':n===2?'.75':'.55')+'" stroke="'+col+'" stroke-width="2"/>';
+    if(n===1){ s+='<path d="M148 148 l4 5 l-4 6" stroke="#fff" stroke-width="2" fill="none"/>'; }
+    if(n===2){ s+='<path d="M147 152 l4 4 l7 -8" stroke="#fff" stroke-width="2.4" fill="none"/>'; }
+    if(n===3){ s+='<path d="M144 152 q4 -4 8 0 q4 4 8 0" stroke="#fff" stroke-width="2" fill="none"/>'; }
+  }
+  if(dim==='C'){
+    s+='<circle cx="152" cy="148" r="9" fill="'+col+'" fill-opacity=".55"/>';
+    if(n===1){ s+='<circle cx="138" cy="158" r="3" fill="'+col+'"/><circle cx="147" cy="164" r="2.4" fill="'+col+'"/><circle cx="162" cy="161" r="3.2" fill="'+col+'"/>'; }
+    if(n===2){ s+='<circle cx="152" cy="148" r="14" fill="none" stroke="'+col+'" stroke-width="2" stroke-opacity=".5"/>'; }
+    if(n===3){ s+='<circle cx="164" cy="141" r="4" fill="'+col+'" fill-opacity=".8"/><circle cx="140" cy="160" r="5" fill="'+col+'" fill-opacity=".45"/>'; }
+  }
+  if(dim==='D'){
+    s+='<circle cx="152" cy="150" r="13" fill="none" stroke="'+col+'" stroke-width="2.6"/>';
+    if(n===1){ s+='<path d="M152 143 v7 l5 4" stroke="'+col+'" stroke-width="2.4" fill="none" stroke-linecap="round"/>'; }
+    if(n===2){ s+='<path d="M152 150 a5 5 0 1 1 5 5" stroke="'+col+'" stroke-width="2.4" fill="none"/>'; }
+    if(n===3){ s+='<path d="M152 140 v18 m-4 -5 l4 5 l4 -5" stroke="'+col+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>'; }
+  }
+  if(dim==='E'){
+    if(n===1){ s+='<circle cx="152" cy="150" r="11" fill="'+col+'" fill-opacity=".35"/><circle cx="152" cy="150" r="4.5" fill="'+col+'"/>'; }
+    if(n===2){ s+='<circle cx="145" cy="144" r="3" fill="'+col+'"/><circle cx="158" cy="147" r="3" fill="'+col+'" fill-opacity=".6"/><circle cx="149" cy="158" r="3" fill="'+col+'" fill-opacity=".75"/><circle cx="160" cy="159" r="2.2" fill="'+col+'" fill-opacity=".45"/>'; }
+    if(n===3){ s+='<path d="M152 141 q9 9 0 18 q-9 -9 0 -18" fill="'+col+'" fill-opacity=".5"/><path d="M138 150 h-6 M170 150 h6" stroke="'+col+'" stroke-width="2.4"/>'; }
+  }
+  if(dim==='F'){
+    if(n===1){ s+='<circle cx="152" cy="150" r="13" fill="none" stroke="'+col+'" stroke-width="2.4"/><path d="M152 141 q7 8 0 16 q-7 -8 0 -16" fill="'+col+'" fill-opacity=".5"/>'; }
+    if(n===2){ s+='<path d="M141 156 q-7 0 -7 -6 q0 -6 6 -6 q1 -8 9 -7 q8 1 8 8 q6 1 5 6 q-1 5 -7 5 z" fill="'+col+'" fill-opacity=".55"/><path d="M141 156 h16 q5 0 5 4" stroke="'+col+'" stroke-width="2" fill="none"/>'; }
+    if(n===3){ s+='<path d="M148 140 a10 10 0 1 0 8 17 a11 11 0 1 1 -8 -17" fill="'+col+'" fill-opacity=".55"/><circle cx="164" cy="142" r="2" fill="'+col+'"/><circle cx="169" cy="150" r="1.6" fill="'+col+'" fill-opacity=".7"/>'; }
+  }
+  return s;
+}
+
+function artFor(code){
+  var dim = code.charAt(0), n = parseInt(code.charAt(1),10);
+  var col = RESULTS[code].c || ARTCOL[dim] || '#5FAE9B';
+  var gid = 'g_'+code;
+  var blush = col;
+  var s = '<svg viewBox="0 0 200 200" class="art" role="img" aria-label="肤质图案">';
+  s += '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1">'
+     +  '<stop offset="0" stop-color="'+col+'" stop-opacity="0.20"/>'
+     +  '<stop offset="1" stop-color="#ffffff" stop-opacity="1"/></linearGradient></defs>';
+  s += '<rect x="6" y="6" width="188" height="188" rx="30" fill="url(#'+gid+')"/>';
+  s += '<circle cx="38" cy="42" r="7" fill="'+col+'" fill-opacity=".25"/>';
+  s += '<circle cx="168" cy="34" r="4.5" fill="'+col+'" fill-opacity=".35"/>';
+  s += '<circle cx="30" cy="168" r="5" fill="'+col+'" fill-opacity=".2"/>';
+  s += '<ellipse cx="100" cy="92" rx="47" ry="54" fill="#FDF3EC" stroke="'+col+'" stroke-width="3" stroke-opacity=".55"/>';
+  s += '<path d="M76 84 q9 -8 18 0" stroke="#5A7370" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  s += '<path d="M108 84 q9 -8 18 0" stroke="#5A7370" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  s += '<ellipse cx="70" cy="102" rx="10" ry="6.5" fill="'+blush+'" fill-opacity=".28"/>';
+  s += '<ellipse cx="130" cy="102" rx="10" ry="6.5" fill="'+blush+'" fill-opacity=".28"/>';
+  s += '<path d="M92 106 q8 7 16 0" stroke="#C88A86" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  s += '<path d="M92 64 q8 -6 16 0" stroke="'+col+'" stroke-width="2.6" fill="none" stroke-opacity=".5" stroke-linecap="round"/>';
+  s += iconFor(dim, n, col);
+  s += '</svg>';
+  return s;
+}
+
+function coverArt(){
+  var s = '<svg viewBox="0 0 300 400" class="art" role="img" aria-label="封面主视觉">';
+  s += '<defs><linearGradient id="covg" x1="0" y1="0" x2="1" y2="1">'
+     +  '<stop offset="0" stop-color="#E3F3EF"/><stop offset="1" stop-color="#F4FBFD"/></linearGradient></defs>';
+  s += '<rect x="0" y="0" width="300" height="400" rx="24" fill="url(#covg)"/>';
+  s += '<circle cx="150" cy="150" r="96" fill="#fff" fill-opacity=".55"/>';
+  s += '<circle cx="150" cy="150" r="72" fill="#FDF3EC" stroke="#5FAE9B" stroke-width="4" stroke-opacity=".45"/>';
+  s += '<path d="M118 142 q12 -10 24 0" stroke="#5A7370" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  s += '<path d="M158 142 q12 -10 24 0" stroke="#5A7370" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  s += '<ellipse cx="110" cy="166" rx="13" ry="8" fill="#5FAE9B" fill-opacity=".22"/>';
+  s += '<ellipse cx="190" cy="166" rx="13" ry="8" fill="#5FAE9B" fill-opacity=".22"/>';
+  s += '<path d="M138 172 q12 9 24 0" stroke="#C88A86" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+  s += '<circle cx="248" cy="72" r="22" fill="#fff" stroke="#D98B9C" stroke-width="3" stroke-opacity=".5"/>';
+  s += '<path d="M248 62 q9 10 0 18 q-9 -8 0 -18" fill="#D98B9C" fill-opacity=".6"/>';
+  s += '<circle cx="52" cy="252" r="22" fill="#fff" stroke="#D2A350" stroke-width="3" stroke-opacity=".5"/>';
+  s += '<circle cx="52" cy="248" r="8" fill="#D2A350" fill-opacity=".55"/>';
+  s += '<circle cx="62" cy="262" r="3" fill="#D2A350"/>';
+  s += '<circle cx="42" cy="260" r="2.4" fill="#D2A350" fill-opacity=".7"/>';
+  s += '<circle cx="242" cy="278" r="22" fill="#fff" stroke="#948CC7" stroke-width="3" stroke-opacity=".5"/>';
+  s += '<path d="M242 266 v20 m-5 -6 l5 6 l5 -6" stroke="#948CC7" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  s += '<rect x="60" y="316" width="180" height="12" rx="6" fill="#5FAE9B" fill-opacity=".18"/>';
+  s += '<rect x="60" y="316" width="108" height="12" rx="6" fill="#5FAE9B" fill-opacity=".45"/>';
+  s += '<text x="150" y="356" text-anchor="middle" font-size="13" fill="#5C7773" font-family="sans-serif" letter-spacing="2">油水平衡 · 耐受 · 色素 · 紧致</text>';
+  s += '</svg>';
+  return s;
+}
+
+function resolve(answers){
+  var sc = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    sc[code] = (sc[code]||0) + 1;
+  });
+  var keys = Object.keys(sc);
+  var mx = Math.max.apply(null, keys.map(function(k){return sc[k];}));
+  var tied = keys.filter(function(k){return sc[k]===mx;});
+  var code;
+  if(tied.length===1){
+    code = tied[0];
+  }else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[answers.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0){ code = last; }
+    else if(tied.indexOf(first)>=0){ code = first; }
+    else { code = tied.sort()[0]; }
+  }
+  return { code:code, scores:sc };
+}
+
+/* ===== 视图切换与渲染 ===== */
+var qIndex = 0;
+var answers = [];
+var lastResultCode = '';
+
+document.getElementById('coverArt').innerHTML = coverArt();
+
+function renderQuestion(){
+  var q = QUESTIONS[qIndex];
+  document.getElementById('qIndex').textContent = '第 ' + (qIndex+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((qIndex)/QUESTIONS.length*100).toFixed(1) + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o, i){
+    var d = document.createElement('div');
+    d.className = 'option';
+    d.innerHTML = '<span class="opt-key">'+o.key+'</span><span>'+o.text+'</span>';
+    d.addEventListener('click', function(){ pick(i); });
+    box.appendChild(d);
+  });
+}
+
+function pick(i){
+  answers[qIndex] = i;
+  var opts = document.querySelectorAll('#options .option');
+  opts.forEach(function(el){ el.classList.remove('on'); });
+  opts[i].classList.add('on');
+  setTimeout(function(){
+    if(qIndex < QUESTIONS.length-1){
+      qIndex++;
+      renderQuestion();
+    }else{
+      finish();
+    }
+  }, 260);
+}
+
+function finish(){
+  document.getElementById('progressFill').style.width = '100%';
+  var r = resolve(answers);
+  lastResultCode = r.code;
+  renderResult(r);
+  show('result');
+}
+
+function polarity(a, b){
+  var tot = a + b;
+  if(!tot) return 50;
+  return Math.round(a / tot * 100);
+}
+
+function axisData(sc){
+  var A1 = sc.A1||0, A2 = sc.A2||0, A3 = sc.A3||0;
+  var B1 = sc.B1||0, B2 = sc.B2||0, B3 = sc.B3||0;
+  var C1 = sc.C1||0, C2 = sc.C2||0, C3 = sc.C3||0;
+  var D1 = sc.D1||0, D2 = sc.D2||0, D3 = sc.D3||0;
+  var oil = A1 + A3, sen = B1 + B3, pig = C1 + C3, wri = D1 + D3;
+  var arr = [];
+  arr.push(oil >= A2 ? {lb:'偏油指数', v:polarity(oil, A2)} : {lb:'偏干指数', v:polarity(A2, oil)});
+  arr.push(B2 >= sen ? {lb:'耐受指数', v:polarity(B2, sen)} : {lb:'敏感指数', v:polarity(sen, B2)});
+  arr.push(C2 >= pig ? {lb:'匀净指数', v:polarity(C2, pig)} : {lb:'色素活跃', v:polarity(pig, C2)});
+  arr.push(D2 >= wri ? {lb:'紧致指数', v:polarity(D2, wri)} : {lb:'老化压力', v:polarity(wri, D2)});
+  return arr;
+}
+
+var lastAxes = [];
+
+function renderResult(r){
+  var code = r.code;
+  var d = RESULTS[code];
+  document.getElementById('rArt').innerHTML = artFor(code);
+  document.getElementById('rEmoji').textContent = d.emoji;
+  document.getElementById('rName').textContent = d.name;
+  document.getElementById('rPersona').textContent = d.persona;
+  document.getElementById('rCoord').innerHTML = d.coord.map(function(c){return '<span>'+c+'</span>';}).join('');
+  document.getElementById('rKeywords').innerHTML = d.kw.map(function(k){return '<span class="kw">'+k+'</span>';}).join('');
+
+  lastAxes = axisData(r.scores);
+  document.getElementById('rBars').innerHTML = lastAxes.map(function(a){
+    return '<div class="bar-row"><span class="lb">'+a.lb+'</span>'
+         + '<span class="bar-track"><span class="bar-in" style="width:'+a.v+'%"></span></span>'
+         + '<span class="vl">'+a.v+'%</span></div>';
+  }).join('');
+
+  document.getElementById('rInsight').innerHTML =
+      '<p><span class="lead">👀 一个画面</span><br>'+d.insight[0]+'</p>'
+    + '<p><span class="lead">🌱 这是这样的皮肤</span><br>'+d.insight[1]+'</p>'
+    + '<div class="quote">✨ '+d.insight[2]+'</div>';
+
+  document.getElementById('rCare').innerHTML = d.care.map(function(c){return '<li>'+c+'</li>';}).join('');
+  document.getElementById('rWarn').textContent = '⚠️ 避雷：' + d.warn;
+  document.getElementById('rBasis').textContent = d.basis;
+  document.getElementById('rMatch').textContent = '🧴 ' + d.match;
+}
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  qIndex = 0; answers = [];
+  renderQuestion();
+  show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(qIndex > 0){ qIndex--; renderQuestion(); }
+  else { show('home'); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  qIndex = 0; answers = [];
+  show('home');
+});
+
+/* ================= 海报 ================= */
+var toastTimer = null;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+
+function rr(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text.charAt(i);
+    var test = line + ch;
+    if(c.measureText(test).width > maxW && line){
+      c.fillText(line, x, y);
+      line = ch;
+      y += lineH;
+    }else{
+      line = test;
+    }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+document.getElementById('posterBtn').addEventListener('click', function(){
+  var code = lastResultCode;
+  if(!code){ toast('还没有结果哦'); return; }
+  var d = RESULTS[code];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var EM = '"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+  var FAM = '-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+
+  var g = c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#F1FAF6'); g.addColorStop(.5,'#F7FCFD'); g.addColorStop(1,'#FFFFFF');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  var PAD = 54, CW = W - PAD*2, y = 58;
+  c.textAlign = 'left';
+  c.fillStyle = '#93A9A5'; c.font = '20px '+FAM;
+  c.fillText('肤质档案 · 18 题文献版', PAD, y);
+  var no = (code.charCodeAt(0)-65)*3 + parseInt(code.charAt(1),10);
+  c.textAlign = 'right'; c.fillStyle = d.c; c.font = '800 20px '+FAM;
+  c.fillText('NO.' + (no<10 ? '0'+no : ''+no), W-PAD, y);
+  c.textAlign = 'left';
+  y += 26;
+  c.strokeStyle = '#DCEBE7'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(PAD, y); c.lineTo(W-PAD, y); c.stroke();
+  y += 50;
+
+  c.fillStyle = '#26403C'; c.font = '800 44px '+FAM;
+  y = wrapText(c, d.name, PAD, y, CW, 54); y += 6;
+  c.fillStyle = '#5C7773'; c.font = '23px '+FAM;
+  y = wrapText(c, d.persona, PAD, y, CW, 32); y += 14;
+
+  var x = PAD; c.font = '20px '+FAM;
+  d.coord.forEach(function(t){
+    var w = c.measureText(t).width + 30;
+    if(x + w > W - PAD){ x = PAD; y += 40; }
+    c.fillStyle = '#EDF7F4'; rr(c, x, y, w, 34, 9); c.fill();
+    c.fillStyle = '#3E6B62'; c.fillText(t, x+15, y+24);
+    x += w + 8;
+  });
+  y += 30;
+  x = PAD; c.font = '19px '+FAM;
+  d.kw.forEach(function(t){
+    var w = c.measureText(t).width + 24;
+    if(x + w > W - PAD){ x = PAD; y += 36; }
+    c.fillStyle = '#F5F9F8'; rr(c, x, y, w, 30, 15); c.fill();
+    c.fillStyle = '#5C7773'; c.fillText(t, x+12, y+21);
+    x += w + 8;
+  });
+  y += 46;
+
+  var artSide = 188, ax = PAD, ay = y;
+  c.fillStyle = '#FFFFFF'; rr(c, ax, ay, artSide, artSide, 20); c.fill();
+  c.strokeStyle = '#E4F0EC'; c.lineWidth = 1.5; c.stroke();
+  c.fillStyle = d.c; c.globalAlpha = .10;
+  rr(c, ax+8, ay+8, artSide-16, artSide-16, 15); c.fill();
+  c.globalAlpha = 1;
+  var fx = ax + artSide/2, fy = ay + artSide/2 - 8;
+  c.beginPath(); c.arc(fx, fy, 42, 0, Math.PI*2); c.fillStyle = '#FDF3EC'; c.fill();
+  c.strokeStyle = d.c; c.lineWidth = 3.5; c.stroke();
+  c.strokeStyle = '#5A7370'; c.lineWidth = 3; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(fx-26, fy-6); c.quadraticCurveTo(fx-19, fy-14, fx-12, fy-6); c.stroke();
+  c.beginPath(); c.moveTo(fx+12, fy-6); c.quadraticCurveTo(fx+19, fy-14, fx+26, fy-6); c.stroke();
+  c.strokeStyle = '#C88A86';
+  c.beginPath(); c.moveTo(fx-10, fy+16); c.quadraticCurveTo(fx, fy+24, fx+10, fy+16); c.stroke();
+  c.fillStyle = d.c; c.font = '22px '+EM; c.textAlign = 'center';
+  c.fillText(d.emoji, fx, ay+artSide-10);
+  c.textAlign = 'left'; c.lineCap = 'butt';
+
+  var bx = ax + artSide + 30, bw = W - PAD - bx, by = ay + 8;
+  lastAxes.forEach(function(a){
+    c.fillStyle = '#8FA6A2'; c.font = '20px '+FAM; c.textAlign = 'left';
+    c.fillText(a.lb, bx, by+16);
+    c.textAlign = 'right'; c.fillStyle = '#3E8E80'; c.font = '800 18px '+FAM;
+    c.fillText(a.v+'%', bx+bw, by+16);
+    c.textAlign = 'left';
+    c.fillStyle = '#EEF5F3'; rr(c, bx, by+26, bw, 12, 6); c.fill();
+    c.fillStyle = d.c; rr(c, bx, by+26, Math.max(6, bw*a.v/100), 12, 6); c.fill();
+    by += 44;
+  });
+  y = ay + artSide + 40;
+
+  c.fillStyle = '#3E8E80'; c.font = '800 25px '+FAM;
+  c.fillText('👀 一个画面', PAD, y); y += 34;
+  c.fillStyle = '#33514C'; c.font = '24px '+FAM;
+  y = wrapText(c, d.insight[0], PAD, y, CW, 40); y += 12;
+
+  c.fillStyle = '#3E8E80'; c.font = '800 25px '+FAM;
+  c.fillText('🌱 这是这样的皮肤', PAD, y); y += 34;
+  c.fillStyle = '#33514C'; c.font = '24px '+FAM;
+  y = wrapText(c, d.insight[1], PAD, y, CW, 40); y += 16;
+
+  c.font = '800 26px '+FAM;
+  var qlines = Math.ceil(c.measureText(d.insight[2]).width / (CW-56));
+  var qh = Math.max(84, qlines*40 + 40);
+  c.fillStyle = '#EAF7F3'; rr(c, PAD, y, CW, qh, 14); c.fill();
+  c.fillStyle = d.c; rr(c, PAD, y, 5, qh, 3); c.fill();
+  c.fillStyle = '#2C5A51';
+  y = wrapText(c, d.insight[2], PAD+22, y+38, CW-50, 40) + 10;
+
+  c.fillStyle = '#3E8E80'; c.font = '800 22px '+FAM;
+  c.fillText('照着做就好', PAD, y+16); y += 22;
+  c.fillStyle = '#33514C'; c.font = '21px '+FAM;
+  d.care.forEach(function(t,i){
+    y = wrapText(c, (i+1)+'. '+t, PAD, y+28, CW, 30);
+  });
+
+  c.textAlign = 'center';
+  c.fillStyle = '#93A9A5'; c.font = '21px '+FAM;
+  c.fillText('把这张图发给那个总说自己“外油内干”的朋友', W/2, H-80);
+  c.fillStyle = '#B4C6C2'; c.font = '17px '+FAM;
+  c.fillText('科普向自测 · 结果仅供参考 · 不构成医学诊断', W/2, H-48);
+
+  var url = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = url;
+  document.getElementById('posterDownload').href = url;
+  document.getElementById('posterDownload').download = '我的肤质档案_'+d.name+'.png';
+  document.getElementById('posterModal').classList.add('show');
+});
+
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+</script>
+</body>
+</html>
