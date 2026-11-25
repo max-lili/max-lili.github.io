@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你是哪种打工人 · 打工人类型测评</title>
+<style>
+:root{
+  --main:#FF7A59; --main-deep:#E9542F; --main-soft:#FFE8DE;
+  --cream:#FFFBF6; --ink:#3F332F; --ink-2:#7A6862; --ink-3:#A99A94;
+  --line:#F3E3DA; --yellow:#FFD36E; --mint:#7CC7BE;
+  --shadow-sm:0 4px 18px rgba(233,84,47,.10);
+  --shadow:0 14px 44px rgba(233,84,47,.16);
+  --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(150deg,#FFF6EF,#F5FAF8 60%,#FFFBF6);color:var(--ink);min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:26px 20px 48px}
+.view{display:none}
+.view.show{display:block;animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .4s ease}
+
+#gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:linear-gradient(150deg,rgba(255,246,239,.97),rgba(245,250,248,.97))}
+#gate.hide{display:none}
+.gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+  padding:38px 30px 30px;width:100%;max-width:400px;text-align:center}
+.gate-lock{font-size:42px;margin-bottom:6px;font-family:var(--emoji)}
+.gate-card h2{font-size:20px;margin:0 0 8px}
+.gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0}
+#passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+  margin-top:18px;padding:14px 12px 14px 24px;border:2px solid var(--main-soft);border-radius:14px;
+  color:var(--ink);font-family:inherit;outline:none;background:#FFFAF7}
+#passInput:focus{border-color:var(--main);box-shadow:0 0 0 4px rgba(255,122,89,.12)}
+.gate-msg{height:20px;font-size:12.5px;color:var(--main-deep);margin:6px 0 10px;opacity:0;transition:opacity .2s}
+.gate-msg.on{opacity:1}
+.gate-foot{font-size:11px;color:var(--ink-3);margin:16px 0 0}
+
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+  color:#fff;background:linear-gradient(135deg,var(--main),var(--main-deep));
+  box-shadow:0 8px 22px rgba(233,84,47,.26);cursor:pointer;font-family:inherit;margin-top:12px;transition:.18s}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:#fff;color:var(--main-deep);border:1.5px solid var(--main-soft);box-shadow:none}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+  padding:20px;margin-bottom:16px}
+h1{font-size:29px;line-height:1.32;margin:10px 0 12px;letter-spacing:.5px}
+h1 .hl{color:var(--main-deep)}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--main-deep);
+  background:var(--main-soft);padding:5px 12px;border-radius:999px;font-weight:700}
+.cover{width:min(100%,300px);margin:2px auto 6px;display:block}
+.hero-sub{font-size:14px;color:var(--ink-2);line-height:1.8;margin:0 0 16px}
+.stats{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+.stat{flex:1;min-width:92px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-size:17px;color:var(--main-deep)}
+.stat span{font-size:11.5px;color:var(--ink-3)}
+.progress-track{height:8px;background:var(--main-soft);border-radius:99px;overflow:hidden;margin:14px 0 10px}
+.bar-fill{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--main),var(--main-deep));transition:width .45s ease}
+.qmeta{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--ink-3);margin-bottom:14px}
+.qmeta b{color:var(--main-deep);font-size:14px}
+.qtitle{font-size:19px;line-height:1.6;margin:0 0 18px;font-weight:800}
+.option{display:flex;align-items:flex-start;gap:11px;padding:14px;border:1.5px solid var(--line);
+  border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.16s;font-size:14.5px;line-height:1.6}
+.option:hover{transform:translateY(-2px);border-color:var(--main-soft);box-shadow:var(--shadow-sm)}
+.option.on{border-color:var(--main);background:#FFF4EF}
+.opt-key{flex:0 0 24px;height:24px;border-radius:50%;background:var(--main-soft);color:var(--main-deep);
+  font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.option.on .opt-key{background:var(--main);color:#fff}
+
+.r-art{width:190px;margin:0 auto 8px;display:block}
+.dim-tag{display:inline-block;font-size:12px;font-weight:700;color:var(--main-deep);background:var(--main-soft);
+  padding:4px 11px;border-radius:999px;margin-bottom:8px}
+.r-name{font-size:26px;margin:0 0 6px;letter-spacing:1px}
+.r-persona{font-size:14px;color:var(--ink-2);line-height:1.7;margin:0 0 12px}
+.kws{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.kw{font-size:12px;color:var(--main-deep);background:#FFF1EA;border:1px solid var(--main-soft);
+  padding:4px 11px;border-radius:999px}
+.insight-sec{margin-bottom:14px}
+.insight-label{font-size:12.5px;font-weight:800;color:var(--main-deep);margin-bottom:5px;font-family:var(--emoji)}
+.insight-text{font-size:14.5px;line-height:1.85;color:var(--ink);margin:0}
+.quote{margin:4px 0 0;padding:12px 14px;border-radius:12px;
+  background:linear-gradient(135deg,#FFF1E8,#FFF9F2);border-left:4px solid var(--main);
+  font-size:15px;line-height:1.7;font-weight:800;color:var(--main-deep)}
+.energy{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.energy h3{font-size:13px;margin:0 0 12px;color:var(--ink-2);font-weight:700}
+.e-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.e-name{flex:0 0 84px;font-size:12px;color:var(--ink-2)}
+.e-track{flex:1;height:7px;background:#F4EEE9;border-radius:99px;overflow:hidden}
+.e-fill{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--main),#FFC59B);transition:width .8s ease}
+.e-val{flex:0 0 46px;font-size:11.5px;color:var(--ink-3);text-align:right}
+.scene{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin:14px 0 0}
+.match{margin-top:14px;padding:12px 14px;background:#F7FAF9;border-radius:12px;font-size:13px;line-height:1.75;color:var(--ink-2)}
+.disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+
+#posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(63,51,47,.66);
+  align-items:center;justify-content:center;padding:18px}
+#posterModal.show{display:flex}
+.poster-box{background:#fff;border-radius:20px;padding:14px;max-width:400px;width:100%;text-align:center;max-height:94vh;overflow:auto}
+#posterImg{width:100%;border-radius:12px;display:block}
+.poster-tip{font-size:11.5px;color:var(--ink-3);margin:8px 0 0}
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:rgba(63,51,47,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开始测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网，不收集任何信息</p>
+    </div>
+  </div>
+
+  <section id="home" class="view">
+    <span class="eyebrow">18 道工位小题</span>
+    <h1>你是哪种<span class="hl">打工人</span>？</h1>
+    <div id="coverArt" class="cover"></div>
+    <p class="hero-sub">同样一个周五下午的通知，18 个人能有 18 种反应。<br>凭第一反应选，看看你在办公室里到底是以什么姿势活着的那类人。</p>
+    <div class="stats">
+      <div class="stat"><b>18</b><span>道情景题</span></div>
+      <div class="stat"><b>18</b><span>种打工人</span></div>
+      <div class="stat"><b>3</b><span>分钟测完</span></div>
+    </div>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，<br>不构成任何心理诊断或职业建议。</p>
+  </section>
+
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <div class="qmeta"><span id="qIndex">第 1 / 18 题</span><span id="qTip">选最像你的那个</span></div>
+    <div class="card">
+      <h2 class="qtitle" id="qTitle">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <section id="result" class="view">
+    <div class="card">
+      <div id="artBox"></div>
+      <div style="text-align:center">
+        <span class="dim-tag" id="rDim">接锅姿势</span>
+        <h2 class="r-name" id="rName">稳锅侠</h2>
+        <p class="r-persona" id="rPersona">一句话人设</p>
+      </div>
+      <div class="kws" id="rKeywords"></div>
+      <div id="rInsight"></div>
+      <p class="scene" id="rScene"></p>
+      <div class="match" id="rMatch"></div>
+      <div class="energy">
+        <h3>你的六维打工能量</h3>
+        <div id="energyRows"></div>
+      </div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，<br>不构成任何心理诊断或职业建议。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <p class="poster-tip">手机上长按图片可保存，电脑上点下面的按钮下载</p>
+    <a class="btn" id="posterDownload" href="#" download="我的打工人类型.png">⬇️ 保存海报</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "1896"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 数据区 ============ */
+var DIMS = {
+  A:'接锅姿势', B:'沟通频道', C:'能量曲线',
+  D:'下班边界', E:'干活理由', F:'团队角色'
+};
+var DIM_ORDER = ['A','B','C','D','E','F'];
+
+var QUESTIONS = [
+  { title:'周三下午，群里突然冒出一句：「这个需求今天要上线，谁来接？」', options:[
+    {key:'A', code:'A1', text:'我先看现在到底卡在哪，边查边回一句「我来」。'},
+    {key:'B', code:'A2', text:'先在心里骂三秒，然后在群里回「行，给我半小时」。'},
+    {key:'C', code:'A3', text:'先不说话，默默打开文件，把能改的都改完再抬头。'},
+    {key:'D', code:'B1', text:'直接在群里问：需求文档在哪？谁拍板？几点真的上线？'}
+  ]},
+  { title:'上线前十分钟，你发现一个不明显、但可能很致命的 bug。', options:[
+    {key:'A', code:'A1', text:'立刻复现，先定位再动手，十分钟内给结论。'},
+    {key:'B', code:'A2', text:'先骂一句「怎么又是这里」，手已经在改了。'},
+    {key:'C', code:'A3', text:'安静蹲在角落查日志，查到了才抬头说「找到了」。'},
+    {key:'D', code:'B3', text:'不发语音不开会，把复现步骤和截图整理成一条长消息发出去。'}
+  ]},
+  { title:'周五快下班，领导说：「下周一要一版新的。」', options:[
+    {key:'A', code:'A1', text:'嘴上说好，手上立刻列清单，连周末怎么排都想好了。'},
+    {key:'B', code:'A2', text:'先原地崩溃一秒，然后开始算「最少要做到哪几件事」。'},
+    {key:'C', code:'A3', text:'先应一声，关掉电脑，回家路上在脑子里把方案过一遍。'},
+    {key:'D', code:'B2', text:'先稳住大家的情绪，再私下跟领导确认哪些是真的必须。'}
+  ]},
+  { title:'开会时有人提了个明显不靠谱的方案，还转头问你：「你觉得呢？」', options:[
+    {key:'A', code:'B1', text:'直接说「这个方案有三个坑，我最担心的是……」'},
+    {key:'B', code:'B2', text:'先接一句「这个方向挺好的」，再把问题换个说法提出来。'},
+    {key:'C', code:'B3', text:'当场只说「我再想想」，回去写一段有条理的分析发群里。'},
+    {key:'D', code:'A1', text:'不评价方案，先问「那我们下周先做哪一块」，把事往前推。'}
+  ]},
+  { title:'需要别的部门配合一件事，对方一直拖着不回。', options:[
+    {key:'A', code:'B1', text:'直接找到对接人，把时间和交付物说清楚。'},
+    {key:'B', code:'B2', text:'先问一句「你最近是不是特别忙」，再把请求说小一点。'},
+    {key:'C', code:'B3', text:'把需求写成一条条清楚的消息，配上时间节点，发过去。'},
+    {key:'D', code:'A3', text:'不催不问，自己先把能做的部分做完，等对方有空再接上。'}
+  ]},
+  { title:'同事在群里 @ 你，当着所有人的面指出你的错。', options:[
+    {key:'A', code:'B1', text:'回一句「是我漏了，马上改」，顺便把原因说清楚。'},
+    {key:'B', code:'B2', text:'先谢谢对方提出来，再私下补一句细节，不让场面难看。'},
+    {key:'C', code:'B3', text:'群里只回「收到」，然后把完整说明写成一条长消息补上。'},
+    {key:'D', code:'A2', text:'第一反应有点上火，忍了两分钟，还是先把错改完再说。'}
+  ]},
+  { title:'一天里，你状态最好的时段是？', options:[
+    {key:'A', code:'C1', text:'早上九点到十一点，脑子像刚充满电。'},
+    {key:'B', code:'C2', text:'深夜十一点以后，安静得只剩键盘声。'},
+    {key:'C', code:'C3', text:'没有特别高峰，一整天都差不多，稳。'},
+    {key:'D', code:'D1', text:'下班前那一小时，想到马上能走，效率反而最高。'}
+  ]},
+  { title:'一个要做三天的活，你会怎么排？', options:[
+    {key:'A', code:'C1', text:'第一天就干掉大半，剩下两天补细节。'},
+    {key:'B', code:'C2', text:'前两天先想清楚，最后半天一口气写完。'},
+    {key:'C', code:'C3', text:'每天推进一点点，不快，但绝不拖到最后。'},
+    {key:'D', code:'D2', text:'白天穿插着做，晚上和周末也随时能接着弄。'}
+  ]},
+  { title:'连续加班一周后，你的状态是？', options:[
+    {key:'A', code:'C1', text:'早上还能撑，下午彻底掉线，靠咖啡续命。'},
+    {key:'B', code:'C2', text:'越到后面越清醒，最后一天反而是巅峰。'},
+    {key:'C', code:'C3', text:'累是累，但节奏没乱，该干的照样干完。'},
+    {key:'D', code:'D3', text:'该加的加，该休的休，我会给自己留一天完全不碰工作。'}
+  ]},
+  { title:'晚上十点，工作群里有人发消息。', options:[
+    {key:'A', code:'D1', text:'看到了，明天上班再说。'},
+    {key:'B', code:'D2', text:'立刻回，怕耽误事。'},
+    {key:'C', code:'D3', text:'看内容：真是急事就接，闲聊就明天。'},
+    {key:'D', code:'C1', text:'看一眼就睡，第二天早上八点起来第一件事就是回。'}
+  ]},
+  { title:'周末朋友约你出去玩，但你有个周一要交的活。', options:[
+    {key:'A', code:'D1', text:'活留到周日晚上，周六先痛快玩。'},
+    {key:'B', code:'D2', text:'带着电脑出门，随时准备被叫回去。'},
+    {key:'C', code:'D3', text:'把活拆成两半，玩半天、干半天。'},
+    {key:'D', code:'C2', text:'周日中午才开始，最后几个小时一口气干完。'}
+  ]},
+  { title:'你怎么看「下班后还要学习、还要回消息」这件事？', options:[
+    {key:'A', code:'D1', text:'下班是下班，学习是我自己的事，跟工作没关系。'},
+    {key:'B', code:'D2', text:'习惯了，手机一直开着，看到就回。'},
+    {key:'C', code:'D3', text:'看阶段：忙的时候全给工作，闲的时候全给自己。'},
+    {key:'D', code:'C3', text:'每天固定半小时，不快，但一直在学。'}
+  ]},
+  { title:'一份工资不错、但很没意思的工作，你会？', options:[
+    {key:'A', code:'E1', text:'先干着，钱到位就行，别的不多想。'},
+    {key:'B', code:'E2', text:'干不久，我得找到一点「这事有意义」的理由。'},
+    {key:'C', code:'E3', text:'会干，但一定要从里面学到点什么带走。'},
+    {key:'D', code:'F2', text:'会干，因为这摊事现在只有我最熟，走了没人接。'}
+  ]},
+  { title:'让你最有成就感的瞬间是？', options:[
+    {key:'A', code:'E1', text:'看到工资条、看到项目奖金的那一刻。'},
+    {key:'B', code:'E2', text:'有人说「你做的这个真的帮到我了」。'},
+    {key:'C', code:'E3', text:'发现自己比半年前能搞定更难的事了。'},
+    {key:'D', code:'F1', text:'整个组因为一件事一起熬过来，然后一起去吃饭。'}
+  ]},
+  { title:'如果明天不用为钱发愁，你还会上班吗？', options:[
+    {key:'A', code:'E1', text:'可能不干了，或者只挑钱多事少的干。'},
+    {key:'B', code:'E2', text:'会，去做那件我一直想做的事。'},
+    {key:'C', code:'E3', text:'会，换个更难的领域继续折腾。'},
+    {key:'D', code:'F3', text:'会，但我要一个人干，不参加任何会。'}
+  ]},
+  { title:'团队里来了个什么都不会的新人。', options:[
+    {key:'A', code:'F1', text:'先带他熟悉环境，顺便把气氛搞热。'},
+    {key:'B', code:'F2', text:'把流程写成文档给他，让他少走弯路。'},
+    {key:'C', code:'F3', text:'该教的教，但别一直问我，我更想自己干完。'},
+    {key:'D', code:'E1', text:'先看他能不能帮我分担点活，能分担我就好好教。'}
+  ]},
+  { title:'团建你通常是？', options:[
+    {key:'A', code:'F1', text:'组织者，负责点菜、拍照、把冷场救回来。'},
+    {key:'B', code:'F2', text:'会去，帮大家收拾残局，最后把账算清。'},
+    {key:'C', code:'F3', text:'能不去就不去，去了也坐角落。'},
+    {key:'D', code:'E2', text:'看这次团建是不是真能让大家放松，纯摆拍我就不去。'}
+  ]},
+  { title:'项目做成了，庆功会上你最想说的是？', options:[
+    {key:'A', code:'F1', text:'来来来，先敬大家一杯，这波是真的辛苦。'},
+    {key:'B', code:'F2', text:'把每个人做的部分都说一遍，别漏了谁。'},
+    {key:'C', code:'F3', text:'说句谢谢就撤，庆功不如让我早点回家。'},
+    {key:'D', code:'E3', text:'庆功的时候我在想，这个项目我能带走什么本事。'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'🧯', name:'稳锅侠', persona:'别人还在问「怎么办」，你已经把水枪对准了火。',
+    kw:['稳','先上手','收尾王'], scene:'深夜的线上故障群',
+    insight:[
+      '群里刚炸开锅，别人还在追问「到底谁负责」，你已经点开文件、翻出上次的记录，顺手把最急的那块改好了；等大家回过神，你只留下一句「先这样，剩下的我盯着」，然后继续往下弄，连测试都自己跑了一遍。改完之后你还会在群里留一条进度，谁接手都看得懂。',
+      '你不是天生不慌，只是知道慌解决不了问题。你把情绪往后放一放，先让事情落地，再回头处理心里那点委屈——这个顺序，让你在乱局里格外可靠，也让你成了那个「有事找他就对了」的人。你也很少喊累，只是习惯自己扛着。',
+      '你的稳，是别人敢把后背交给你的原因。'
+    ],
+    match:'最搭「会议润滑剂」：你冲前面，他替你善后；最容易和「DDL 特种兵」吵起来，一个要提前，一个要最后一刻。'},
+
+  A2:{ emoji:'⚡', name:'炸完就干侠', persona:'先炸三秒，再干三小时。',
+    kw:['直脾气','真性情','不记仇'], scene:'被临时改需求的下午',
+    insight:[
+      '接到临时任务，你会先在心里连骂三句，键盘敲得特别响，连隔壁都听得出你在生气；可三分钟之后，方案已经开了个头，气还在，活也没耽误，甚至还顺手把格式调好了，最后交得比谁都早。你嘴上说着不想干，手却比谁都快，连收尾都顺手做了。',
+      '你的情绪是热的，来得快，去得也快。你不藏、不演、不憋着，骂完照样把事做完——比起永远微笑的人，你反而更让人放心，因为你的不高兴都写在脸上，你的靠谱也都落在事上。你这种人，气话说得快，靠谱事也做得快，跟你搭班其实很踏实。',
+      '你的脾气是明火，烧完就只剩温度。'
+    ],
+    match:'最搭「茶水间 DJ」：有人接得住你的火气；最怕「静音处理机」，一个在吼一个不吭声，能把自己憋到内伤。'},
+
+  A3:{ emoji:'🤿', name:'静音处理机', persona:'全程没声音，结束时事情已经好了。',
+    kw:['内敛','心里有数','默默搞定'], scene:'会议室里最安静的那个角落',
+    insight:[
+      '出事那天，你一句多余的话都没说，安安静静坐在工位上翻日志、复现、改参数；中途有人问「怎么样了」，你只回两个字「在弄」，等到快下班，问题已经悄悄修好了，连复盘都补上了。第二天有人问那天怎么回事，你只说了一句都修好了。',
+      '你不是没有情绪，只是习惯先把它调成静音。你把所有慌张都在心里跑了一遍，对外只交出结果——这样的人常常被低估，却也最经得起事，因为你不靠声音证明自己，只靠事情说话。你习惯把所有慌张都留在心里，对外只交结果，所以你常在事后被人惊讶地夸一句。',
+      '你不出声，但事情总会因为你而变好。'
+    ],
+    match:'最搭「靠谱挂件」：两个不声不响的人凑一块，事就成了；需要一个「人形对讲机」替你把想法说出来。'},
+
+  B1:{ emoji:'📢', name:'人形对讲机', persona:'有话直说，省下所有人的时间。',
+    kw:['直给','边界清楚','效率控'], scene:'需求评审会',
+    insight:[
+      '开会时有人绕了十分钟还没说到重点，你会直接问「所以我们现在要决定的到底是哪一件事」；别人觉得你有点冲，但这场会确实因此提前半小时结束，还留下了明确的待办和负责人。散会时大家才发现，原来说不清的那件事，被你三句话讲明白了。',
+      '你不是不会说话，是不想把大家都困在客气里。你把模糊的话掰开，把含糊的责任落实，虽然少了点柔软，却让团队少走了很多弯路——你省下的，是所有人反复确认的时间。你也不太在意别人说你凶，效率比客气重要，真出事时大家第一个找的还是你。',
+      '你把话说清楚，是给别人最大的体面。'
+    ],
+    match:'最搭「会议润滑剂」：你负责说硬话，他负责把话补圆；最容易被「单机模式」的沉默气到。'},
+
+  B2:{ emoji:'🍯', name:'会议润滑剂', persona:'谁都没得罪，事还推得动。',
+    kw:['会说话','情绪稳定','会翻译'], scene:'两个部门对接的中间人',
+    insight:[
+      '两个同事在群里呛起来，你先发一句「我理解两边都在赶时间」，然后分别私聊各说一句，十分钟后群里安静了，方案也改好了，谁都没觉得丢面子，事情推得比之前还快。最后两边的诉求都落地了，谁也没觉得被牺牲。',
+      '你天生能听懂话背后的意思，也愿意花力气把话重新说一遍，直到所有人都能下台。你不是没有立场，只是知道很多事情要绕一个弯才能走通，硬碰硬往往两败俱伤，面子给足了事才办得动。你很懂得给人留台阶，也很懂得什么时候该私下说，所以你常常是那个把话接住的人。',
+      '你让难听的话，也能有个好听的出口。'
+    ],
+    match:'最搭「人形对讲机」：一个敢开口，一个会收尾；最需要「意义感收集者」提醒你，别把自己累着。'},
+
+  B3:{ emoji:'💬', name:'文字型选手', persona:'当面话少，消息里巨能说。',
+    kw:['慢热','有条理','打字比说话快'], scene:'群里最后那条长消息',
+    insight:[
+      '会上你几乎不发言，别人以为你没想法；晚上你在群里发了一段分点清楚的文字，把白天的争议一条条解释明白，连领导都回了一句「这个说得好」，第二天讨论就顺了，没人再来回问。有人第二天照着你的文字改了自己的方案。',
+      '你不是不想说，是需要时间把想法整理成句子。你的表达在落笔时才真正开始，稳、准、有分寸——很多人后来才发现，你是那个把事想得最透、却最少抢话的人，也是最能留下东西的人。你不抢话，但你说出来的东西通常没人反驳，你也乐得把功劳让给说出口的人。',
+      '你说得慢，但每一句都算数。'
+    ],
+    match:'最搭「稳锅侠」：一个写清楚一个做干净；最容易被「茶水间 DJ」的热情吓到，需要一点缓冲时间。'},
+
+  C1:{ emoji:'🌅', name:'清晨开挂侠', persona:'上午的你是满格，下午的你在等下班。',
+    kw:['早起','高效','需要咖啡'], scene:'早上八点的空办公室',
+    insight:[
+      '早上七点半你就到了，一杯咖啡、一张清单，最难的那部分在十一点前就写完；而到了下午三点，你盯着屏幕，脑子里只剩下「今天还有几封邮件没回」，连打字都慢了半拍。到了晚上你只想躺着，什么都不想安排。',
+      '你的能量是有保质期的，而且很诚实。你懂得把重要的事放在自己最清醒的那几个小时里，其余时间用来收尾和应付，这其实是一种很聪明的自律，不是懒，是知道自己什么时候最值钱。你也试过硬撑下午，结果一整天都在补救，所以现在你干脆把重要的事都塞进上午。',
+      '把最好的时间留给自己，你一直做得不错。'
+    ],
+    match:'最搭「匀速马拉松」：你抢开局，他兜后程；和「DDL 特种兵」几乎完全错峰，很难配合。'},
+
+  C2:{ emoji:'🚀', name:'DDL 特种兵', persona:'不到最后不动手，一动手就超神。',
+    kw:['延时启动','爆发力','越急越稳'], scene:'截止前四小时的工位',
+    insight:[
+      '前三天你看起来什么都没干，其实在脑子里把方案过了一遍又一遍；截止前四个小时，你像换了一个人，键盘没停过，水都没喝几口，最后交出去的东西还意外地完整，细节一个都没漏。同事都喜欢在截止前一天来找你，因为那时候你最好沟通。',
+      '你不是拖延，是需要压力才能启动。别人靠计划推进，你靠最后那口气冲刺，虽然过程惊险、每次都发誓下次早点开始，但你几乎从没真的掉过链子，关键时刻还挺靠得住。你也知道自己这个毛病，但一直没打算改，反正结果摆在那儿，你也懒得解释。',
+      '你总在最紧的时候，跑出最好的成绩。'
+    ],
+    match:'最搭「清晨开挂侠」：他先把框架搭好，你最后收口；最怕「匀速马拉松」在旁边碎碎念。'},
+
+  C3:{ emoji:'🏃', name:'匀速马拉松', persona:'不快不慢，但从来不掉线。',
+    kw:['稳定','抗造','不冒进'], scene:'每天固定的那杯下午茶',
+    insight:[
+      '别人第一天冲得飞快，第三天就开始喊累，你每天推进一点点，进度条永远在稳稳往前走；到最后一天，别人手忙脚乱，反而是你最从容，还能顺手帮别人补两块。有人临时来救火，你还能腾出手帮他理一下顺序。',
+      '你不追求爆发，只相信持续。你很少惊艳谁，但谁都知道交给你的事不会烂尾——这种不声不响的可靠，是职场里最稀缺的东西，也是最难被替代的东西，时间越久越明显。你也羡慕过那些一鸣惊人的人，但很快就继续干活了，你更相信把每一天做好比某一天爆发更管用，也更适合自己。',
+      '你走得慢，但从来没停过。'
+    ],
+    match:'最搭「靠谱挂件」：都是长线选手，配合起来很省心；最需要「秒切开关」提醒你，偶尔也该歇一会。'},
+
+  D1:{ emoji:'🔌', name:'秒切开关', persona:'打卡那一刻，灵魂准时归位。',
+    kw:['边界感强','拎得清','不内耗'], scene:'六点整的电梯口',
+    insight:[
+      '六点整，你合上电脑、拿起包、说一句「明天见」，手机里的工作群直接静音；晚上朋友问你工作的事，你愣了一下才想起来今天开过什么会，然后笑着说不记得了，一点也不心虚。同事晚上十点找你，看到你的自动回复也不生气。',
+      '你把工作和生活切得很干净，不是不上心，是知道人需要留一块地方给自己。你下班后的那份松弛，恰恰让你第二天还能好好上班，不至于一睁眼就烦，也不至于把情绪带给同事。你不是不负责，只是把负责的那部分留在了白天，第二天一上班，你该做的第一件事就做好了。',
+      '能下班的人，才有力气一直上班。'
+    ],
+    match:'最搭「弹性橡皮筋」：都懂分寸，不会互相绑架；最容易被「永不断网」的深夜消息烦到。'},
+
+  D2:{ emoji:'📶', name:'永不断网', persona:'手机二十四小时待命，谁找都能接住。',
+    kw:['责任心重','随叫随到','有点累'], scene:'周末的超市推车旁',
+    insight:[
+      '晚上十一点半，群里冒出一条「有个急事」，你是第一个回「我在」的人；周末逛超市，你一只手推着车，一只手回消息，回得比坐在工位时还快，还顺手把表格改了。有时候你自己也觉得累，但还是先回了那句「我在」。',
+      '你不是不懂得休息，是总觉得「如果我不接，事情就卡住了」。这份责任心让你被信任，也让你很难真正放松——偶尔也可以让别人接一次，天不会塌，别人也该练练手。你不太会说「这不归我」，哪怕心里已经叹了口气，你只是希望别人也能记得你也会累，偶尔。',
+      '你把所有事都接住了，也记得给自己留个空档。'
+    ],
+    match:'最搭「靠谱挂件」：互相兜底，谁也不掉链子；最需要「秒切开关」教你，关机其实也可以。'},
+
+  D3:{ emoji:'🪢', name:'弹性橡皮筋', persona:'该上的时候能上，该歇的时候真歇。',
+    kw:['有弹性','分得清','会取舍'], scene:'项目结束后的第一天',
+    insight:[
+      '项目冲刺那周，你能连着几天熬到深夜，第二天照样准时出现；项目结束的第二天，你请了假，关机、睡觉、什么都不想，谁找都找不到你，连外卖都懒得点。回来那天，你把之前没回的消息一次性清空，也没人多说什么。',
+      '你分得清什么时候该拼、什么时候该退。这种弹性不是没原则，恰恰是知道自己有多少力气，并且愿意把它花在值得的地方，而不是均匀地撒在每一天。你不觉得这叫任性，只是把力气留在真正要用的时候，你身边的人慢慢也学会了看你的节奏，很少催你。',
+      '你知道什么时候该用尽全力，也知道什么时候该松手。'
+    ],
+    match:'最搭「会议润滑剂」：都会看场合；和「永不断网」其实是同一个人在不同阶段的样子。'},
+
+  E1:{ emoji:'🧮', name:'清醒算盘', persona:'不谈情怀，只谈对不对得上。',
+    kw:['清醒','现实','不吃亏'], scene:'涨薪谈判的会议室',
+    insight:[
+      '领导说「这个项目很有意义」，你笑着点头，心里在算这件事算不算工时、年底能不能写进考核；该干的活你一件不少，白干的活你也一件不接，还会先问清楚再动手。有人说你太现实，你也懒得解释，反正账算得清就不会亏。',
+      '你不装、不骗自己，也从不把委屈当成长。你清楚地知道自己为什么来上班，所以很少被「大家都这样」绑住，也很少为一句空头承诺多熬一个通宵，该谈的时候你会直接谈。你知道情怀不能当饭吃，但也从不嘲笑别人认真，你只是把每一分力气都花在明处，不亏待自己。',
+      '你算得清楚，所以活得明白。'
+    ],
+    match:'最搭「技能树玩家」：一起算投入产出，越算越清醒；最看不惯「会议润滑剂」那种白忙一场。'},
+
+  E2:{ emoji:'🌱', name:'意义感收集者', persona:'得先说服自己「这值得」，才肯全力以赴。',
+    kw:['走心','有信念','容易感动'], scene:'改到第八版的文档',
+    insight:[
+      '一份报告你可以改八遍，只因为那句「这样别人更容易看懂」；有人跟你说「你做的这个东西真的帮到我了」，你能高兴一整天，比月底发奖金还开心，还会把这句话记很久。有时候一句「辛苦了」就能让你再撑一周。',
+      '你需要意义，胜过需要掌声。你会为一件小事反复打磨，也会因为一句反馈重新有劲——这种在乎，让你的工作里始终有点温度，也让你偶尔显得不太「划算」，但你自己知道值。你也知道自己这样容易吃亏，但改不掉，也不想改，毕竟你上班，是想做点让自己认得出的事。',
+      '你做的每件事，都在偷偷让世界好一点点。'
+    ],
+    match:'最搭「茶水间 DJ」：都需要被看见、被回应；最容易被「清醒算盘」的一句话泼冷水。'},
+
+  E3:{ emoji:'📈', name:'技能树玩家', persona:'每份工作都要带走点本事。',
+    kw:['上瘾','好奇','不服输'], scene:'新的技术文档第一页',
+    insight:[
+      '接一份看起来很枯燥的活，你会顺手研究出一套自己的模板；别人问你为什么这么较真，你说「下次就能快一半」，眼睛里是有光的，还顺便教会了旁边的人。别人觉得你在卷，其实你只是不想重复第三年。',
+      '你把工作当成练习场，把每个难题当成升级任务。你不是不累，只是比起重复，你更怕自己停在原地——所以你总在悄悄变强，也总在偷偷给自己找新的关卡，然后一个个打过去。你会把学到的东西记在本子上，也会主动揽下没做过的活，累是真的累，但那种变强的感觉也是真的，停不下来。',
+      '你不是在打工，你是在给自己升级。'
+    ],
+    match:'最搭「人形对讲机」：一个敢问一个敢教；最怕「静音处理机」憋着不交流，好经验都传不出去。'},
+
+  F1:{ emoji:'🎧', name:'茶水间 DJ', persona:'有你在，加班也没那么难熬。',
+    kw:['会来事','有感染力','情绪供氧'], scene:'加班第九个小时的茶水间',
+    insight:[
+      '连着加班到第九个小时，是你先说了句「我去买奶茶，谁要」，然后整个组的空气才重新流动起来；你记得每个人的口味，也记得谁今天脸色不太好，会多问一句。下雨天你会顺手多带一把伞，谁忘带就递给谁。',
+      '你天生会调节气氛，不是因为你没烦恼，而是你知道人在累的时候，需要有人先把灯打开。你把自己的疲惫收起来，先让别人松一口气——这其实是一种很温柔的强，不是没心没肺。你不觉得这算什么本事，可组里少了你，气氛就是不一样，你也希望有人问一句你累不累。',
+      '你把日子过热闹了，大家才有力气往前走。'
+    ],
+    match:'最搭「炸完就干侠」：你的热闹接得住他的火气；最需要「意义感收集者」懂你那些小心思。'},
+
+  F2:{ emoji:'🧲', name:'靠谱挂件', persona:'交给他的事，基本不用再问第二遍。',
+    kw:['靠谱','有交代','记得住细节'], scene:'周五下午的待办清单',
+    insight:[
+      '每次开会你都安静地记，散会后把待办拆好、标上人、写上时间；别人以为事情会忘，结果到了那天，提醒消息准时出现，连对方自己都忘了的事你都记得，还提前留了余量。偶尔有人临时改需求，你也能立刻把影响范围列出来。',
+      '你不太会说漂亮话，但你说过的每件事都会落地。团队里最不可或缺的往往不是最耀眼的那个人，而是最让人放心的那个位置——你就是那个位置，安静但关键。你不是天生细心，只是怕别人因为你出岔子，所以你宁愿自己多核对一遍，也不愿事后解释，你相信事情做完了才算数。',
+      '你的靠谱，是团队最安静的地基。'
+    ],
+    match:'最搭「稳锅侠」：两个都能收尾，事交给你们基本不会翻车；最怕「DDL 特种兵」最后一刻的惊喜。'},
+
+  F3:{ emoji:'🎮', name:'单机模式', persona:'一个人干活最爽，开会是消耗。',
+    kw:['独立','专注','社交电量有限'], scene:'戴着耳机的下午',
+    insight:[
+      '耳机一戴，你就进入了另一个世界，一整个下午不说一句话，却把最难的模块啃完了；团建通知发出来，你第一反应是「能不能不去」，第二反应是「去了坐哪」。有人说你冷淡，其实你只是把热情用在了事情上。',
+      '你不是不合群，是独处时你才最像自己。你把能量都留给了手上的事，所以做出的东西往往比谁都扎实，只是很少有人知道你在那半天里完成了什么。你需要一个人的时间，才能把手上的活做到自己满意，所以你不爱凑热闹，也不勉强自己合群，安静的时候你反而最在状态。',
+      '你不需要热闹，你只需要一段不被打扰的时间。'
+    ],
+    match:'最搭「文字型选手」：不说话也能协作；最需要「茶水间 DJ」偶尔来敲一下门。'}
+};
+
+/* ============ 计分逻辑 ============ */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0) + 1;
+  });
+  var keys = Object.keys(s);
+  var mx = Math.max.apply(null, keys.map(function(k){ return s[k]; }));
+  var tied = keys.filter(function(k){ return s[k] === mx; });
+  var code;
+  if(tied.length === 1){
+    code = tied[0];
+  }else{
+    // 平局兜底：最后一题所选 -> 第一题所选 -> 编号靠前
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[answers.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last) >= 0){ code = last; }
+    else if(tied.indexOf(first) >= 0){ code = first; }
+    else { code = tied.slice().sort()[0]; }
+  }
+  return { code:code, scores:s };
+}
+
+/* ============ 角色图案（内联 SVG） ============ */
+var PALS = {
+  A:{main:'#FF7A59', light:'#FFD9CB', deep:'#E9542F'},
+  B:{main:'#FFA48F', light:'#FFE3DA', deep:'#E9775C'},
+  C:{main:'#FFD36E', light:'#FFF0CB', deep:'#DFA434'},
+  D:{main:'#7CC7BE', light:'#D6F0EC', deep:'#4FA79D'},
+  E:{main:'#C98A5E', light:'#F3E1D2', deep:'#A66A40'},
+  F:{main:'#8FA9D6', light:'#DFE7F5', deep:'#6B85B6'}
+};
+
+function worker(pal, extra){
+  return ''+
+  '<rect x="24" y="150" width="152" height="9" rx="4.5" fill="'+pal.deep+'" opacity="0.22"/>'+
+  '<rect x="60" y="112" width="13" height="34" rx="6.5" fill="'+pal.main+'" opacity="0.92" transform="rotate(14 66 112)"/>'+
+  '<rect x="127" y="112" width="13" height="34" rx="6.5" fill="'+pal.main+'" opacity="0.92" transform="rotate(-14 133 112)"/>'+
+  '<rect x="77" y="104" width="46" height="52" rx="17" fill="'+pal.main+'"/>'+
+  '<path d="M92 108 L100 118 L108 108" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round" opacity="0.8"/>'+
+  '<circle cx="100" cy="88" r="22" fill="#FFE2D1" stroke="'+pal.deep+'" stroke-width="3"/>'+
+  '<path d="M78 84 Q100 62 122 84 Q100 70 78 84 Z" fill="#5A4741"/>'+
+  '<circle cx="92" cy="91" r="2.6" fill="#3F332F"/><circle cx="108" cy="91" r="2.6" fill="#3F332F"/>'+
+  '<path d="M96 98 Q100 101 104 98" fill="none" stroke="#C98A7A" stroke-width="2" stroke-linecap="round"/>'+
+  '<circle cx="84" cy="97" r="3.6" fill="#FFB3A0" opacity="0.65"/>'+
+  '<circle cx="116" cy="97" r="3.6" fill="#FFB3A0" opacity="0.65"/>'+
+  (extra||'');
+}
+
+var PROPS = {
+  A1:
+    '<rect x="33" y="116" width="20" height="42" rx="7" fill="#E9542F"/>'+
+    '<rect x="37" y="108" width="12" height="9" rx="3" fill="#B93F22"/>'+
+    '<path d="M49 117 L59 107" stroke="#B93F22" stroke-width="4" stroke-linecap="round"/>'+
+    '<rect x="37" y="124" width="12" height="4" rx="2" fill="#FFFFFF" opacity="0.85"/>'+
+    '<path d="M164 146 q7 -10 12 -2 q6 -9 12 0 q-6 8 -12 1 q-5 -6 -12 1 Z" fill="#FFD36E"/>'+
+    '<circle cx="150" cy="128" r="3" fill="#FFFFFF" opacity="0.9"/>'+
+    '<circle cx="160" cy="118" r="2" fill="#FFFFFF" opacity="0.8"/>',
+  A2:
+    '<path d="M100 28 L84 56 L95 56 L88 74 L114 46 L102 46 L110 28 Z" fill="#FFD36E" stroke="#DFA434" stroke-width="2.5" stroke-linejoin="round"/>'+
+    '<circle cx="142" cy="76" r="7" fill="#FFFFFF" opacity="0.85"/>'+
+    '<circle cx="154" cy="63" r="5" fill="#FFFFFF" opacity="0.7"/>'+
+    '<circle cx="58" cy="70" r="5" fill="#FFFFFF" opacity="0.7"/>'+
+    '<path d="M132 140 l14 -6 l14 6" stroke="#E9542F" stroke-width="3" fill="none"/>',
+  A3:
+    '<circle cx="148" cy="72" r="7" fill="#FFFFFF" opacity="0.85" stroke="'+'#7CC7BE'+'" stroke-width="2"/>'+
+    '<circle cx="162" cy="56" r="5" fill="#FFFFFF" opacity="0.75" stroke="'+'#7CC7BE'+'" stroke-width="2"/>'+
+    '<circle cx="136" cy="52" r="4" fill="#FFFFFF" opacity="0.7" stroke="'+'#7CC7BE'+'" stroke-width="2"/>'+
+    '<rect x="128" y="132" width="42" height="24" rx="5" fill="#FFFFFF" stroke="#4FA79D" stroke-width="2.5"/>'+
+    '<path d="M134 140 h30 M134 147 h22" stroke="#4FA79D" stroke-width="2.5" opacity="0.7"/>',
+  B1:
+    '<path d="M128 100 L156 88 L156 132 L128 120 Z" fill="#E9775C"/>'+
+    '<rect x="118" y="106" width="12" height="10" rx="3" fill="#B9563C"/>'+
+    '<path d="M160 96 q14 8 14 14 q0 6 -14 14" stroke="#FFB49B" stroke-width="3" fill="none"/>'+
+    '<path d="M166 88 q20 10 20 22 q0 12 -20 22" stroke="#FFB49B" stroke-width="3" fill="none" opacity="0.7"/>'+
+    '<circle cx="42" cy="112" r="4" fill="#FFD36E"/>',
+  B2:
+    '<rect x="124" y="46" width="48" height="30" rx="12" fill="#FFFFFF" stroke="#E9775C" stroke-width="2.5"/>'+
+    '<path d="M136 74 l-6 10 l14 -4 Z" fill="#FFFFFF" stroke="#E9775C" stroke-width="2.5"/>'+
+    '<path d="M138 58 h20 M138 65 h12" stroke="#FFA48F" stroke-width="3"/>'+
+    '<rect x="136" y="86" width="42" height="26" rx="11" fill="#FFE3DA" stroke="#E9775C" stroke-width="2.5"/>'+
+    '<path d="M170 108 l6 9 l-14 -3 Z" fill="#FFE3DA" stroke="#E9775C" stroke-width="2.5"/>'+
+    '<path d="M152 92 q5 3 5 7 q0 -4 5 -7 q-2 9 -5 9 q-3 0 -5 -9 Z" fill="#E9542F"/>',
+  B3:
+    '<rect x="52" y="112" width="32" height="50" rx="8" fill="#3F332F" transform="rotate(-8 68 137)"/>'+
+    '<rect x="57" y="119" width="22" height="36" rx="4" fill="#FFFFFF" transform="rotate(-8 68 137)"/>'+
+    '<path d="M61 126 h14 M61 133 h16 M61 140 h10" stroke="#FFA48F" stroke-width="2.5" transform="rotate(-8 68 137)"/>'+
+    '<circle cx="150" cy="56" r="11" fill="none" stroke="#E9775C" stroke-width="2.5"/>'+
+    '<path d="M150 49 v7 h6" stroke="#E9775C" stroke-width="2.5"/>',
+  C1:
+    '<circle cx="152" cy="52" r="15" fill="#FFD36E" opacity="0.85"/>'+
+    '<path d="M152 28 v-7 M152 76 v7 M128 52 h-7 M176 52 h7 M135 35 l-5 -5 M169 69 l5 5 M169 35 l5 -5 M135 69 l-5 5" stroke="#DFA434" stroke-width="3" stroke-linecap="round"/>'+
+    '<rect x="36" y="120" width="24" height="22" rx="4" fill="#FFFFFF" stroke="#DFA434" stroke-width="2.5"/>'+
+    '<path d="M60 126 q8 0 8 7 q0 7 -8 7" fill="none" stroke="#DFA434" stroke-width="2.5"/>'+
+    '<path d="M43 114 q3 -6 0 -10 M51 114 q3 -6 0 -10" stroke="#FFD36E" stroke-width="2.5" fill="none" opacity="0.9"/>',
+  C2:
+    '<path d="M148 40 q16 32 0 62 q-16 -30 0 -62 Z" fill="#E9775C"/>'+
+    '<circle cx="148" cy="66" r="8" fill="#FFFFFF" opacity="0.9"/>'+
+    '<path d="M136 92 l-8 12 l12 -4 Z M160 92 l8 12 l-12 -4 Z" fill="#DFA434"/>'+
+    '<path d="M142 102 q6 14 6 18 q0 -4 6 -18 Z" fill="#FFD36E"/>'+
+    '<circle cx="54" cy="56" r="14" fill="#FFFFFF" stroke="#DFA434" stroke-width="2.5"/>'+
+    '<path d="M54 47 v9 h7" stroke="#DFA434" stroke-width="2.5"/>'+
+    '<rect x="118" y="128" width="60" height="8" rx="4" fill="#FFF0CB"/>',
+  C3:
+    '<path d="M22 166 q78 -34 156 0" stroke="#DFA434" stroke-width="4" fill="none" opacity="0.6"/>'+
+    '<path d="M34 156 q66 -26 132 0" stroke="#FFD36E" stroke-width="3" fill="none" opacity="0.7"/>'+
+    '<rect x="132" y="112" width="42" height="9" rx="4.5" fill="#FFF0CB" stroke="#DFA434" stroke-width="2"/>'+
+    '<rect x="132" y="128" width="34" height="9" rx="4.5" fill="#FFD36E" stroke="#DFA434" stroke-width="2"/>'+
+    '<rect x="132" y="144" width="26" height="9" rx="4.5" fill="#FFF0CB" stroke="#DFA434" stroke-width="2"/>',
+  D1:
+    '<rect x="142" y="92" width="36" height="68" rx="6" fill="#FFFFFF" stroke="#4FA79D" stroke-width="2.5"/>'+
+    '<rect x="146" y="96" width="28" height="60" rx="4" fill="#D6F0EC"/>'+
+    '<circle cx="170" cy="126" r="3.2" fill="#4FA79D"/>'+
+    '<circle cx="42" cy="128" r="15" fill="none" stroke="#4FA79D" stroke-width="3"/>'+
+    '<path d="M42 104 v10" stroke="#4FA79D" stroke-width="3" stroke-linecap="round"/>'+
+    '<path d="M42 118 v16" stroke="#7CC7BE" stroke-width="3" stroke-linecap="round"/>',
+  D2:
+    '<path d="M126 56 q26 -16 52 0" stroke="#4FA79D" stroke-width="3" fill="none"/>'+
+    '<path d="M132 66 q20 -12 40 0" stroke="#7CC7BE" stroke-width="3" fill="none"/>'+
+    '<path d="M138 76 q14 -8 28 0" stroke="#4FA79D" stroke-width="3" fill="none"/>'+
+    '<circle cx="152" cy="84" r="3" fill="#4FA79D"/>'+
+    '<rect x="52" y="108" width="30" height="50" rx="8" fill="#3F332F" transform="rotate(8 67 133)"/>'+
+    '<rect x="57" y="115" width="20" height="36" rx="4" fill="#D6F0EC" transform="rotate(8 67 133)"/>',
+  D3:
+    '<path d="M28 140 q10 -14 20 0 q10 14 20 0 q10 -14 20 0 q10 14 20 0" stroke="#4FA79D" stroke-width="3.5" fill="none"/>'+
+    '<circle cx="26" cy="140" r="6" fill="#D6F0EC" stroke="#4FA79D" stroke-width="2.5"/>'+
+    '<circle cx="138" cy="140" r="6" fill="#D6F0EC" stroke="#4FA79D" stroke-width="2.5"/>'+
+    '<path d="M150 128 q10 -8 20 0" stroke="#7CC7BE" stroke-width="3" fill="none"/>'+
+    '<path d="M156 138 q8 -6 16 0" stroke="#7CC7BE" stroke-width="3" fill="none"/>',
+  E1:
+    '<rect x="128" y="86" width="52" height="58" rx="7" fill="#FFFFFF" stroke="#A66A40" stroke-width="2.5"/>'+
+    '<path d="M128 106 h52 M128 126 h52" stroke="#A66A40" stroke-width="2.5" opacity="0.75"/>'+
+    '<circle cx="142" cy="98" r="4.5" fill="#C98A5E"/><circle cx="155" cy="98" r="4.5" fill="#C98A5E"/><circle cx="168" cy="98" r="4.5" fill="#C98A5E"/>'+
+    '<circle cx="142" cy="117" r="4.5" fill="#E9542F"/><circle cx="158" cy="117" r="4.5" fill="#C98A5E"/>'+
+    '<circle cx="148" cy="136" r="4.5" fill="#C98A5E"/><circle cx="164" cy="136" r="4.5" fill="#C98A5E"/>'+
+    '<circle cx="44" cy="118" r="12" fill="#FFF0CB" stroke="#DFA434" stroke-width="2.5"/>',
+  E2:
+    '<circle cx="150" cy="52" r="17" fill="#FFF0CB" stroke="#DFA434" stroke-width="2.5"/>'+
+    '<path d="M150 69 v10" stroke="#DFA434" stroke-width="3"/>'+
+    '<path d="M142 79 h16 M144 85 h12" stroke="#DFA434" stroke-width="3"/>'+
+    '<path d="M150 44 v16 M146 48 h8" stroke="#E9542F" stroke-width="2.5"/>'+
+    '<path d="M44 140 v-22" stroke="#4FA79D" stroke-width="3"/>'+
+    '<path d="M44 124 q-16 -2 -14 -16 q16 2 14 16 Z" fill="#7CC7BE"/>'+
+    '<path d="M44 130 q16 -2 14 -16 q-16 2 -14 16 Z" fill="#A9DCD3"/>',
+  E3:
+    '<rect x="26" y="140" width="26" height="18" rx="4" fill="#F3E1D2" stroke="#A66A40" stroke-width="2"/>'+
+    '<rect x="54" y="124" width="26" height="34" rx="4" fill="#E7C9AE" stroke="#A66A40" stroke-width="2"/>'+
+    '<rect x="82" y="106" width="26" height="52" rx="4" fill="#C98A5E" stroke="#A66A40" stroke-width="2"/>'+
+    '<circle cx="39" cy="149" r="3" fill="#FFFFFF"/><circle cx="67" cy="134" r="3" fill="#FFFFFF"/><circle cx="95" cy="116" r="3" fill="#FFFFFF"/>'+
+    '<path d="M122 112 h44 v30 h-44 Z" fill="#FFFFFF" stroke="#A66A40" stroke-width="2.5"/>'+
+    '<path d="M128 120 h32 M128 128 h24" stroke="#C98A5E" stroke-width="2.5"/>',
+  F1:
+    '<path d="M74 84 A26 26 0 0 1 126 84" stroke="#6B85B6" stroke-width="5" fill="none"/>'+
+    '<rect x="69" y="82" width="10" height="16" rx="5" fill="#6B85B6"/>'+
+    '<rect x="121" y="82" width="10" height="16" rx="5" fill="#6B85B6"/>'+
+    '<path d="M150 46 v18 M150 46 q8 4 6 12" stroke="#8FA9D6" stroke-width="3" fill="none"/>'+
+    '<circle cx="150" cy="66" r="3.5" fill="#8FA9D6"/>'+
+    '<path d="M164 60 v14" stroke="#8FA9D6" stroke-width="2.5"/>'+
+    '<circle cx="164" cy="78" r="3" fill="#8FA9D6"/>'+
+    '<rect x="36" y="122" width="22" height="24" rx="4" fill="#FFFFFF" stroke="#6B85B6" stroke-width="2.5"/>'+
+    '<path d="M58 128 q8 2 8 7 q0 5 -8 7" stroke="#6B85B6" stroke-width="2.5" fill="none"/>',
+  F2:
+    '<path d="M150 92 L172 100 L172 120 q0 18 -22 27 q-22 -9 -22 -27 L128 100 Z" fill="#FFFFFF" stroke="#6B85B6" stroke-width="2.5"/>'+
+    '<circle cx="140" cy="114" r="3" fill="#6B85B6"/><circle cx="150" cy="114" r="3" fill="#6B85B6"/><circle cx="160" cy="114" r="3" fill="#6B85B6"/>'+
+    '<path d="M144 126 q6 6 12 0" stroke="#6B85B6" stroke-width="2.5" fill="none"/>'+
+    '<path d="M44 118 v-20 a10 10 0 0 0 -20 0 v20" stroke="#6B85B6" stroke-width="4" fill="none"/>'+
+    '<rect x="82" y="114" width="9" height="8" rx="3" fill="#FFFFFF" stroke="#6B85B6" stroke-width="2.5"/>',
+  F3:
+    '<rect x="124" y="128" width="48" height="24" rx="11" fill="#FFFFFF" stroke="#6B85B6" stroke-width="2.5"/>'+
+    '<path d="M136 134 h-6 M133 131 v6" stroke="#6B85B6" stroke-width="2.5"/>'+
+    '<circle cx="160" cy="137" r="3" fill="#E9542F"/><circle cx="150" cy="141" r="3" fill="#DFA434"/>'+
+    '<path d="M40 62 h18 v18 h-18 Z" fill="#DFE7F5" stroke="#6B85B6" stroke-width="2"/>'+
+    '<path d="M49 56 v30" stroke="#6B85B6" stroke-width="2" opacity="0.5"/>'
+};
+
+function artFor(code){
+  var pal = PALS[code.charAt(0)] || PALS.A;
+  var gid = 'g' + code;
+  return '<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+code+'">'+
+    '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="'+pal.light+'"/></linearGradient></defs>'+
+    '<rect x="0" y="0" width="200" height="200" rx="18" fill="url(#'+gid+')"/>'+
+    '<circle cx="168" cy="34" r="12" fill="'+pal.main+'" opacity="0.18"/>'+
+    '<circle cx="30" cy="44" r="7" fill="'+pal.main+'" opacity="0.22"/>'+
+    worker(pal, PROPS[code])+
+    '</svg>';
+}
+
+function coverArt(){
+  return '<svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="cover">'+
+    '<defs><linearGradient id="coverG" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="#FFF7F1"/><stop offset="1" stop-color="#FFE8DE"/></linearGradient></defs>'+
+    '<rect x="0" y="0" width="300" height="400" rx="26" fill="url(#coverG)"/>'+
+    '<rect x="0" y="300" width="300" height="100" fill="#FFD9CB" opacity="0.55"/>'+
+    /* 挂钟 */
+    '<circle cx="56" cy="54" r="19" fill="#FFFFFF" stroke="#E9542F" stroke-width="2.5"/>'+
+    '<path d="M56 41 v13 h8" stroke="#E9542F" stroke-width="2.5"/>'+
+    /* 便签 */
+    '<rect x="212" y="42" width="28" height="28" rx="4" fill="#FFD36E" opacity="0.9"/>'+
+    '<rect x="246" y="66" width="24" height="24" rx="4" fill="#7CC7BE" opacity="0.75"/>'+
+    /* 对话气泡（纯几何） */
+    '<rect x="180" y="108" width="90" height="54" rx="17" fill="#FFFFFF" stroke="#FF7A59" stroke-width="2.5"/>'+
+    '<circle cx="208" cy="135" r="5" fill="#FF7A59"/><circle cx="226" cy="135" r="5" fill="#FF7A59"/><circle cx="244" cy="135" r="5" fill="#FF7A59"/>'+
+    /* 打工人 */
+    '<g transform="translate(2,52) scale(1.12)">'+worker(PALS.A,'')+'</g>'+
+    /* 桌面与道具 */
+    '<rect x="18" y="228" width="264" height="13" rx="6" fill="#FFFFFF" opacity="0.9"/>'+
+    '<rect x="18" y="231" width="264" height="6" rx="3" fill="#E9542F" opacity="0.22"/>'+
+    /* 咖啡杯 */
+    '<rect x="32" y="200" width="26" height="26" rx="4" fill="#FFFFFF" stroke="#E9542F" stroke-width="2.5"/>'+
+    '<path d="M58 206 q9 2 9 8 q0 6 -9 8" fill="none" stroke="#E9542F" stroke-width="2.5"/>'+
+    '<path d="M39 194 q3 -7 0 -11 M48 194 q3 -7 0 -11" stroke="#FFD36E" stroke-width="2.5" fill="none"/>'+
+    /* 笔记本 */
+    '<rect x="208" y="196" width="58" height="32" rx="5" fill="#FFFFFF" stroke="#7CC7BE" stroke-width="2.5"/>'+
+    '<path d="M208 222 h58" stroke="#7CC7BE" stroke-width="2.5"/>'+
+    '<path d="M216 206 h36 M216 213 h24" stroke="#7CC7BE" stroke-width="2" opacity="0.8"/>'+
+    /* 地面装饰 */
+    '<ellipse cx="150" cy="352" rx="112" ry="17" fill="#FFFFFF" opacity="0.65"/>'+
+    '<rect x="236" y="318" width="40" height="34" rx="6" fill="#FFD36E"/>'+
+    '<path d="M256 318 q-16 -14 -6 -26 q10 -6 12 8 Z" fill="#7CC7BE"/>'+
+    '<path d="M256 318 q16 -12 24 -24 q8 12 -6 22 Z" fill="#A9DCD3"/>'+
+    '<circle cx="64" cy="350" r="9" fill="#FFD36E" opacity="0.8"/>'+
+    '<circle cx="92" cy="336" r="5" fill="#7CC7BE" opacity="0.7"/>'+
+    '</svg>';
+}
+
+/* ============ 答题流程 ============ */
+var answers = [];
+var cur = 0;
+var lastResultCode = '';
+var lastScores = {};
+
+function renderQuestion(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('qTitle').textContent = q.title;
+  var html = '';
+  q.options.forEach(function(o, i){
+    html += '<div class="option'+(answers[cur]===i?' on':'')+'" data-i="'+i+'">'+
+      '<span class="opt-key">'+o.key+'</span><span>'+o.text+'</span></div>';
+  });
+  var box = document.getElementById('options');
+  box.innerHTML = html;
+  Array.prototype.forEach.call(box.querySelectorAll('.option'), function(el){
+    el.addEventListener('click', function(){ pick(parseInt(el.getAttribute('data-i'),10)); });
+  });
+  var pct = Math.round((cur) / QUESTIONS.length * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('backBtn').style.visibility = cur === 0 ? 'hidden' : 'visible';
+}
+
+function pick(i){
+  answers[cur] = i;
+  var els = document.querySelectorAll('#options .option');
+  Array.prototype.forEach.call(els, function(el, idx){ el.classList.toggle('on', idx === i); });
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){
+      cur++;
+      renderQuestion();
+    }else{
+      document.getElementById('progressFill').style.width = '100%';
+      finish();
+    }
+  }, 260);
+}
+
+function finish(){
+  var r = resolve(answers.slice(0, QUESTIONS.length));
+  lastResultCode = r.code;
+  lastScores = r.scores;
+  renderResult(r.code, r.scores);
+  show('result');
+}
+
+function renderResult(code, scores){
+  var r = RESULTS[code];
+  var dimChar = code.charAt(0);
+  var counts = {};
+  DIM_ORDER.forEach(function(d){ counts[d] = 0; });
+  Object.keys(scores).forEach(function(k){
+    var d = k.charAt(0);
+    if(counts[d] !== undefined) counts[d] += scores[k];
+  });
+  document.getElementById('artBox').innerHTML = '<div class="r-art">'+artFor(code)+'</div>';
+  document.getElementById('rDim').textContent = DIMS[dimChar];
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  document.getElementById('rKeywords').innerHTML = r.kw.map(function(k){
+    return '<span class="kw">'+k+'</span>';
+  }).join('');
+  var labels = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  document.getElementById('rInsight').innerHTML = r.insight.map(function(t, i){
+    if(i === 2) return '<div class="insight-sec"><div class="insight-label">'+labels[i]+'</div><p class="quote">'+t+'</p></div>';
+    return '<div class="insight-sec"><div class="insight-label">'+labels[i]+'</div><p class="insight-text">'+t+'</p></div>';
+  }).join('');
+  document.getElementById('rScene').textContent = '同款场景：' + r.scene;
+  document.getElementById('rMatch').textContent = r.match;
+
+  var maxC = Math.max.apply(null, DIM_ORDER.map(function(d){ return counts[d]; })) || 1;
+  document.getElementById('energyRows').innerHTML = DIM_ORDER.map(function(d){
+    var c = counts[d] || 0;
+    var w = Math.round(c / maxC * 100);
+    return '<div class="e-row"><span class="e-name">'+DIMS[d]+'</span>'+
+      '<span class="e-track"><span class="e-fill" style="width:'+w+'%"></span></span>'+
+      '<span class="e-val">'+c+' 题</span></div>';
+  }).join('');
+}
+
+/* ============ 结果海报 ============ */
+function roundRect(c, x, y, w, h, r){
+  if(c.roundRect){ c.beginPath(); c.roundRect(x, y, w, h, r); }
+  else{
+    c.beginPath();
+    c.moveTo(x+r, y); c.lineTo(x+w-r, y); c.quadraticCurveTo(x+w, y, x+w, y+r);
+    c.lineTo(x+w, y+h-r); c.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+    c.lineTo(x+r, y+h); c.quadraticCurveTo(x, y+h, x, y+h-r);
+    c.lineTo(x, y+r); c.quadraticCurveTo(x, y, x+r, y);
+    c.closePath();
+  }
+}
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '', first = true;
+  for(var i=0; i<text.length; i++){
+    var ch = text.charAt(i);
+    var test = line + ch;
+    if(c.measureText(test).width > maxW && line){
+      c.fillText(line, x, y);
+      y += lineH;
+      line = ch;
+      first = false;
+    }else{ line = test; }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function measureLines(c, text, maxW){
+  var line = '', lines = 1;
+  for(var i=0; i<text.length; i++){
+    var ch = text.charAt(i);
+    if(c.measureText(line + ch).width > maxW && line){ lines++; line = ch; }
+    else{ line += ch; }
+  }
+  return lines;
+}
+
+function buildPoster(){
+  var W = 750, H = 1500, PAD = 48, CW = W - PAD*2;
+  var r = RESULTS[lastResultCode];
+  var pal = PALS[lastResultCode.charAt(0)];
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+
+  var g = c.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#FFF8F2'); g.addColorStop(0.55, '#FFFFFF'); g.addColorStop(1, pal.light);
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+
+  c.fillStyle = pal.main; c.globalAlpha = 0.12;
+  c.beginPath(); c.arc(700, 70, 90, 0, Math.PI*2); c.fill();
+  c.beginPath(); c.arc(40, 1430, 70, 0, Math.PI*2); c.fill();
+  c.globalAlpha = 1;
+
+  c.textAlign = 'center';
+  c.fillStyle = '#7A6862';
+  c.font = 'bold 26px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('我的打工人类型', W/2, 72);
+  c.fillStyle = pal.deep;
+  c.font = '15px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('18 道工位小题 · 打工人类型测评', W/2, 102);
+
+  c.font = '84px "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+  c.fillText(r.emoji, W/2, 208);
+
+  c.fillStyle = '#3F332F';
+  c.font = 'bold 54px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(r.name, W/2, 276);
+
+  c.fillStyle = pal.deep;
+  c.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(DIMS[lastResultCode.charAt(0)] + ' · 第 ' + lastResultCode.charAt(1) + ' 号原型', W/2, 312);
+
+  c.fillStyle = '#7A6862';
+  c.font = '23px "PingFang SC","Microsoft YaHei",sans-serif';
+  var py = wrapText(c, r.persona, W/2, 350, 600, 34);
+
+  // 关键词胶囊
+  var kwW = [];
+  c.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+  var totalW = 0;
+  r.kw.forEach(function(k){ var w = c.measureText(k).width + 44; kwW.push(w); totalW += w; });
+  totalW += (r.kw.length - 1) * 12;
+  var kx = (W - totalW) / 2;
+  var ky = py + 6;
+  r.kw.forEach(function(k, i){
+    c.fillStyle = '#FFF1EA';
+    roundRect(c, kx, ky, kwW[i], 40, 20); c.fill();
+    c.strokeStyle = pal.main; c.lineWidth = 2;
+    roundRect(c, kx, ky, kwW[i], 40, 20); c.stroke();
+    c.fillStyle = pal.deep; c.textAlign = 'center';
+    c.font = '20px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(k, kx + kwW[i]/2, ky + 27);
+    kx += kwW[i] + 12;
+  });
+
+  // 解读卡片（先量高度，再画）
+  var labels = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  var textX = PAD + 34, textW = CW - 68;
+  var bodyFont = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.textAlign = 'left';
+  c.font = bodyFont;
+  var l1 = measureLines(c, r.insight[0], textW);
+  var l2 = measureLines(c, r.insight[1], textW);
+  var l3 = measureLines(c, r.insight[2], textW - 16);
+  var cardH = 44 + 32*3 + (l1 + l2 + l3)*34 + 20 + 18 + 26;
+  var cardY = ky + 58;
+  c.fillStyle = '#FFFFFF';
+  roundRect(c, PAD, cardY, CW, cardH, 26); c.fill();
+  c.strokeStyle = '#F3E3DA'; c.lineWidth = 2;
+  roundRect(c, PAD, cardY, CW, cardH, 26); c.stroke();
+
+  var y = cardY + 44;
+  r.insight.forEach(function(t, i){
+    c.textAlign = 'left';
+    c.fillStyle = pal.deep;
+    c.font = 'bold 21px "Apple Color Emoji","Segoe UI Emoji","Microsoft YaHei",sans-serif';
+    c.fillText(labels[i], textX, y);
+    y += 34;
+    if(i === 2){
+      c.fillStyle = '#FFF1E8';
+      roundRect(c, textX - 14, y - 26, textW + 28, l3*34 + 26, 14); c.fill();
+      c.fillStyle = pal.deep;
+      c.font = 'bold 22px "PingFang SC","Microsoft YaHei",sans-serif';
+      y = wrapText(c, t, textX, y + 2, textW - 10, 34) + 4;
+    }else{
+      c.fillStyle = '#3F332F';
+      c.font = bodyFont;
+      y = wrapText(c, t, textX, y + 2, textW, 34) + 8;
+    }
+  });
+
+  // 维度能量
+  var eY = cardY + cardH + 44;
+  var counts = {};
+  DIM_ORDER.forEach(function(d){ counts[d] = 0; });
+  Object.keys(lastScores || {}).forEach(function(k){
+    var d = k.charAt(0);
+    if(counts[d] !== undefined) counts[d] += lastScores[k];
+  });
+  var maxC = Math.max.apply(null, DIM_ORDER.map(function(d){ return counts[d]; })) || 1;
+
+  c.textAlign = 'left';
+  c.fillStyle = '#7A6862';
+  c.font = 'bold 19px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('六维打工能量', PAD, eY);
+  var rowY = eY + 24;
+  DIM_ORDER.forEach(function(d){
+    c.textAlign = 'left';
+    c.fillStyle = '#7A6862';
+    c.font = '17px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(DIMS[d], PAD, rowY + 15);
+    c.fillStyle = '#F4EEE9';
+    roundRect(c, PAD + 106, rowY + 4, 440, 12, 6); c.fill();
+    c.fillStyle = pal.main;
+    var w = Math.max(12, 440 * counts[d] / maxC);
+    roundRect(c, PAD + 106, rowY + 4, w, 12, 6); c.fill();
+    c.textAlign = 'right';
+    c.fillStyle = '#A99A94';
+    c.font = '16px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(counts[d] + ' 题', W - PAD, rowY + 15);
+    rowY += 30;
+  });
+
+  c.textAlign = 'center';
+  c.fillStyle = pal.deep;
+  c.font = 'bold 21px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('@ 你想到的那个同事，来测测谁和你最搭', W/2, rowY + 30);
+
+  c.fillStyle = '#A99A94';
+  c.font = '15px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，', W/2, 1444);
+  c.fillText('不构成任何心理诊断或职业建议。', W/2, 1470);
+
+  var dataURL = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = dataURL;
+  document.getElementById('posterDownload').href = dataURL;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 交互绑定 ============ */
+document.getElementById('coverArt').innerHTML = coverArt();
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = []; cur = 0; renderQuestion(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQuestion(); }
+});
+document.getElementById('posterBtn').addEventListener('click', buildPoster);
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  answers = []; cur = 0; show('home');
+});
+</script>
+</body>
+</html>

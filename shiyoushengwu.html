@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你的室友是哪种生物 · 室友生物图鉴</title>
+<style>
+  :root{
+    --green:#3FA96B; --green-deep:#2E8B57; --green-soft:#E3F5E8; --green-mist:#F0FAF3;
+    --orange:#F4A261; --orange-soft:#FFEFD9;
+    --cream:#FFFDF7; --ink:#35423B; --ink-2:#6E7D74; --ink-3:#9AA9A0;
+    --line:#DCEBE0; --shadow-sm:0 4px 18px rgba(63,169,107,.13);
+    --shadow:0 14px 40px rgba(63,169,107,.18);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,#F3FBF5,#FFFDF7 60%,#FFF6EA);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:24px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:linear-gradient(135deg,rgba(243,251,245,.97),rgba(255,253,247,.97));
+    backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:44px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.7;margin:0 0 20px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--green-soft);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:#F8FDF9}
+  #passInput:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(63,169,107,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--green-deep);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#fff;background:linear-gradient(135deg,var(--green),var(--green-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn.ghost{background:#fff;color:var(--green-deep);border:1.5px solid var(--green-soft);box-shadow:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:27px;line-height:1.35;margin:10px 0 12px;letter-spacing:.5px}
+  h1 .hl{color:var(--green-deep)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--green-deep);
+    background:var(--green-soft);padding:5px 12px;border-radius:999px;letter-spacing:.5px}
+  .progress-track{height:8px;background:var(--green-soft);border-radius:99px;overflow:hidden;margin:12px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--green),var(--orange));transition:width .5s ease}
+  .option{display:flex;align-items:flex-start;gap:11px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:#fff;transition:.18s}
+  .option:hover{transform:translateY(-2px);border-color:var(--green-soft)}
+  .option.on{border-color:var(--green);background:#F5FDF8}
+  .opt-key{flex:0 0 26px;height:26px;border-radius:50%;background:var(--green-soft);color:var(--green-deep);
+    font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .opt-key.on{background:var(--green);color:#fff}
+  .kw{display:inline-block;font-size:12px;color:var(--green-deep);background:var(--green-soft);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.7;text-align:center;margin-top:22px}
+
+  /* 首页封面 */
+  .cover{border-radius:22px;overflow:hidden;background:#fff;border:1px solid var(--line);
+    box-shadow:var(--shadow-sm);margin:6px 0 18px}
+  .cover svg{display:block;width:100%;height:auto}
+  .meta-row{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 6px}
+  .chip{font-size:11.5px;color:var(--ink-2);background:#F6FBF7;border:1px dashed var(--line);
+    padding:4px 10px;border-radius:8px}
+
+  /* 答题 */
+  .qtag{font-size:11.5px;color:var(--ink-3);letter-spacing:1px;margin:0 0 4px}
+  #qTitle{font-size:18px;line-height:1.6;margin:4px 0 16px}
+
+  /* 结果 */
+  .art-box{width:150px;height:150px;margin:0 auto 12px}
+  .art-box svg{width:100%;height:100%;display:block}
+  .dim-tag{display:inline-block;font-size:11.5px;color:#fff;background:var(--green);
+    padding:3px 10px;border-radius:999px;letter-spacing:1px;margin-bottom:8px}
+  #rName{font-size:30px;margin:6px 0 8px;letter-spacing:1px}
+  .insight-block{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  .insight-label{font-size:12px;color:var(--ink-3);letter-spacing:1px;margin-bottom:6px;font-family:var(--emoji)}
+  .insight-block p{font-size:14.5px;line-height:1.95;color:var(--ink);margin:0;text-align:justify}
+  .quote{margin-top:16px;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#F0FAF3,#FFF6EA);
+    font-size:16px;font-weight:800;line-height:1.7;color:var(--green-deep);text-align:center}
+  .match{margin-top:14px;font-size:13px;color:var(--ink-2);line-height:1.8;background:#FBFEFC;
+    border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(53,66,59,.62);
+    align-items:center;justify-content:center;padding:16px}
+  #posterModal.show{display:flex}
+  .poster-box{background:#fff;border-radius:20px;padding:14px;max-width:380px;width:100%;text-align:center;
+    max-height:96vh;overflow:auto}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(53,66,59,.92);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .poster-tip{font-size:11.5px;color:var(--ink-3);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启图鉴</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入图鉴 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">✨ 室友生物图鉴 · 第 001 号观察</span>
+    <h1>你的室友<br>到底是<span class="hl">哪种生物</span>？</h1>
+    <p class="gsub">12 道合租现场小题，凭第一反应选。<br>测完，你会得到一张属于他/她的图鉴卡。</p>
+    <div class="cover"><svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="cvG" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0" stop-color="#F0FAF3"/><stop offset="1" stop-color="#FFFDF7"/>
+        </linearGradient>
+      </defs>
+      <rect width="300" height="400" fill="url(#cvG)"/>
+      <rect x="14" y="14" width="272" height="372" rx="18" fill="none" stroke="#3FA96B" stroke-width="2" stroke-dasharray="7 6" opacity=".45"/>
+      <ellipse cx="150" cy="312" rx="104" ry="22" fill="#3FA96B" opacity=".14"/>
+      <path d="M46 312h208" stroke="#2E8B57" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      <!-- 熊 -->
+      <g>
+        <circle cx="98" cy="252" r="42" fill="#B08157"/>
+        <circle cx="72" cy="218" r="14" fill="#B08157"/><circle cx="124" cy="218" r="14" fill="#B08157"/>
+        <ellipse cx="98" cy="266" rx="20" ry="14" fill="#E8CDB0"/>
+        <path d="M86 248q7 6 14 0" stroke="#4A3222" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        <path d="M98 258q6 4 11 0" stroke="#4A3222" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M78 296q20 12 40 0" stroke="#8A5E3B" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+      </g>
+      <!-- 猫头鹰 -->
+      <g>
+        <ellipse cx="196" cy="262" rx="34" ry="30" fill="#3FA96B"/>
+        <circle cx="196" cy="228" r="30" fill="#4FBB7A"/>
+        <path d="M176 206l-7-20 20 9z" fill="#4FBB7A"/>
+        <path d="M216 206l7-20-20 9z" fill="#4FBB7A"/>
+        <circle cx="186" cy="228" r="9" fill="#FFFDF7"/><circle cx="207" cy="228" r="9" fill="#FFFDF7"/>
+        <circle cx="187" cy="229" r="4.5" fill="#1F3A2C"/><circle cx="208" cy="229" r="4.5" fill="#1F3A2C"/>
+        <path d="M196 238l-7 9h14z" fill="#F4A261"/>
+        <ellipse cx="196" cy="266" rx="16" ry="12" fill="#7FD3A0" opacity=".8"/>
+      </g>
+      <!-- 小雀 -->
+      <g>
+        <ellipse cx="64" cy="286" rx="24" ry="19" fill="#F4A261"/>
+        <circle cx="56" cy="264" r="15" fill="#F7B77A"/>
+        <path d="M44 264l-14 6 14 6z" fill="#E8913F"/>
+        <circle cx="50" cy="261" r="3" fill="#3A2A1C"/>
+        <path d="M84 282q12-4 20-12" stroke="#E8913F" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M40 296q10 6 22 2" stroke="#C97F38" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+      </g>
+      <!-- 浮星与标本标签 -->
+      <circle cx="66" cy="132" r="4" fill="#F4A261" opacity=".85"/>
+      <circle cx="236" cy="122" r="5" fill="#3FA96B" opacity=".55"/>
+      <circle cx="208" cy="168" r="3" fill="#F4A261" opacity=".8"/>
+      <rect x="54" y="166" width="72" height="24" rx="8" fill="#fff" stroke="#DCEBE0" stroke-width="2"/>
+      <path d="M64 178h52" stroke="#AFC9B8" stroke-width="3" stroke-linecap="round"/>
+      <rect x="188" y="86" width="62" height="24" rx="8" fill="#fff" stroke="#DCEBE0" stroke-width="2"/>
+      <path d="M198 98h42" stroke="#AFC9B8" stroke-width="3" stroke-linecap="round"/>
+      <path d="M20 356h260" stroke="#DCEBE0" stroke-width="2" stroke-dasharray="5 5"/>
+    </svg></div>
+    <div class="meta-row">
+      <span class="chip">12 道情景题</span>
+      <span class="chip">12 种室友生物</span>
+      <span class="chip">无标准答案</span>
+      <span class="chip">可保存海报</span>
+    </div>
+    <button class="btn" id="startBtn">开始观察 →</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+  <!-- 答题 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><span class="bar-fill" id="progressFill"></span></div>
+    <p class="gsub" id="qIndex" style="margin:0 0 10px">第 1 / 12 题</p>
+    <div class="card">
+      <p class="qtag" id="qTag">观察记录 01</p>
+      <h2 id="qTitle" style="font-size:18px;line-height:1.6;margin:4px 0 16px">题干</h2>
+      <div id="options"></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 结果 -->
+  <section id="result" class="view">
+    <div class="card">
+      <div class="art-box" id="rArt"></div>
+      <div style="text-align:center">
+        <div id="rEmoji" style="font-size:38px;line-height:1;margin-bottom:6px;font-family:var(--emoji)">🦉</div>
+        <span class="dim-tag" id="rDim">作息物种</span>
+        <h2 id="rName">夜行枭</h2>
+        <p class="gsub" id="rPersona" style="margin:0 0 12px">一句话人设</p>
+        <div id="rKeywords" style="margin-bottom:6px"></div>
+      </div>
+      <div id="rInsight"></div>
+      <div class="match" id="rMatch"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </section>
+
+</div>
+
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的室友生物图鉴.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+    <p class="poster-tip">手机端可长按上方图片保存</p>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "4034"; // 4 位数字口令，可自行修改此处
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 数据区 ============ */
+var DIMS = { A:'作息物种', B:'领地物种', C:'社交物种', D:'资源物种' };
+
+var QUESTIONS = [
+  { title:'凌晨一点，你准备睡了，室友房间的灯还亮着，键盘声没停。', options:[
+    { key:'A', code:'A1', text:'拉我一把，我这局也刚开，一起干到三点。' },
+    { key:'B', code:'B1', text:'灯可以亮，音量得归我管，客厅分贝我说了算。' },
+    { key:'C', code:'C1', text:'既然都醒着，干脆把人叫齐，客厅开个夜宵局。' },
+    { key:'D', code:'D1', text:'你们先闹，我先把桌上的零食和空瓶收好，别乱我库存。' } ] },
+
+  { title:'早上七点你要出门，室友还在睡。', options:[
+    { key:'A', code:'A2', text:'六点半我已经跑完步洗完澡，顺手把早饭也做了。' },
+    { key:'B', code:'B2', text:'（抱着枕头）你帮我带个早饭吧，顺便把快递也拿上来。' },
+    { key:'C', code:'C2', text:'轻手轻脚出门，一句多余的话都不说，谁也别吵谁。' },
+    { key:'D', code:'D2', text:'出门前先翻一遍冰箱，看看今天能顺走点什么。' } ] },
+
+  { title:'周五晚上，大家问这周末有什么安排。', options:[
+    { key:'A', code:'A3', text:'周末？我的安排是从周五睡到周日，谁叫我我跟谁急。' },
+    { key:'B', code:'B3', text:'我周末回家呢，行李已经收好，随时能走。' },
+    { key:'C', code:'C3', text:'你们去哪我去哪，我负责订餐和拍照，跟着队伍走。' },
+    { key:'D', code:'D3', text:'先把屋子大扫除一遍，再考虑要不要出门。' } ] },
+
+  { title:'室友没问过你，就把朋友带回客厅，占了你的沙发位。', options:[
+    { key:'A', code:'B1', text:'沙发是我的领地，人可以坐，鞋必须脱，位置得给我留一个。' },
+    { key:'B', code:'C1', text:'正好，人多热闹，我再去切盘水果、加两把椅子。' },
+    { key:'C', code:'D1', text:'先把我堆在沙发上的东西搬走，别碰，那都是我留着的。' },
+    { key:'D', code:'A1', text:'你们玩，我凌晨再出来收场，正好错峰用客厅。' } ] },
+
+  { title:'室友又一次用了你的洗面奶、抽纸和充电线，没打招呼。', options:[
+    { key:'A', code:'B2', text:'你的就是我的，我的还是我的，我用完会跟你说一声的（大概）。' },
+    { key:'B', code:'C2', text:'东西我收进柜子了，钥匙我自己拿着，边界感请自备。' },
+    { key:'C', code:'D2', text:'顺便问一句，你柜子里那袋饼干还吃吗？' },
+    { key:'D', code:'A2', text:'东西我都有备份，早上六点顺手收拾好了，用完放回原位就行。' } ] },
+
+  { title:'房租水电该交了，室友的态度。', options:[
+    { key:'A', code:'B3', text:'我下个月可能搬走，这月先按天算，我好结算。' },
+    { key:'B', code:'C3', text:'我算好了，按人头平摊，我先垫上，大家转我就行。' },
+    { key:'C', code:'D3', text:'钱可以交，但先把上个月谁没倒垃圾这件事说清楚。' },
+    { key:'D', code:'A3', text:'多少钱？发我，我醒了就转（然后睡到下午）。' } ] },
+
+  { title:'你在客厅看剧，室友突然开始讲他今天遇到的八卦。', options:[
+    { key:'A', code:'C1', text:'等下等下，这么重要的事得把人叫齐一起听。' },
+    { key:'B', code:'D1', text:'你先说，我把这集存下来，一句都不能漏。' },
+    { key:'C', code:'A1', text:'这个点正好，我精神最好，讲，讲到天亮。' },
+    { key:'D', code:'B1', text:'讲可以，遥控器归我，剧情不能停。' } ] },
+
+  { title:'你心情不好回家，室友的反应。', options:[
+    { key:'A', code:'C2', text:'看出来你不对，但没问，只把灯调暗、把你的房门带上。' },
+    { key:'B', code:'D2', text:'先别难过，我点了炸鸡，吃完再说。' },
+    { key:'C', code:'A2', text:'明早六点我陪你去跑步，跑完什么情绪都能散。' },
+    { key:'D', code:'B2', text:'你难过我更难过，我今天就赖在你旁边不走了。' } ] },
+
+  { title:'冰箱里的东西总是不翼而飞。', options:[
+    { key:'A', code:'C3', text:'咱们建个共享清单吧，谁买的谁标名字，吃完一起补。' },
+    { key:'B', code:'D3', text:'我每周清一次冰箱，过期的直接扔，别问我为什么。' },
+    { key:'C', code:'A3', text:'我基本不吃夜宵之外的东西，少的那盒酸奶不是我（大概）。' },
+    { key:'D', code:'B3', text:'我很少在家吃，冰箱我就放一瓶水，占个位。' } ] },
+
+  { title:'大扫除日，你打开室友的柜子。', options:[
+    { key:'A', code:'D1', text:'别动！那个袋子我还有用，那个盒子以后也会有用。' },
+    { key:'B', code:'A1', text:'我凌晨三点整理过了，你们白天别进来，我的秩序你们不懂。' },
+    { key:'C', code:'B1', text:'这柜子从中间划开，左半边我的，谁越界谁请奶茶。' },
+    { key:'D', code:'C1', text:'扫除完咱们拍个合照，再叫上隔壁一起搞个庆祝。' } ] },
+
+  { title:'你刚点完外卖坐下，室友从房间出来了。', options:[
+    { key:'A', code:'D2', text:'你点了我最爱的，我加一份，钱我转你。' },
+    { key:'B', code:'A2', text:'这个点吃太晚了，我厨房有早上做的粥，给你留了一碗。' },
+    { key:'C', code:'B2', text:'我坐你旁边，我们一起看，筷子借我。' },
+    { key:'D', code:'C2', text:'拿了自己的那份回房间，门一关，各吃各的。' } ] },
+
+  { title:'最后一题：如果只能给这段合租生活下一个定义。', options:[
+    { key:'A', code:'D3', text:'是一场持续一年的卫生保卫战，我负责前线。' },
+    { key:'B', code:'A3', text:'是两个人轮流占领客厅，谁醒着谁当家。' },
+    { key:'C', code:'B3', text:'是短暂同路的两个行李箱，随时可以各自出发。' },
+    { key:'D', code:'C3', text:'是两株长在一起的珊瑚，磕磕碰碰，但分不太开。' } ] }
+];
+
+var RESULTS = {
+  A1:{ emoji:'🦉', dim:'A', name:'夜行枭', persona:'白天是植物，晚上是全场最亮的灯。',
+    kw:['深夜选手','反差开机','独享安静'],
+    insight:[
+      '凌晨一点，客厅只剩一盏灯，你端着泡面蹲在沙发边，把音量调到一格，笑到肩膀发抖又赶紧憋回去。室友第二天问你昨晚是不是没睡，你说睡了，其实那三个小时才是你一天里真正醒着的时候，白天那个你只是在待机。，然后等到整栋楼都安静下来才松一口气。',
+      '你把白天让给别人，把夜晚留给自己。不是不合群，是你需要一段没人打扰的时间，把自己重新装满。安静对你不是孤独，是充电；夜里的你，才有余力应付白天所有的声音与要求，也才有耐心对别人笑。你不需要被理解，只需要被允许。',
+      '世界睡了，你才真正开始生活。愿你夜夜都有自己的那盏灯。'
+    ],
+    scene:'凌晨两点的便利店', match:'最佳室友：晨鸣雀——一个负责白天，一个负责夜里，屋子 24 小时都有人看着。',
+    art:'A1' },
+
+  A2:{ emoji:'🐦', dim:'A', name:'晨鸣雀', persona:'六点半起床，能把整栋楼叫醒。',
+    kw:['早起体质','生活管理员','稳定输出'],
+    insight:[
+      '六点二十，天刚亮，你已经跑完两公里，顺手把厨房台面擦了一遍，粥在锅里咕嘟。室友起床时，桌上有一杯温度刚好的水，你只留一句：锅里有粥，碗自己洗，别等我回来。你在厨房忙的时候，还会顺手把室友的杯子也洗了。',
+      '你把生活过成一份清晰的时间表，早起不是自律表演，是你需要先把自己安顿好，才有余力照顾别人。你不喊口号，只用行动把一天的开头摆平，你的稳定，是这间屋子最不容易塌的那面墙。你把日子过成可以预期的样子，让人放心。',
+      '你把每个普通清晨，都过成了别人羡慕的样子，也把自己照顾得很好。愿你偶尔也能睡个懒觉。'
+    ],
+    scene:'早上七点的菜市场', match:'最佳室友：休眠熊——你负责白天，他负责别把白天搞乱。',
+    art:'A2' },
+
+  A3:{ emoji:'🐻', dim:'A', name:'休眠熊', persona:'一沾床就自动进入冬眠模式。',
+    kw:['深度睡眠','低耗运行','关机重启'],
+    insight:[
+      '周末下午三点，你从被子里伸出一只手摸到手机，看了一眼又塞回去。室友喊你吃饭，你应了一声，等真正坐起来天已经黑了。你的睡眠不是懒，是一键关机，彻底断联，谁来都叫不动，连外卖都叫不醒。你醒来第一件事是看时间，然后决定要不要再睡一轮。',
+      '你懂得把自己彻底放空，不被消息、计划和别人的节奏牵着走。能睡踏实的人，往往也能在关键时刻稳住自己，因为你知道怎么恢复，也知道什么时候该省电，不跟世界硬碰硬。省电不是摆烂，是给下一次启动攒力气。',
+      '会休息的人，才有力气把日子过成自己的，也才有力气爱人。别急着叫醒自己。'
+    ],
+    scene:'周末午后的窗帘缝', match:'最容易吵起来的：晨鸣雀；最舒服的：夜行枭，你俩一天见不到两面。',
+    art:'A3' },
+
+  B1:{ emoji:'🦁', dim:'B', name:'圈地狮', persona:'这间屋子的每块地，都有归属。',
+    kw:['边界清晰','主权意识','秩序感'],
+    insight:[
+      '你在书桌边缘贴了一条胶带，左边是你的，右边是室友的。有人把水杯放到你的地盘，你会笑着挪回去，嘴上说着没事，手比谁都诚实，连椅子的角度都要摆回原样，一根头发也要归位。连放在公共区域的拖鞋，都要摆成一条直线。',
+      '你不是小气，是需要清晰的边界才安心。你把规则摆到明面上，反而让相处少了很多猜来猜去。能说清界线的人，通常也最守承诺，说到哪就做到哪，和这样的人同住最省心，也最不容易积怨。界线不是墙，是让大家都舒服的说明书。',
+      '把边界说清楚的人，才配拥有长久的关系，也才守得住自己。先划清，再靠近。'
+    ],
+    scene:'书桌中间那条胶带', match:'最省心：共生珊瑚；最容易起摩擦：藤壶，边界是他最看不懂的词。',
+    art:'B1' },
+
+  B2:{ emoji:'🐚', dim:'B', name:'藤壶', persona:'贴上来就不走，粘人精本精。',
+    kw:['全程贴贴','借用大师','高浓度陪伴'],
+    insight:[
+      '室友刚坐下，你就端着杯子挪过去，肩挨着肩一起看他手机屏幕。他去厨房你也跟去，说不是要吃什么，就是想有人在旁边。你的理由是：一个人待着太安静了，安静得心里发慌。室友去阳台晾衣服，你也能在门口等到他回来。',
+      '你的亲近是本能，你把关系维持在很近的距离，用陪伴证明在乎。只是偶尔也要留一点空隙，让对方喘口气，你的热情才不会变成压力，黏得太紧反而容易散，松一点更长久。你怕的不是没人陪，是安静下来之后的那种空。',
+      '愿意靠近的人本身很珍贵，记得也给自己留个位置。靠近的方式，也可以慢一点。'
+    ],
+    scene:'沙发左上角那一小块', match:'最难磨合：独居猫；一拍即合：群居蜂，你俩能把客厅变成菜市场。',
+    art:'B2' },
+
+  B3:{ emoji:'🦢', dim:'B', name:'游牧雁', persona:'行李永远半开着，说走就走。',
+    kw:['随时启程','轻装上阵','不扎根'],
+    insight:[
+      '你的行李箱从来不收进柜子，就靠在门边，里面常年放着充电器和两件换洗衣服。周末一到，你拉上箱子就出门，室友问你去哪，你说看情况，票买到哪算哪，反正哪儿都能住一晚。你的洗漱包里永远有一套备用的，第二天就能走。',
+      '你习惯把生活保持在一个随时可以带走的状态，这不是不安定，是你对自由的需要。你走得开，也回得来，这间屋子对你来说是驿站，不是牢笼，住得舒服就够了，不必占下所有。你把每一次停留都过得很认真，因为你知道它不长久。',
+      '世界很大，你随时都有出发的资格，也随时都有回来的路。别怕没有归处。'
+    ],
+    scene:'车站候车厅', match:'完全两种活法：囤积松鼠；聚得快散得也快：群居蜂。',
+    art:'B3' },
+
+  C1:{ emoji:'🐝', dim:'C', name:'群居蜂', persona:'客厅就是你的社交主场。',
+    kw:['热闹制造机','全员召集','氛围担当'],
+    insight:[
+      '只要有人在家，客厅的灯就不会只亮一盏。你切水果、叫外卖、把隔壁的人也喊来，茶几上摆满杯子。你说人不齐，东西就不好吃，热闹才配得上周末这两个字，安静会浪费好天气。哪怕只是周三，你也能把它过成小型的节日。',
+      '你天生会把人聚在一起，用一顿饭、一句玩笑把气氛托起来。你在意的是没有人被落下，谁不吭声你就多问两句，这种温度，是很多屋子真正缺的东西，也是最容易被忘记的东西。你记得每个人的口味，也记得谁上次没吃到。',
+      '你把普通的一天，过成了有人记得的晚上，也把自己放进热闹里。愿你也被人叫一次。'
+    ],
+    scene:'客厅茶几', match:'天生一对：共生珊瑚；需要磨合：独居猫，他不来你就多留一份。',
+    art:'C1' },
+
+  C2:{ emoji:'🐈', dim:'C', name:'独居猫', persona:'回窝就闭麦，社交额度按月发放。',
+    kw:['高冷有礼','自留空间','慢热'],
+    insight:[
+      '室友在客厅喊你吃水果，你说好，然后没有下文。你在房间里戴着耳机，门虚掩着，谁都能看见你在，但谁也不会真的进来。你的社交额度，一个月只够用几次，用完就自动下线。有人敲门，你会先问一句什么事，再决定开不开。',
+      '你不是冷淡，是需要独处来恢复。你对人保持礼貌的距离，一旦熟了，会给出非常密的关心，记得你爱吃什么、怕什么。你的安静里，藏着很稳的在意，只是不写在脸上而已。你不说漂亮话，但你会把对方的难处记在心里。',
+      '不必对所有人热情，把热留给对的人就够了，慢一点也没关系。你会被懂你的人找到。'
+    ],
+    scene:'房门虚掩的房间', match:'互相为难：群居蜂；最需要提前沟通：藤壶，他真的会跟进来。',
+    art:'C2' },
+
+  C3:{ emoji:'🤝', dim:'C', name:'共生珊瑚', persona:'谁强我补谁，天生互补体质。',
+    kw:['互补搭档','会算账','好商量'],
+    insight:[
+      '水电网费的单子一出来，你已经算好了每人多少，连上个月谁多用了一度都标了颜色。室友说不用这么细，你说细一点，大家心里都舒服，账清了感情才长，糊着来的最后都要吵。连谁先垫的钱、什么时候还，你都记在那个共享表格里。',
+      '你擅长把关系调到一个双方都不吃亏的位置，谁擅长什么就多做什么，谁忙了你就补位。这种务实的温柔，让一起生活这件事变得可持续，也让矛盾停在发生之前，不用谁来忍。你不怕麻烦，你怕的是有人憋着不说。',
+      '好的关系不是谁让谁，是彼此都刚好，都愿意多走半步。所以你们能住很久。'
+    ],
+    scene:'一起交的电费单', match:'最省心：圈地狮；最容易算不清：游牧雁，他随时可能退租。',
+    art:'C3' },
+
+  D1:{ emoji:'🐿️', dim:'D', name:'囤积松鼠', persona:'什么都不扔，万物皆可留着。',
+    kw:['万物有用','仓储管理','舍不得'],
+    insight:[
+      '柜子里有三个空的玻璃罐、五个外卖袋、一把不知道配哪把锁的钥匙。室友问能不能扔，你说别，以后肯定用得上。然后你把它们重新摞整齐，摞得比原来还高一点，看着特别满足。你甚至记得每个袋子的来历，哪次外卖、哪家店。',
+      '你舍不得扔的不是东西，是那点可能用得上的安全感。你把生活里的痕迹都留着，看起来乱，其实每一件都有它的位置和来历，扔掉的不是物，是一段时间，一段不想忘的日子。你其实很怕浪费，也怕辜负当时那个舍不得的自己。',
+      '留一点旧东西，也留一点余地去生活，不必什么都清空。你不必活成极简的样子。'
+    ],
+    scene:'塞满的储物柜', match:'完全对立：清洁蟹；互相看不惯：游牧雁，他连箱子都不留。',
+    art:'D1' },
+
+  D2:{ emoji:'🐤', dim:'D', name:'觅食麻雀', persona:'闻着味儿就知道谁点了外卖。',
+    kw:['嗅觉灵敏','蹭饭有礼','消息灵通'],
+    insight:[
+      '你从房间出来，第一句话是：谁点外卖了。明明隔着一道门，你总能第一时间闻到。坐下之前先说钱我转你，然后就着别人的剧吃得比谁都香，还不忘点评两句，吃得比点的人还投入。你连室友的加班时间都摸清了，掐着点出来。',
+      '你对生活里的好消息特别敏感，哪里有吃的、哪里热闹，你都能第一时间赶到。你不占便宜，你只是很会参与，让一顿饭变成两个人的饭，让冷清的房间有点动静，有点人味。你让屋子里多了一点声音，也多了一点人情。',
+      '会蹭饭的人，往往也最会分享，最喜欢把好吃的分你一半。分享这件事，你从不小气。'
+    ],
+    scene:'外卖到楼下的那一刻', match:'深夜搭子：夜行枭；同一食物链：囤积松鼠。',
+    art:'D2' },
+
+  D3:{ emoji:'🦀', dim:'D', name:'清洁蟹', persona:'见不得一点灰，抹布永远在手边。',
+    kw:['洁癖前线','秩序重建','眼里有活'],
+    insight:[
+      '室友刚把碗放进水池，你已经站在旁边，等他转身就接手洗掉。地上有一根头发，你会弯腰捡起来，顺手把整块地拖一遍。抹布永远在你手边，像长在手上一样，随手就能开工。室友说你是不是有洁癖，你说没有，就是看着难受。',
+      '你不是嫌别人脏，是环境一乱你就坐不住。你用打扫把生活重新归位，也在无声地照顾这间屋子里的人。只是别忘了，允许一点不完美，也允许自己歇一会儿，地明天还能再拖。干净是你的安全感，也是你表达在乎的方式。',
+      '你把日子擦得很亮，也记得给自己留点灰，别把自己也擦掉。擦不到的地方，就先放着。'
+    ],
+    scene:'刚拖完的地板', match:'最容易吵起来：囤积松鼠；分工最明确：圈地狮，各守各的地盘。',
+    art:'D3' }
+};
+
+/* 计分：取最高分；平局兜底 末题 -> 首题 -> 编号靠前 */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code]||0) + 1;
+  });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){ return s[k]; }));
+  var tied = Object.keys(s).filter(function(k){ return s[k] === mx; });
+  var code;
+  if(tied.length === 1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[answers.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last) >= 0) code = last;
+    else if(tied.indexOf(first) >= 0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code: code, scores: s };
+}
+
+/* ============ 内联 SVG 图案（扁平几何 + 柔光渐变 + 圆角描边） ============ */
+var ART = {
+A1:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gA1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#16352A"/><stop offset="1" stop-color="#245240"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gA1)"/><circle cx="152" cy="52" r="3" fill="#F0C36B"/><circle cx="62" cy="44" r="4" fill="#F0C36B" opacity=".8"/><circle cx="176" cy="86" r="2.4" fill="#F0C36B" opacity=".7"/><path d="M150 40a17 17 0 1 0 14 26 19 19 0 1 1-14-26" fill="#F0C36B"/><path d="M46 146h108" stroke="#3FA96B" stroke-width="3.2" stroke-linecap="round"/><ellipse cx="100" cy="146" rx="34" ry="8" fill="#0D1F18" opacity=".5"/><ellipse cx="100" cy="118" rx="32" ry="29" fill="#3FA96B"/><ellipse cx="100" cy="126" rx="20" ry="20" fill="#5BC98B" opacity=".55"/><circle cx="100" cy="84" r="30" fill="#4FBB7A"/><path d="M80 60l-7-18 20 8z" fill="#4FBB7A"/><path d="M120 60l7-18-20 8z" fill="#4FBB7A"/><circle cx="89" cy="84" r="9" fill="#FFFDF7"/><circle cx="111" cy="84" r="9" fill="#FFFDF7"/><circle cx="90" cy="85" r="4.4" fill="#16352A"/><circle cx="112" cy="85" r="4.4" fill="#16352A"/><path d="M100 94l-7 10h14z" fill="#F0C36B"/><path d="M84 130q16 9 32 0" stroke="#2E8B57" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+A2:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gA2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7E0"/><stop offset="1" stop-color="#FFE3B8"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gA2)"/><circle cx="152" cy="52" r="20" fill="#FFC96B"/><circle cx="152" cy="52" r="27" fill="none" stroke="#FFC96B" stroke-width="2" opacity=".4"/><path d="M46 150h110" stroke="#F4A261" stroke-width="3.2" stroke-linecap="round" opacity=".6"/><ellipse cx="100" cy="132" rx="30" ry="7" fill="#E8913F" opacity=".22"/><ellipse cx="96" cy="116" rx="30" ry="26" fill="#F4A261"/><ellipse cx="96" cy="120" rx="18" ry="15" fill="#FFD3A8" opacity=".7"/><circle cx="90" cy="86" r="21" fill="#F7B77A"/><path d="M72 84l-16 7 16 7z" fill="#E8913F"/><circle cx="83" cy="82" r="3.6" fill="#4A3222"/><path d="M122 128q14-6 22-16" stroke="#E8913F" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M64 66v-16a7 7 0 0 1 7-7" stroke="#C97F38" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="64" cy="68" r="4.5" fill="#C97F38"/><path d="M40 176h120" stroke="#E8C98F" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"/><circle cx="54" cy="112" r="3" fill="#F4A261" opacity=".8"/><circle cx="138" cy="98" r="2.6" fill="#F4A261" opacity=".7"/></svg>',
+A3:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gA3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBF3E8"/><stop offset="1" stop-color="#EBD8BF"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gA3)"/><rect x="42" y="132" width="118" height="34" rx="17" fill="#FFF7EC" stroke="#D9BFA2" stroke-width="3"/><ellipse cx="100" cy="158" rx="40" ry="7" fill="#B08157" opacity=".22"/><circle cx="100" cy="94" r="30" fill="#B08157"/><circle cx="74" cy="68" r="11" fill="#B08157"/><circle cx="126" cy="68" r="11" fill="#B08157"/><ellipse cx="100" cy="104" rx="16" ry="11" fill="#E8CDB0"/><path d="M84 88q7 6 14 0" stroke="#4A3222" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M100 100q6 4 11 0" stroke="#4A3222" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M148 62h14l-14 15h14" stroke="#A9744F" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M162 96h10l-10 11h10" stroke="#A9744F" stroke-width="3" fill="none" stroke-linecap="round" opacity=".75"/><path d="M52 62l6-12 6 12" stroke="#C9A98B" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+B1:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gB1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF6DF"/><stop offset="1" stop-color="#F0D9A8"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gB1)"/><circle cx="100" cy="92" r="40" fill="#C8912E"/><circle cx="62" cy="66" r="11" fill="#C8912E"/><circle cx="138" cy="66" r="11" fill="#C8912E"/><circle cx="46" cy="100" r="11" fill="#C8912E"/><circle cx="154" cy="100" r="11" fill="#C8912E"/><circle cx="58" cy="132" r="11" fill="#C8912E"/><circle cx="142" cy="132" r="11" fill="#C8912E"/><circle cx="100" cy="92" r="31" fill="#E6B267"/><circle cx="88" cy="86" r="4" fill="#4A3222"/><circle cx="112" cy="86" r="4" fill="#4A3222"/><path d="M100 96l-6 8h12z" fill="#8A5E3B"/><path d="M86 112q14 7 28 0" stroke="#8A5E3B" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M34 150h132" stroke="#C8912E" stroke-width="3.2" stroke-dasharray="9 8" stroke-linecap="round"/><path d="M42 150v-22l16 8-16 8z" fill="#F4A261"/><path d="M158 150v-22l-16 8 16 8z" fill="#F4A261"/><ellipse cx="100" cy="160" rx="44" ry="7" fill="#C8912E" opacity=".2"/></svg>',
+B2:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gB2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF2E6"/><stop offset="1" stop-color="#FFD9BE"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gB2)"/><rect x="122" y="48" width="56" height="112" rx="10" fill="#F7E0CD" stroke="#D9B49A" stroke-width="3"/><path d="M122 48v112" stroke="#D9B49A" stroke-width="3"/><path d="M100 138L128 92l28 46z" fill="#E08B5A"/><ellipse cx="128" cy="138" rx="28" ry="10" fill="#C97748"/><circle cx="128" cy="90" r="8" fill="#F2AE85"/><path d="M128 90q-22-14-30-30" stroke="#FFD9B8" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M128 90q22-14 26-28" stroke="#FFD9B8" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M128 90q-4-18 10-24" stroke="#FFD9B8" stroke-width="4.5" fill="none" stroke-linecap="round"/><circle cx="62" cy="60" r="6" fill="#FFF" opacity=".7"/><circle cx="78" cy="80" r="3.6" fill="#FFF" opacity=".55"/><ellipse cx="128" cy="152" rx="40" ry="7" fill="#C97748" opacity=".18"/></svg>',
+B3:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gB3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EEF7F8"/><stop offset="1" stop-color="#D2E7EC"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gB3)"/><circle cx="58" cy="46" r="14" fill="#FFF" opacity=".7"/><circle cx="78" cy="50" r="9" fill="#FFF" opacity=".6"/><circle cx="152" cy="38" r="10" fill="#FFF" opacity=".55"/><path d="M36 122h28M28 134h36M40 146h24" stroke="#A9C9D1" stroke-width="3" stroke-linecap="round"/><ellipse cx="96" cy="124" rx="26" ry="18" fill="#4A7C8C"/><path d="M112 116q14-16 10-36" stroke="#4A7C8C" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="121" cy="76" r="11" fill="#4A7C8C"/><path d="M131 74l16 4-16 6z" fill="#F4A261"/><path d="M74 118q22-16 40-4-18 12-40 4" fill="#6E9BA8"/><circle cx="118" cy="72" r="2.6" fill="#0E2A31"/><rect x="112" y="140" width="42" height="28" rx="7" fill="#F0C36B" stroke="#8A6A3A" stroke-width="2.4"/><path d="M124 140v-6h18v6" stroke="#8A6A3A" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="120" cy="170" r="3.4" fill="#8A6A3A"/><circle cx="146" cy="170" r="3.4" fill="#8A6A3A"/><circle cx="166" cy="120" r="3.6" fill="#4A7C8C" opacity=".6"/></svg>',
+C1:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gC1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF8E4"/><stop offset="1" stop-color="#FFE4B0"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gC1)"/><ellipse cx="78" cy="110" rx="26" ry="16" fill="#FFF" opacity=".75"/><ellipse cx="122" cy="110" rx="26" ry="16" fill="#FFF" opacity=".75"/><ellipse cx="100" cy="122" rx="28" ry="34" fill="#E8A83A"/><path d="M78 110q24-7 46 0" stroke="#6B4A18" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M76 128q26-8 50 0" stroke="#6B4A18" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M80 146q22-6 42 0" stroke="#6B4A18" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="82" r="18" fill="#F2BE5A"/><circle cx="92" cy="80" r="3.2" fill="#3A2A1C"/><circle cx="108" cy="80" r="3.2" fill="#3A2A1C"/><path d="M92 66q-6-10-2-16" stroke="#6B4A18" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M108 66q6-10 2-16" stroke="#6B4A18" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M100 156l-8 8h16z" fill="#C97F38"/><rect x="140" y="52" width="34" height="22" rx="9" fill="#FFF" stroke="#E8C98F" stroke-width="2"/><rect x="34" y="66" width="30" height="20" rx="9" fill="#FFF" stroke="#E8C98F" stroke-width="2"/><circle cx="52" cy="150" r="3.4" fill="#E8A83A" opacity=".7"/><circle cx="150" cy="132" r="3.4" fill="#E8A83A" opacity=".7"/></svg>',
+C2:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gC2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F9F6FE"/><stop offset="1" stop-color="#E1DAF2"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gC2)"/><rect x="52" y="40" width="96" height="126" rx="10" fill="#FDFBFF" stroke="#B9B2D6" stroke-width="4"/><rect x="58" y="46" width="84" height="114" rx="6" fill="#FFF7E8"/><path d="M58 46h84v114H58z" fill="none"/><path d="M58 120v40h84v-40" fill="#FFE9C9" opacity=".6"/><circle cx="100" cy="104" r="27" fill="#8E86B8"/><path d="M79 84l-6-20 22 8z" fill="#8E86B8"/><path d="M121 84l6-20-22 8z" fill="#8E86B8"/><ellipse cx="90" cy="102" rx="4" ry="5.5" fill="#2E2A44"/><ellipse cx="110" cy="102" rx="4" ry="5.5" fill="#2E2A44"/><path d="M100 112l-5 6h10z" fill="#E4776B"/><path d="M74 108h-14M74 118h-14M126 108h14M126 118h14" stroke="#B9B2D6" stroke-width="2.2" stroke-linecap="round"/><path d="M148 150q16-4 12-22" stroke="#8E86B8" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="66" cy="60" r="3" fill="#FFF" opacity=".8"/><circle cx="136" cy="150" r="2.6" fill="#FFF" opacity=".7"/></svg>',
+C3:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gC3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF2F0"/><stop offset="1" stop-color="#FFDAD2"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gC3)"/><ellipse cx="100" cy="158" rx="48" ry="11" fill="#F3C4BE"/><path d="M86 154q-8-26-20-38" stroke="#E4776F" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M66 118q-12-6-14-18" stroke="#E4776F" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M70 126q4-16 16-20" stroke="#E4776F" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M114 154q8-26 20-38" stroke="#F0998F" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M134 118q12-6 14-18" stroke="#F0998F" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M130 126q-4-16-16-20" stroke="#F0998F" stroke-width="8" fill="none" stroke-linecap="round"/><circle cx="68" cy="70" r="5" fill="#FFD9D2"/><circle cx="136" cy="64" r="4" fill="#FFD9D2"/><circle cx="100" cy="52" r="3.4" fill="#FFD9D2"/><circle cx="156" cy="96" r="3" fill="#FFD9D2"/><path d="M42 96q10-14 26-12" stroke="#FFF" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/><path d="M158 132q-8 12-22 12" stroke="#FFF" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/></svg>',
+D1:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gD1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FDF4E9"/><stop offset="1" stop-color="#EDD8BF"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gD1)"/><path d="M130 130C176 130 172 62 130 72 148 88 148 114 130 130" fill="#A9744F"/><path d="M130 130C166 126 162 78 134 84" fill="#C79A72" opacity=".7"/><ellipse cx="104" cy="128" rx="26" ry="22" fill="#B9835B"/><circle cx="96" cy="98" r="20" fill="#C08D62"/><circle cx="84" cy="82" r="7" fill="#C08D62"/><circle cx="108" cy="82" r="7" fill="#C08D62"/><circle cx="90" cy="96" r="3.4" fill="#3A2A1C"/><path d="M96 104l-4 5h8z" fill="#7A4E2E"/><path d="M62 128h34M56 142h40M66 156h28" stroke="#C9A98B" stroke-width="2.6" stroke-linecap="round" opacity=".8"/><rect x="44" y="152" width="46" height="18" rx="4" fill="#E8D3B4" stroke="#B49A78" stroke-width="2.4"/><rect x="48" y="136" width="38" height="16" rx="4" fill="#F2E1C6" stroke="#B49A78" stroke-width="2.4"/><rect x="52" y="122" width="30" height="14" rx="4" fill="#FAEEDC" stroke="#B49A78" stroke-width="2.4"/><ellipse cx="152" cy="140" rx="6" ry="4.6" fill="#8A5E3B"/><ellipse cx="162" cy="146" rx="5.4" ry="4" fill="#8A5E3B"/></svg>',
+D2:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gD2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFAEA"/><stop offset="1" stop-color="#F4E2B4"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gD2)"/><rect x="62" y="134" width="72" height="34" rx="7" fill="#F0B45E" stroke="#B98A3E" stroke-width="3"/><path d="M62 148h72" stroke="#B98A3E" stroke-width="2.4"/><ellipse cx="100" cy="172" rx="40" ry="6" fill="#B98A3E" opacity=".2"/><ellipse cx="104" cy="110" rx="26" ry="19" fill="#D8A94A"/><circle cx="120" cy="92" r="14" fill="#E2B75E"/><path d="M132 90l15 6-15 7z" fill="#C98E32"/><circle cx="124" cy="89" r="3" fill="#3A2A1C"/><path d="M80 108q-14 4-22 16" stroke="#C98E32" stroke-width="4.4" fill="none" stroke-linecap="round"/><path d="M84 118q-10 8-8 18" stroke="#C98E32" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M138 128q8 2 12 8" stroke="#C98E32" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M62 108q-8-6-8-16" stroke="#E8C98F" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M52 96q-8-8-6-18" stroke="#E8C98F" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M92 48l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#F4A261" opacity=".85"/><path d="M160 60l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#F4A261" opacity=".6"/></svg>',
+D3:'<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="gD3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2FCF7"/><stop offset="1" stop-color="#D3EFE4"/></linearGradient></defs><rect width="200" height="200" rx="20" fill="url(#gD3)"/><ellipse cx="100" cy="150" rx="56" ry="12" fill="#4FA98D" opacity=".16"/><path d="M44 152q30 10 112 0" stroke="#9FDCC6" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/><ellipse cx="100" cy="116" rx="42" ry="29" fill="#4FA98D"/><ellipse cx="100" cy="108" rx="26" ry="14" fill="#7FCFB6" opacity=".7"/><path d="M84 88v-14M116 88v-14" stroke="#3E8C74" stroke-width="4" stroke-linecap="round"/><circle cx="84" cy="72" r="5" fill="#2F6F5C"/><circle cx="116" cy="72" r="5" fill="#2F6F5C"/><path d="M62 108q-16-4-24-16" stroke="#3E8C74" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M138 108q16-4 24-16" stroke="#3E8C74" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="40" cy="86" rx="12" ry="8" transform="rotate(-24 40 86)" fill="#D6F0E4" stroke="#3E8C74" stroke-width="2.6"/><ellipse cx="160" cy="86" rx="12" ry="8" transform="rotate(24 160 86)" fill="#D6F0E4" stroke="#3E8C74" stroke-width="2.6"/><path d="M136 150l14-6 4 12-14 4z" fill="#FFF" stroke="#9FDCC6" stroke-width="2.4"/><path d="M56 132l12-4 4 10-12 4z" fill="#FFF" stroke="#9FDCC6" stroke-width="2.4"/><path d="M70 146v-6a3 3 0 0 1 6 0v6z" fill="#9FDCC6"/><path d="M128 136v-6a3 3 0 0 1 6 0v6z" fill="#9FDCC6"/><circle cx="152" cy="60" r="3.4" fill="#9FDCC6"/><circle cx="44" cy="54" r="2.8" fill="#9FDCC6"/></svg>'
+};
+
+function artFor(code){
+  return ART[code] || ART.A1;
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ 答题 ============ */
+var answers = [];
+var cur = 0;
+var lastResultCode = null;
+var lastScores = null;
+
+function renderQuestion(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = '第 ' + (cur+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('qTag').textContent = '观察记录 ' + ('0' + (cur+1)).slice(-2);
+  document.getElementById('qTitle').textContent = q.title;
+  var fill = (cur / QUESTIONS.length) * 100;
+  document.getElementById('progressFill').style.width = fill + '%';
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(o, i){
+    var d = document.createElement('div');
+    d.className = 'option';
+    d.innerHTML = '<div class="opt-key">' + o.key + '</div><div style="flex:1;font-size:14.5px;line-height:1.75">' + o.text + '</div>';
+    d.addEventListener('click', function(){ pick(i); });
+    box.appendChild(d);
+  });
+  document.getElementById('backBtn').style.visibility = cur === 0 ? 'hidden' : 'visible';
+}
+
+function pick(i){
+  answers[cur] = i;
+  var opts = document.querySelectorAll('#options .option');
+  for(var k=0;k<opts.length;k++){
+    opts[k].classList.toggle('on', k === i);
+    opts[k].querySelector('.opt-key').classList.toggle('on', k === i);
+  }
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){ cur++; renderQuestion(); }
+    else { finish(); }
+  }, 320);
+}
+
+function finish(){
+  document.getElementById('progressFill').style.width = '100%';
+  var r = resolve(answers);
+  lastResultCode = r.code;
+  lastScores = r.scores;
+  renderResult(r.code, r.scores);
+  show('result');
+}
+
+function renderResult(code, scores){
+  var r = RESULTS[code];
+  document.getElementById('rArt').innerHTML = artFor(r.art);
+  document.getElementById('rDim').textContent = DIMS[r.dim];
+  document.getElementById('rEmoji').textContent = r.emoji;
+  document.getElementById('rName').textContent = r.name;
+  document.getElementById('rPersona').textContent = r.persona;
+  var kw = '';
+  r.kw.forEach(function(k){ kw += '<span class="kw">' + k + '</span>'; });
+  document.getElementById('rKeywords').innerHTML = kw;
+  var labels = ['👀 一个画面', '🌱 这是这样的你', '✨ 一句话送给你'];
+  var html = '';
+  r.insight.forEach(function(t, i){
+    if(i === 2){
+      html += '<div class="quote">' + t + '</div>';
+    }else{
+      html += '<div class="insight-block"><div class="insight-label">' + labels[i] + '</div><p>' + t + '</p></div>';
+    }
+  });
+  document.getElementById('rInsight').innerHTML = html;
+  document.getElementById('rMatch').textContent = '🐾 ' + r.match + '　同款场景：' + r.scene;
+}
+
+/* ============ Canvas 结果海报 ============ */
+function wrapText(c, text, x, y, maxW, lineH){
+  var NO_HEAD = '，。、；：！？）」』》…%,.!?:;)]}';
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var t = line + text[i];
+    if(c.measureText(t).width > maxW && line){
+      if(NO_HEAD.indexOf(text[i]) >= 0){
+        c.fillText(t, x, y);
+        line = '';
+        y += lineH;
+        continue;
+      }
+      c.fillText(line, x, y);
+      line = text[i];
+      y += lineH;
+    }else{
+      line = t;
+    }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function roundRect(c,x,y,w,h,r){
+  if(c.roundRect){ c.beginPath(); c.roundRect(x,y,w,h,r); }
+  else{
+    c.beginPath();
+    c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+    c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+  }
+}
+
+function buildPoster(code, scores){
+  var r = RESULTS[code];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var g = c.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#EFFBF3'); g.addColorStop(.55,'#FFFDF7'); g.addColorStop(1,'#FFF3E2');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+  c.fillStyle = 'rgba(63,169,107,.09)';
+  c.beginPath(); c.arc(650,104,116,0,Math.PI*2); c.fill();
+  c.beginPath(); c.arc(76,1286,96,0,Math.PI*2); c.fill();
+  c.strokeStyle = 'rgba(63,169,107,.32)'; c.lineWidth = 2; c.setLineDash([8,7]);
+  roundRect(c,30,30,W-60,H-60,26); c.stroke(); c.setLineDash([]);
+
+  var PAD = 62, CW = W - PAD*2, y = 92;
+  c.textAlign = 'center';
+  c.fillStyle = '#6E7D74';
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('室 友 生 物 图 鉴', W/2, y);
+  y = 114;
+  c.fillStyle = '#3FA96B'; c.fillRect(W/2-44, y, 88, 3);
+
+  // emoji
+  c.font = '84px "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+  c.fillStyle = '#000';
+  c.fillText(r.emoji, W/2, 228);
+
+  // 维度胶囊
+  c.font = '22px "PingFang SC","Microsoft YaHei",sans-serif';
+  var dimTxt = DIMS[r.dim];
+  var dw = c.measureText(dimTxt).width + 52;
+  c.fillStyle = '#E3F5E8';
+  roundRect(c, (W-dw)/2, 250, dw, 42, 21); c.fill();
+  c.fillStyle = '#2E8B57';
+  c.fillText(dimTxt, W/2, 279);
+
+  // 名称
+  c.font = '800 52px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillStyle = '#35423B';
+  c.fillText(r.name, W/2, 356);
+
+  // 人设
+  c.font = '25px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillStyle = '#6E7D74';
+  y = wrapText(c, r.persona, W/2, 396, CW - 40, 36);
+  y += 12;
+
+  // 关键词
+  c.font = '23px "PingFang SC","Microsoft YaHei",sans-serif';
+  var kwW = [];
+  r.kw.forEach(function(k){ kwW.push(c.measureText(k).width + 40); });
+  var totalW = kwW.reduce(function(a,b){ return a+b; }, 0) + (r.kw.length-1)*14;
+  var kx = (W - totalW)/2;
+  r.kw.forEach(function(k, i){
+    c.fillStyle = '#FFF3E2';
+    roundRect(c, kx, y, kwW[i], 40, 20); c.fill();
+    c.fillStyle = '#B9762F';
+    c.fillText(k, kx + kwW[i]/2, y + 27);
+    kx += kwW[i] + 14;
+  });
+  y += 62;
+
+  // 三段解读
+  var titles = ['一个画面', '这是这样的你', '一句话送给你'];
+  c.textAlign = 'left';
+  r.insight.forEach(function(t, i){
+    if(i < 2){
+      c.fillStyle = '#3FA96B';
+      c.fillRect(PAD, y + 2, 5, 22);
+      c.font = '800 24px "PingFang SC","Microsoft YaHei",sans-serif';
+      c.fillStyle = '#2E8B57';
+      c.fillText(titles[i], PAD + 16, y + 22);
+      c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+      c.fillStyle = '#35423B';
+      y = wrapText(c, t, PAD, y + 58, CW, 37);
+      y += 14;
+    }else{
+      c.font = '800 27px "PingFang SC","Microsoft YaHei",sans-serif';
+      var ln = Math.ceil(c.measureText(t).width / (CW - 90)) + 1;
+      var boxH = 26 + 44 + (ln - 1) * 43;
+      c.fillStyle = 'rgba(255,240,214,.92)';
+      roundRect(c, PAD, y, CW, boxH, 16); c.fill();
+      c.fillStyle = '#2E8B57';
+      c.fillText('✨', PAD + 20, y + 42);
+      c.font = '800 27px "PingFang SC","Microsoft YaHei",sans-serif';
+      y = wrapText(c, t, PAD + 58, y + 42, CW - 84, 43);
+      y += 14;
+    }
+  });
+
+  // 维度能量
+  var dimSums = {};
+  Object.keys(scores).forEach(function(k){
+    var d = RESULTS[k].dim; dimSums[d] = (dimSums[d]||0) + scores[k];
+  });
+  y = Math.max(y + 30, 1156);
+  ['A','B','C','D'].forEach(function(d){
+    c.textAlign = 'left';
+    c.font = '21px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillStyle = '#6E7D74';
+    c.fillText(DIMS[d], PAD, y + 18);
+    var bx = PAD + 128, bw = CW - 128 - 46;
+    c.fillStyle = '#E3F5E8';
+    roundRect(c, bx, y + 3, bw, 16, 8); c.fill();
+    var val = dimSums[d] || 0;
+    c.fillStyle = '#3FA96B';
+    roundRect(c, bx, y + 3, Math.max(16, bw * val / 12), 16, 8); c.fill();
+    c.fillStyle = '#2E8B57';
+    c.textAlign = 'right';
+    c.fillText(String(val), W - PAD, y + 18);
+    y += 38;
+  });
+
+  // 结尾
+  c.textAlign = 'center';
+  c.font = '23px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillStyle = '#2E8B57';
+  c.fillText('@ 你想到的那个人，一起测测谁和谁最搭', W/2, y + 40);
+  c.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillStyle = '#9AA9A0';
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，', W/2, y + 84);
+  c.fillText('不构成任何心理诊断或情感建议。', W/2, y + 111);
+
+  return cv.toDataURL('image/png');
+}
+
+document.getElementById('startBtn').addEventListener('click', function(){
+  answers = []; cur = 0; renderQuestion(); show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(cur > 0){ cur--; renderQuestion(); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  answers = []; cur = 0;
+  show('home');
+});
+document.getElementById('posterBtn').addEventListener('click', function(){
+  try{
+    var url = buildPoster(lastResultCode, lastScores);
+    document.getElementById('posterImg').src = url;
+    document.getElementById('posterDownload').href = url;
+    document.getElementById('posterDownload').download = '我的室友生物图鉴_' + RESULTS[lastResultCode].name + '.png';
+    document.getElementById('posterModal').classList.add('show');
+  }catch(e){
+    toast('海报生成失败，请重试');
+  }
+});
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('posterModal').addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('show');
+});
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+</script>
+</body>
+</html>

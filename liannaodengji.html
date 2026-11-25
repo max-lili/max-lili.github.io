@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>你的恋爱脑几级？｜趣味人格测试</title>
+<style>
+:root{
+  --pink:#ff7a9c;
+  --pink-deep:#ff5c85;
+  --pink-soft:#ffe4ec;
+  --cream:#fffaf7;
+  --ink:#4a3b45;
+  --ink-2:#7c6974;
+  --ink-3:#a8929c;
+  --line:#f3e2e8;
+  --shadow-sm:0 4px 18px rgba(255,122,156,.12);
+  --shadow:0 12px 40px rgba(255,122,156,.18);
+  --r:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",sans-serif;
+  background:linear-gradient(135deg,#fff5f8 0%,#f7f5ff 45%,#f1f8ff 100%);
+  color:var(--ink);
+  min-height:100vh;
+  padding:26px 16px 44px;
+  display:flex;
+  justify-content:center;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{width:100%;max-width:520px}
+.emoji{font-family:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif}
+
+/* ---------- 视图切换 ---------- */
+.view{display:none}
+.view.show{display:block;animation:fadeUp .55s cubic-bezier(.2,.7,.3,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+/* ---------- 通用 ---------- */
+.btn{
+  display:block;width:100%;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--pink) 0%,var(--pink-deep) 100%);
+  color:#fff;font-size:17px;font-weight:600;letter-spacing:.5px;
+  padding:15px 20px;border-radius:16px;box-shadow:var(--shadow-sm);
+  font-family:inherit;transition:transform .18s,box-shadow .18s;
+  min-height:48px;
+}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line);box-shadow:none;font-weight:500;font-size:15px}
+.card{background:#fff;border-radius:var(--r);border:1px solid var(--line);box-shadow:var(--shadow-sm);padding:22px}
+.disc{font-size:12px;color:var(--ink-3);text-align:center;line-height:1.7;margin:18px 2px 0}
+
+/* ---------- 口令门控 ---------- */
+#gate{max-width:420px;margin:8vh auto 0}
+.gate-card{
+  background:#fff;border-radius:26px;padding:34px 26px 26px;text-align:center;
+  border:1px solid var(--line);box-shadow:var(--shadow);
+}
+.gate-lock{font-size:40px;line-height:1;margin-bottom:14px}
+.gate-card h2{font-size:19px;margin:0 0 8px;font-weight:700}
+.gsub{font-size:13.5px;color:var(--ink-3);margin:0 0 20px}
+.input-wrap{margin-bottom:10px}
+#passInput{
+  width:100%;padding:15px 16px;border-radius:14px;border:1.5px solid var(--line);
+  background:#fffafc;font-size:20px;text-align:center;letter-spacing:.5em;text-indent:.5em;
+  color:var(--ink);outline:none;font-family:inherit;
+}
+#passInput:focus{border-color:var(--pink);background:#fff}
+.gate-msg{font-size:13px;color:#ff5c85;height:20px;opacity:0;transition:opacity .2s}
+.gate-msg.on{opacity:1}
+.gate-foot{font-size:11.5px;color:var(--ink-3);margin:16px 0 0}
+.shake{animation:shake .4s}
+
+/* ---------- 首页 ---------- */
+.home-card{
+  background:#fff;border-radius:30px;padding:26px 26px 28px;text-align:center;
+  border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;
+}
+.cover{width:100%;max-width:250px;margin:0 auto 18px}
+.cover svg{width:100%;height:auto;display:block}
+.eyebrow{display:inline-block;font-size:12.5px;color:var(--pink-deep);background:var(--pink-soft);padding:4px 12px;border-radius:99px;letter-spacing:1px;margin-bottom:14px}
+h1{font-size:34px;line-height:1.35;margin:0 0 12px;font-weight:800;letter-spacing:1px}
+h1 em{font-style:normal;color:var(--pink-deep);position:relative}
+h1 em::after{content:"";position:absolute;left:-2px;right:-2px;bottom:2px;height:9px;background:var(--pink-soft);z-index:-1;border-radius:6px}
+.sub{font-size:14.5px;color:var(--ink-2);margin:0 0 8px}
+.meta{font-size:12.5px;color:var(--ink-3);margin:0 0 22px;letter-spacing:.5px}
+.foot{font-size:12px;color:var(--ink-3);margin:14px 0 0}
+
+/* ---------- 答题 ---------- */
+.quiz-card{background:#fff;border-radius:26px;padding:22px 22px 20px;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.qhead{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-3);margin-bottom:8px;letter-spacing:.5px}
+.bar{height:7px;background:#f8edf1;border-radius:99px;overflow:hidden;margin-bottom:22px}
+.bar-fill{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--pink-deep));transition:width .35s cubic-bezier(.3,.8,.4,1)}
+.q-title{font-size:20px;line-height:1.6;font-weight:700;margin:0 0 20px;padding:0 2px;animation:fadeUp .4s both}
+.options{display:flex;flex-direction:column;gap:11px}
+.option{
+  display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:#fffafc;border:1.5px solid #f7e9ef;border-radius:16px;padding:14px 15px;
+  font-size:15px;color:var(--ink);font-family:inherit;line-height:1.6;
+  transition:transform .16s,border-color .16s,background .16s,box-shadow .16s;
+}
+.option:hover{transform:translateY(-2px);border-color:#ffc9d8;background:#fff}
+.option .ltr{
+  flex:0 0 26px;height:26px;border-radius:50%;background:var(--pink-soft);color:var(--pink-deep);
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;
+  transition:background .16s,color .16s;
+}
+.option.sel{border-color:var(--pink);background:#fff2f6;box-shadow:0 6px 20px rgba(255,122,156,.16)}
+.option.sel .ltr{background:var(--pink-deep);color:#fff}
+.back{margin-top:14px}
+.back .btn{width:auto;padding:11px 18px;font-size:14px}
+
+/* ---------- 结果 ---------- */
+.result-card{background:#fff;border-radius:28px;padding:24px 22px 22px;border:1px solid var(--line);box-shadow:var(--shadow);text-align:center;animation:pop .6s both}
+.artbox{width:100%;max-width:220px;margin:0 auto 14px}
+.artbox svg{width:100%;height:auto;display:block}
+.lvl{font-size:13px;color:var(--ink-3);letter-spacing:2px;margin-bottom:2px}
+.lvl b{color:var(--pink-deep);font-size:22px;letter-spacing:1px;margin-left:4px}
+.dimtag{display:inline-block;font-size:12px;color:var(--ink-2);background:#fbf3f6;border-radius:99px;padding:3px 12px;margin-bottom:6px}
+.r-name{font-size:26px;font-weight:800;margin:6px 0 6px;letter-spacing:1px}
+.persona{font-size:14px;color:var(--ink-2);margin:0 0 16px;padding:0 6px}
+.kwrow{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.kw{font-size:12.5px;color:var(--pink-deep);background:var(--pink-soft);border-radius:99px;padding:5px 13px}
+.insight{text-align:left;display:flex;flex-direction:column;gap:14px}
+.isec{background:#fffafc;border:1px solid #f7e9ef;border-radius:18px;padding:14px 16px}
+.isec .ih{font-size:13px;font-weight:700;color:var(--pink-deep);margin-bottom:6px;letter-spacing:.5px}
+.isec p{margin:0;font-size:14.5px;color:var(--ink);line-height:1.85}
+.isec.quote{background:linear-gradient(135deg,#fff2f6,#fff8ef);border-color:#ffdde6}
+.isec.quote p{font-size:16px;font-weight:700;color:#c9385f;text-align:center;letter-spacing:.5px}
+.dimbars{margin:20px 0 0;text-align:left}
+.dh{font-size:12.5px;color:var(--ink-3);margin:0 0 10px;letter-spacing:.5px}
+.drow{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px;color:var(--ink-2)}
+.drow .dn{flex:0 0 84px;color:var(--ink-2)}
+.drow .dtrack{flex:1;height:8px;background:#f8edf1;border-radius:99px;overflow:hidden}
+.drow .dfill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ffb0c6,var(--pink-deep))}
+.drow .dv{flex:0 0 22px;text-align:right;color:var(--ink-3)}
+.match{margin:18px 0 4px;font-size:13px;color:var(--ink-2);text-align:left;background:#f7fbff;border:1px solid #e8f1fb;border-radius:16px;padding:12px 15px}
+.match b{color:#4a7fb5}
+.scene{margin-top:10px;font-size:12.5px;color:var(--ink-3);text-align:left;padding-left:2px}
+.rbtns{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+
+/* ---------- 海报弹层 ---------- */
+#posterModal{position:fixed;inset:0;background:rgba(58,36,44,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:99;backdrop-filter:blur(3px)}
+#posterModal.show{display:flex;animation:fadeUp .3s both}
+.pm-card{background:#fff;border-radius:24px;padding:16px;width:100%;max-width:380px;max-height:92vh;overflow:auto;text-align:center}
+.pm-head{font-size:12.5px;color:var(--ink-3);margin-bottom:10px}
+#posterImg{width:100%;border-radius:14px;display:block;margin-bottom:12px;background:#faf5f8}
+.pm-card .btn{margin-bottom:8px}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:rgba(74,59,69,.9);color:#fff;font-size:13.5px;padding:10px 18px;border-radius:99px;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:400px){
+  h1{font-size:29px}
+  .q-title{font-size:18px}
+  .r-name{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="gate" class="view show">
+  <div class="gate-card" id="gateCard">
+    <div class="gate-lock emoji">🔑</div>
+    <h2>输入口令开启测试</h2>
+    <p class="gsub">口令请向测试发起人索取～</p>
+    <div class="input-wrap">
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="请输入 4 位口令">
+    </div>
+    <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+    <button class="btn" id="verifyBtn">进入测试 →</button>
+    <p class="gate-foot emoji">🔒 纯本地运行，无需联网、不收集任何信息</p>
+  </div>
+</div>
+
+<div id="home" class="view">
+  <div class="home-card">
+    <div class="cover" id="coverBox"></div>
+    <div class="eyebrow">趣味人格测试 · 18 型</div>
+    <h1>你的恋爱脑<br><em>几级？</em></h1>
+    <p class="sub">18 个情景小题，测出你在恋爱脑光谱上的位置</p>
+    <p class="meta">18 题 · 约 3 分钟 · 凭第一反应作答</p>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="foot">结果可生成海报保存 · 仅供娱乐</p>
+  </div>
+</div>
+
+<div id="quiz" class="view">
+  <div class="quiz-card">
+    <div class="qhead"><span id="qIndex">1 / 18</span><span id="qPct">0%</span></div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <div class="options" id="options"></div>
+    <div class="back" id="backWrap" style="display:none">
+      <button class="btn ghost" id="backBtn">← 上一题</button>
+    </div>
+  </div>
+</div>
+
+<div id="result" class="view">
+  <div class="result-card">
+    <div class="artbox" id="artBox"></div>
+    <div class="lvl">恋爱脑 <b id="rLevel">Lv.4</b></div>
+    <div class="dimtag" id="rDim"></div>
+    <h2 class="r-name" id="rName"></h2>
+    <p class="persona" id="rPersona"></p>
+    <div class="kwrow" id="rKw"></div>
+    <div class="insight" id="rInsight"></div>
+    <div class="dimbars" id="rBars"></div>
+    <div class="match" id="rMatch"></div>
+    <div class="scene" id="rScene"></div>
+    <div class="rbtns">
+      <button class="btn" id="posterBtn">生成我的结果海报</button>
+      <button class="btn ghost" id="againBtn">再测一次</button>
+    </div>
+    <p class="disc">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+  </div>
+</div>
+
+<div id="posterModal">
+  <div class="pm-card">
+    <div class="pm-head">长按图片保存，或点击下方按钮下载</div>
+    <img id="posterImg" alt="我的恋爱脑等级海报">
+    <a class="btn" id="posterDownload" download="我的恋爱脑等级.png">保存图片</a>
+    <button class="btn ghost" id="pmClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+</div>
+<script>
+var PASSCODE = "7222"; // 4 位数字口令，可自行修改此处
+
+var DIMS = {
+  A: '投入浓度',
+  B: '消息战场',
+  C: '上头速度',
+  D: '情绪与矛盾',
+  E: '边界与自我',
+  F: '表达与行动'
+};
+
+var QUESTIONS = [
+  { title:'他隔了三小时才回你一句「刚忙完」，你的第一反应是？', options:[
+    {key:'A', code:'A1'},
+    {key:'B', code:'B2'},
+    {key:'C', code:'C3'},
+    {key:'D', code:'E1'}
+  ]},
+  { title:'他说「最近有点忙」，你会怎么接这句话？', options:[
+    {key:'A', code:'A2'},
+    {key:'B', code:'B3'},
+    {key:'C', code:'D1'},
+    {key:'D', code:'E2'}
+  ]},
+  { title:'朋友约你周末出门，他也约你，你选谁？', options:[
+    {key:'A', code:'A3'},
+    {key:'B', code:'C1'},
+    {key:'C', code:'D2'},
+    {key:'D', code:'E3'}
+  ]},
+  { title:'他第一次牵你的手，你心里在想什么？', options:[
+    {key:'A', code:'B1'},
+    {key:'B', code:'C2'},
+    {key:'C', code:'D3'},
+    {key:'D', code:'F1'}
+  ]},
+  { title:'他发来一张合照，里面有个女生，你会？', options:[
+    {key:'A', code:'B2'},
+    {key:'B', code:'C3'},
+    {key:'C', code:'E1'},
+    {key:'D', code:'F2'}
+  ]},
+  { title:'他忘了你们的纪念日。', options:[
+    {key:'A', code:'B3'},
+    {key:'B', code:'D1'},
+    {key:'C', code:'E2'},
+    {key:'D', code:'F3'}
+  ]},
+  { title:'刚认识一个月，他问你「我们算什么关系」。', options:[
+    {key:'A', code:'C1'},
+    {key:'B', code:'D2'},
+    {key:'C', code:'E3'},
+    {key:'D', code:'A1'}
+  ]},
+  { title:'半夜他发来一句「睡了吗」。', options:[
+    {key:'A', code:'C2'},
+    {key:'B', code:'D3'},
+    {key:'C', code:'F1'},
+    {key:'D', code:'A2'}
+  ]},
+  { title:'他朋友圈三天没更新。', options:[
+    {key:'A', code:'C3'},
+    {key:'B', code:'E1'},
+    {key:'C', code:'F2'},
+    {key:'D', code:'A3'}
+  ]},
+  { title:'他夸了别的女生一句「她挺好的」。', options:[
+    {key:'A', code:'D1'},
+    {key:'B', code:'E2'},
+    {key:'C', code:'F3'},
+    {key:'D', code:'B1'}
+  ]},
+  { title:'吵架了，他一句话都不说。', options:[
+    {key:'A', code:'D2'},
+    {key:'B', code:'E3'},
+    {key:'C', code:'A1'},
+    {key:'D', code:'B2'}
+  ]},
+  { title:'他工作压力很大，情绪很差。', options:[
+    {key:'A', code:'D3'},
+    {key:'B', code:'F1'},
+    {key:'C', code:'A2'},
+    {key:'D', code:'B3'}
+  ]},
+  { title:'你原本的周末计划被他临时改了。', options:[
+    {key:'A', code:'E1'},
+    {key:'B', code:'F2'},
+    {key:'C', code:'A3'},
+    {key:'D', code:'C1'}
+  ]},
+  { title:'他发来一个很普通的表情包。', options:[
+    {key:'A', code:'E2'},
+    {key:'B', code:'F3'},
+    {key:'C', code:'B1'},
+    {key:'D', code:'C2'}
+  ]},
+  { title:'朋友说你「最近好像变了」。', options:[
+    {key:'A', code:'E3'},
+    {key:'B', code:'A1'},
+    {key:'C', code:'B2'},
+    {key:'D', code:'C3'}
+  ]},
+  { title:'他生病了。', options:[
+    {key:'A', code:'F1'},
+    {key:'B', code:'A2'},
+    {key:'C', code:'B3'},
+    {key:'D', code:'D1'}
+  ]},
+  { title:'他问你「你以前谈过几个」。', options:[
+    {key:'A', code:'F2'},
+    {key:'B', code:'A3'},
+    {key:'C', code:'C1'},
+    {key:'D', code:'D2'}
+  ]},
+  { title:'第一次约会结束，他送你到楼下。', options:[
+    {key:'A', code:'F3'},
+    {key:'B', code:'B1'},
+    {key:'C', code:'C2'},
+    {key:'D', code:'D3'}
+  ]}
+];
+
+/* 选项文案：与上面每题四个选项按下标一一对应 */
+var QTEXT = [
+  ['还好，先看他这句是在说事情，还是在安抚我','有点在意这个时间点，但转头就去忙自己的事','这三个小时他在干嘛？是不是和别人在一起','回得晚就回得晚，我今天的安排不因为这个改'],
+  ['那我多做点，帮他分担，别让他更累','「有点」是多重？我把他这句话逐字回放了一遍','那就等他忙完，我这边照常过','这周少约一次可以，但得问清楚什么时候有空'],
+  ['当然选他，朋友的局以后还有','先看他是不是每次都约，稳定了我才改我的周末','嘴上说「我都可以」，心里早有答案，但不说','先问他想去哪，我自己的想法先放一边'],
+  ['就是牵手，没什么好分析的','脑子嗡一下，回家路上已经在想以后了','心里翻江倒海，表面装作很自然，怕他尴尬','什么都没说，但把手握得更紧了一点'],
+  ['看一眼，问一句是谁，有答案就过了','放大照片，看站位、看距离、看谁离他最近','合照而已，我也有我的异性朋友','直接问：这位是谁呀，我想知道'],
+  ['一句话没说，心里已经演完了一整部剧','有点可惜，日子还长，明天补上就行','我不说「你怎么能忘」，我说「我有点在意，我们补一次」','没关系，那我来办，蛋糕和照片墙我一个人也能搞定'],
+  ['再相处久一点我才能回答，现在说太早','心里想的是「当然在一起」，嘴上说「你觉得呢」','你想算什么就算什么，我都行','我先说我现在的感受，再听听你的'],
+  ['瞬间清醒，心跳到嗓子眼，打字删了六遍','秒回，但故意打得很平淡，怕显得太急','回了「没」，然后陪他聊到他说困','马上问怎么了，是不是遇到事，要不要我过去'],
+  ['三天？是不是把我屏蔽了？开始翻他半年的动态','他不发是他的事，我刷我自己的','直接问：最近怎么不发朋友圈了','他不发我也不发，我的朋友圈最近都是他'],
+  ['哦，那确实，她说得也没错','有点不舒服，但我会说出来，不大吵','那我要在特别的日子听到他夸我，而且要认真地说','他说她好就是她好，没别的意思'],
+  ['我也不说话，但手机一直放在手边没离开','那我先道个歉吧，别把小事闹大','给彼此一点时间，我先把我的情绪理清楚','沉默就沉默，我先去洗个澡，回来再说'],
+  ['我先低头把气氛缓下来，谁对谁错以后再说','不问他怎么了，只把热的那杯放到他手边','他的事就是我的事，我陪他一起想办法','他是不是对我有意见？是不是我哪句说错了'],
+  ['可以改，但我下周的课和约不能停','行，不过下次提前说，我不喜欢临时','改了也没事，反正我周末本来就留给他','第一次可以，第二次我要看看他是不是一直这样'],
+  ['回一个，顺便问问今天怎么样','他挑的是不是我们的暗号？我要收藏起来','就是个表情包，回个笑脸','他主动发了！他是不是在想我'],
+  ['有吗？可能吧，我最近确实什么都先想他','我回头看看，我原来的样子还在不在','可能有点，但我心里有数，过两天就调回来','变了就变了，喜欢一个人本来就会变'],
+  ['什么都不说，直接买好药放在他门口','请假去陪他，工作可以再补','他病得重不重？会不会觉得我没照顾好他','先让他好好休息，明天再看情况'],
+  ['如实说，我也想听听他的','说了会不会影响他？我先把他的感受放前面','现在聊这个是不是有点早，我们才认识不久','嘴上说「不重要」，心里在等他先交代'],
+  ['回家第一件事是记下今天所有细节，写进小本子','挥手说再见，明天照常上班','门一关就开始回放，每个瞬间都自带滤镜','他说「到家告诉我」，我一路在想怎么回才不显得太急']
+];
+
+QUESTIONS.forEach(function(q, i){
+  q.options.forEach(function(op, j){ op.text = QTEXT[i][j]; });
+});
+
+/* 计分：最高分胜出；平局兜底 = 最后一题所选 -> 第一题所选 -> 编号靠前 */
+function resolve(ans){
+  var s = {};
+  ans.forEach(function(ch, i){
+    var code = QUESTIONS[i].options[ch].code;
+    s[code] = (s[code] || 0) + 1;
+  });
+  var mx = 0;
+  Object.keys(s).forEach(function(k){ if(s[k] > mx) mx = s[k]; });
+  var tied = Object.keys(s).filter(function(k){ return s[k] === mx; });
+  var code;
+  if(tied.length === 1){
+    code = tied[0];
+  }else{
+    var lastQ = QUESTIONS.length - 1;
+    var last = QUESTIONS[lastQ].options[ans[lastQ]].code;
+    var first = QUESTIONS[0].options[ans[0]].code;
+    if(tied.indexOf(last) >= 0) code = last;
+    else if(tied.indexOf(first) >= 0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code: code, scores: s };
+}
+
+var RESULTS = {
+  A1:{ lv:4, name:'静水观察者', emoji:'🌊', persona:'先看清，再交付真心',
+    kw:['慢热','有刻度','心里记账'],
+    insight:[
+      '你会在他第三次临时取消约会之后，不再提前把整个周末清空，而是先把自己的安排留着；他随口提起过去的事，你不追问细节，只把杯子往他手边推了推。你看上去很淡定，其实每一件小事你都记在心里，只是从来不说出口，也不急着要一个答案。',
+      '你的喜欢是有刻度的，不会一上来就烧到最旺。你相信感情要经得起时间，也相信自己值得被认真对待，所以你宁愿多花一点时间，去确认那个人是不是真的稳定、真的会留下，而不是先把自己交出去再后悔。这份耐心，本身就是一种稀缺的诚意。',
+      '慢一点不是不爱，是你把认真这件事，只留给值得的人。'
+    ],
+    match:'和「Lv.1 沉默守护型」最容易稳下来，你们都不靠嘴上功夫；遇到「Lv.18 满级恋爱脑」，你多半会被那份热度烫到，然后笑着退半步。',
+    scene:'同款场景：他讲起从前，你把杯子推过去，一句话也没问。'
+  },
+  A2:{ lv:11, name:'全仓投入型', emoji:'🎯', persona:'认定之后，全部押上',
+    kw:['全力付出','不留退路','替他兜底'],
+    insight:[
+      '他一说最近有点忙，你就把两个人的事都往自己身上挪：订好的餐厅你去取消，他没回的消息你替他找理由，连他朋友的生日你都记进了备忘录，还提前挑好了礼物，生怕他多操一点心。',
+      '你是那种认定之后就把全部押上去的人。你不擅长留退路，也不觉得留退路有多体面，你只会在心里默默想：既然选了他，那就好好对他，能多做一点是一点，能多给一分是一分。你甚至会因为他一句「谢谢」高兴很久，转头又替他感到累，好像他的重量本来就该由你分担一部分。这份用心，他有没有都看在眼里？',
+      '你给的爱从来不打折，只希望对面那个人，懂得这份重量。'
+    ],
+    match:'和「Lv.10 弹性妥协型」配得最好，一个肯付出，一个懂分寸；遇到「Lv.3 字面派」，你会松一口气，因为他真的不会让你猜。',
+    scene:'同款场景：他说忙，你默默把他的事排进了自己的日程表。'
+  },
+  A3:{ lv:16, name:'重心迁移型', emoji:'🧭', persona:'世界地图上，他成了原点',
+    kw:['围着他转','计划改写','心甘情愿'],
+    insight:[
+      '你的周末从「我想去哪」变成了「他想去哪」，你的歌单里多了他喜欢的乐队，连相册都按他的行程归档。朋友问起你最近在忙什么，你张口第一句总是他，说完才想起自己好像没什么可讲，只好笑着说「我最近挺好的」。',
+      '你不是没有自己的生活，只是遇见他之后，你心甘情愿地把生活的圆心挪了位置。你觉得爱一个人就该把他放进计划里，只是有时候挪得太远，会忘了原来的坐标在哪，也忘了自己也曾有过想去的地方。你把「我们」放在了「我」前面，只是从来没有人告诉过你，这样有点委屈自己。',
+      '爱不是把自己搬空，留一点位置给自己，他才更看得见你。'
+    ],
+    match:'和「Lv.6 边界清晰型」最能互补，他会帮你把坐标挪回来一点；和「Lv.16 同族」在一起，日子会很热闹，但容易谁也没空照顾自己。',
+    scene:'同款场景：定旅行时，你第一反应是查他想去的城市。'
+  },
+  B1:{ lv:3, name:'字面派', emoji:'📄', persona:'说什么就是什么',
+    kw:['不脑补','直来直去','省心体质'],
+    insight:[
+      '他说「明天再说」，你就真的等到明天；他回一句「在忙」，你就放下手机去干自己的事。别人在这句话里能读出八层意思，你只读出字面上的那一层，然后该吃吃该睡睡，一点都不耽误，也一点都没往心里去。',
+      '你不是迟钝，你只是不愿意把别人的一句随口当成考题。你相信关系里最省力的方式就是直来直去，猜来猜去太累，也容易把好好的日子，过成一部没有结局的悬疑片，你才不想当那个主演。你把省下来的那些猜测，都用在了好好过日子上，这也是本事，很多人学不会。',
+      '不猜，是你给彼此的体面，也是一种少见的安全感。'
+    ],
+    match:'和「Lv.17 标点侦探」正好是两个极端，他猜你直，你会是他最想靠近的那类人；和「Lv.7 直球选手」在一起最轻松，两个人都不绕弯。',
+    scene:'同款场景：他说「随便」，你就真的随便挑了一家。'
+  },
+  B2:{ lv:9, name:'轻度脑补型', emoji:'🔍', persona:'会想多，但想完就放下',
+    kw:['适度在意','自我调节','不内耗'],
+    insight:[
+      '他回复慢了半小时，你会想一下是不是自己哪句说得不对，但想完就去洗了个澡，回来发现他补了一句「刚开会」，你也就笑笑翻篇了。你会在意，但不会把自己关在那半小时里，更不会把手机盯到发烫。',
+      '你身上有一种很珍贵的平衡：情绪是真的，理性也是真的。你允许自己在意，也懂得给自己一个台阶，不把一次没回消息，发酵成一场谁都不肯先低头的危机，也不让猜测占满一整天。你很清楚，真正的关系不会因为晚回半小时就散掉，也不会因为一句话就崩掉，这种底气，是日子给的。',
+      '会想，但不会困在里面，这就是成年人的喜欢。'
+    ],
+    match:'和「Lv.18 满级恋爱脑」做朋友，你能接住他的情绪又不被卷走；和「Lv.9 同族」在一起，两个人都不用演，谁也不必装酷。',
+    scene:'同款场景：消息没回，你放下手机去沏了杯茶。'
+  },
+  B3:{ lv:17, name:'标点侦探', emoji:'🕵️', persona:'一个句号能开庭三小时',
+    kw:['逐字回放','细节控','高敏感'],
+    insight:[
+      '他这条消息比你上一条短了三个字，句末用了句号而不是省略号，回复比昨天晚了七分钟。你能把这几条线索串成一份完整的分析报告，然后一个人在夜里开庭，审到天亮还没结案，第二天顶着黑眼圈假装什么都没发生。',
+      '你天生对细节敏感，别人随口一句，你能听见里面的天气。这份敏锐让你很会照顾人，也让你常常一个人扛下所有的猜测和不安，把所有可能的答案都在心里过一遍，谁也不告诉。你把别人随口的语气当成证据，其实只是因为你太在意，在意这段关系会不会突然变样。',
+      '你的敏感不是缺点，只是别忘了，有些句号真的只是句号。'
+    ],
+    match:'和「Lv.1 沉默守护型」在一起最折磨，他越安静，你越要开庭；和「Lv.7 直球选手」最治愈，他会直接把答案说给你听。',
+    scene:'同款场景：他发来「嗯」，你截图存进了名为「待分析」的相册。'
+  },
+  C1:{ lv:5, name:'文火慢炖型', emoji:'🍲', persona:'感情要煲够时间才入味',
+    kw:['慢热','稳','不将就'],
+    insight:[
+      '刚认识时你不急着定义关系，他约你三次你才答应第二次，聊天也从不超过十二点。你说再相处看看，其实你是在等一颗心慢慢落定，等自己确认这不是一时兴起，才肯把「我们」这两个字说出口。',
+      '你的感情像一锅文火慢炖的汤，不靠大火催，靠时间出味。你不喜欢速食式的心动，也不稀罕热闹的开始，你想要的是一段能被日子验证、也能被朋友祝福的关系，最好还能一起变老。你宁可被人说慢，也不想在还没看清的时候就匆忙交出自己，然后再狼狈地收回来。这样的慢，值得等。',
+      '慢慢来的人，往往爱得最久，也最懂得把一个人放进未来。'
+    ],
+    match:'和「Lv.12 一击上头型」节奏差得最远，他跑你走，谁也追不上谁；和「Lv.4 静水观察者」同频，两个人都愿意先看再交付。',
+    scene:'同款场景：他递来好感，你说「我们再相处看看」。'
+  },
+  C2:{ lv:12, name:'一击上头型', emoji:'🚀', persona:'一个眼神就能原地升空',
+    kw:['秒沦陷','高倍情绪','自带滤镜'],
+    insight:[
+      '他只是在人群里多看了你一眼，你已经开始回想那一眼的角度；他随手给你带了杯咖啡，你能在心里给这杯咖啡写一整篇小作文，连糖度都成了证据，然后一整天做什么都带着笑意。',
+      '你是那种很容易被击中的体质，一点火星就能让你整个人亮起来。你爱得热烈、反应诚实，快乐来得又快又猛，只是偶尔也会被同一份热烈反噬，要一点时间才能重新落回地面。你把每一次普通的相遇都当成一场盛大的开场，所以快乐总是先于现实抵达，也常常累得很突然，但这份真诚，其实很难得。',
+      '敢一秒心动的人，心里都还留着一块没被磨平的地方。'
+    ],
+    match:'和「Lv.2 恒温型」在一起，你会被他的稳慢慢降温；和「Lv.17 标点侦探」凑一双，两个人都能从一句话里读出一整季剧情。',
+    scene:'同款场景：他给你带了杯咖啡，糖度被你当成了暗号。'
+  },
+  C3:{ lv:18, name:'满级恋爱脑', emoji:'💍', persona:'认识三天，脑内已办完婚礼',
+    kw:['满级','想象丰富','全情投入'],
+    insight:[
+      '认识第三天，你已经在脑子里排好了婚礼的座位表：谁坐哪桌、放什么歌、第一支舞怎么跳。他只是在饭桌上说了句「以后带你去」，你连那座城市的天气、住哪条街、几月去最合适，都提前查好了。',
+      '你的爱意总是提前抵达，别人还在试探，你已经规划到了很远的以后。这份浓度让人心动，也让人心疼——你把那么多期待，都放在了一个还没确定的人身上，还替他把未来都想好了。你甚至替他挑好了孩子的名字，又在下一次聊天里假装自己只是随口一提。你不是不清醒，你只是太想认真爱一个人。',
+      '满级的心动很珍贵，记得也留一半给自己。'
+    ],
+    match:'和「Lv.1 沉默守护型」是一个天上一个地下，他一句不说，你脑内已拍完一部电影；和「Lv.3 字面派」在一起，你反而能踏实下来。',
+    scene:'同款场景：他说「以后带你去」，你当晚就查了机票。'
+  },
+  D1:{ lv:2, name:'恒温型', emoji:'🧊', persona:'情绪像恒温泳池',
+    kw:['稳','不内耗','有条理'],
+    insight:[
+      '他忘了纪念日，你说「明天补上就好」；他临时改计划，你说「那你忙」。你的情绪很少大起大落，连吵架都吵得很有条理，朋友都说跟你谈恋爱，像泡在一池温水里，泡久了才知道有多舒服。',
+      '你不是不在意，你只是把在意的表达方式调低了音量。你相信稳定的关系不需要靠情绪的浪来证明，日子过得踏实，比什么誓言都可靠，也比什么惊喜都持久，你有的是耐心。他闹脾气的时候你不吵，只是把水递过去，等他冷静下来再慢慢讲道理。这份耐心，比任何甜言蜜语都耐久。',
+      '你的温度不高，但一直都在，这才最难被替代。'
+    ],
+    match:'和「Lv.12 一击上头型」是互补也是考验，他起浪你会去抚平；和「Lv.8 嘴硬心软型」在一起，你要学会多问一句「真的没事吗」。',
+    scene:'同款场景：他迟到四十分钟，你说「刚好我刷完了两集」。'
+  },
+  D2:{ lv:8, name:'嘴硬心软型', emoji:'🌧️', persona:'嘴上没事，被子里哭',
+    kw:['逞强','心软','等一句哄'],
+    insight:[
+      '吵架时你说「我没事，你忙你的」，挂了电话却把对话翻来覆去看到凌晨；他一句「今天有点累」，你嘴上回「哦」，手上已经在给他点他最爱吃的那家店，还特意备注了不要香菜。',
+      '你的心是软的，嘴是硬的，习惯把委屈包装成体面。你不是不想被哄，你只是希望他能自己看出来，那点骄傲底下藏着的，其实是一句「你来抱抱我就好了」，可惜你从来不肯先说出来。你总觉得自己先开口就输了，可真正输掉的，是那些本来可以被抱一下的夜里。你的温柔，值得被大方地看见，而不是猜出来的。',
+      '下次别忍了，说出来的人，才更容易被抱住。'
+    ],
+    match:'和「Lv.14 先低头型」容易互相体谅，也可能互相憋着；和「Lv.1 沉默守护型」在一起，两个人都不说，容易把心事过成一场默剧。',
+    scene:'同款场景：他问「生气了吗」，你回「没有」，然后关掉了灯。'
+  },
+  D3:{ lv:14, name:'先低头型', emoji:'🏳️', persona:'怕的不是错，是冷场',
+    kw:['求和型','怕冷战','先反省'],
+    insight:[
+      '吵完架你总是先发那句「我们别这样了好不好」，哪怕这次真的不是你的错。你怕的不是输，是那种谁也不说话的沉默，像房间里的空气被一点点抽走，连呼吸都变得小心，连手机都不敢放远。',
+      '你把关系的完整，看得比对错更重。你愿意先低头，是因为你舍不得让一段感情卡在那里。只是有时候低得太快，别人就真的以为，你从来都不会生气，也不会难过。你把「我们」看得太重，重到宁愿自己咽下那口气，也不肯让气氛沉下去。其实你也可以生气，可以要求一句道歉，你值得被哄。',
+      '先低头的人最勇敢，但也值得被温柔地接住。'
+    ],
+    match:'和「Lv.8 嘴硬心软型」是一个先低头一个硬着嘴，容易被你哄好；和「Lv.2 恒温型」在一起最舒服，他不会跟你耗在冷战里。',
+    scene:'同款场景：一句「别这样了」总是你先发出去。'
+  },
+  E1:{ lv:6, name:'边界清晰型', emoji:'🛡️', persona:'爱是加分项，不是全部',
+    kw:['有底线','自我完整','不迁就'],
+    insight:[
+      '他约你，你可以去，但不会因此推掉已经答应的瑜伽课；他发合照里有女生，你只问一句那是谁，得到答案就过去了。你的世界里有他，也有你自己原来的一整套生活，谁也没被谁挤掉。',
+      '你很清楚，好的关系不是两个人黏成一团，而是各自站稳了再靠近。你愿意给爱留位置，但不会把整个自己腾出来——这份清醒，反而让对方更想靠近你，也更愿意尊重你。你不是不爱，你是知道自己一旦把门全打开，就很难再合上，所以你总留一条退路给自己。这不是算计，是自爱，也是长期关系的底子。',
+      '你有自己的岸，所以谁来了都只是风景，不是全部。'
+    ],
+    match:'和「Lv.16 重心迁移型」正好是老手带新手，你能帮他把坐标挪回来；和「Lv.6 同族」在一起，两个人会过得干净又体面。',
+    scene:'同款场景：他说「今晚见」，你说「不行，我七点有课」。'
+  },
+  E2:{ lv:10, name:'弹性妥协型', emoji:'⚖️', persona:'让一步可以，让到底不行',
+    kw:['会沟通','有弹性','不硬撑'],
+    insight:[
+      '他这周忙，你可以少约一次；他想吃辣，你可以点个微辣。但当他第三次临时改时间，你会认真地说「我有点在意，我们聊聊」。你可以弯，但不会折断，也不会一声不吭地把委屈吞下去。',
+      '你身上有一种成熟的弹性：愿意为对方挪一点位置，也清楚自己的底线在哪里。你不吵不闹，却总能把话说到点子上，让对方知道，你的每一次让步都是有重量的，不是理所当然。你从来不把让步当成理所当然，也不会把妥协攒成一笔账，等到某天一次性翻出来。你的分寸感，让关系有了可以呼吸的空间。',
+      '温柔地坚持，比大声地争吵更有力量。'
+    ],
+    match:'和「Lv.11 全仓投入型」最互补，他肯付出，你帮他把分寸留住；和「Lv.15 自我稀释型」在一起，你会忍不住提醒他别把自己丢了。',
+    scene:'同款场景：第一次让步你笑着说好，第二次你会认真开口。'
+  },
+  E3:{ lv:15, name:'自我稀释型', emoji:'🪴', persona:'顺着顺着，把自己弄丢了',
+    kw:['迁就','好说话','忘了自己'],
+    insight:[
+      '问吃什么你说随便，问去哪玩你说都行，问你喜欢什么，你想了半天答不上来。你已经习惯先看他想要什么，久了连自己的口味、喜好和周末想去的地方，都变得模糊不清，好像没有他你就不知道该怎么过。',
+      '你的好脾气里藏着一份很深的在意，你怕自己太麻烦，就一点点把自己收起来。可感情里最动人的从来不是完美配合，而是两个真实的人，愿意把各自的样子都摊开，谁也不必将就谁。你甚至会在他说「随便」的时候，先替他把答案想好，再假装那是自己的想法。你的体贴，其实很动人。',
+      '先把自己找回来，爱才不会把你掏空。'
+    ],
+    match:'和「Lv.10 弹性妥协型」是最好的一对，他会替你把底线划出来；和「Lv.16 重心迁移型」在一起要小心，两个人都会往对方身上沉。',
+    scene:'同款场景：「随便，你想吃什么我都可以。」'
+  },
+  F1:{ lv:1, name:'沉默守护型', emoji:'🍵', persona:'不说，但都在做',
+    kw:['行动派','低调','靠得住'],
+    insight:[
+      '他生病了，你不问他哪里不舒服，只是把药和粥放在门口；他加班到很晚，你会提前把车的位置发给他。你很少说「我很担心你」，但你做的每一件事，都在替这句话发言，比任何一句情话都实在。',
+      '你不擅长把感情挂在嘴上，你的爱都藏在具体的动作里。你不抢镜、不邀功，甚至有点怕被看见，可真正被你在意过的人，都能记住你留下的那些细节，记得那个总在的人。你习惯把关心做成一件事，而不是一句话，因为你觉得说出口的都不算数。这样的你，很让人安心。',
+      '说得少的人，往往做得最多，也最容易被忽略——记得也让自己被看见。'
+    ],
+    match:'和「Lv.18 满级恋爱脑」最像一场误会，他需要一千句，你只给一杯热水；和「Lv.4 静水观察者」同频，安静的人最懂安静的人。',
+    scene:'同款场景：他喊累，你没说话，只把热的那杯推过去。'
+  },
+  F2:{ lv:7, name:'直球选手', emoji:'📣', persona:'喜欢就说，不绕弯',
+    kw:['直接','坦率','不含糊'],
+    insight:[
+      '喜欢你就说「我喜欢你」，不高兴就说「我不高兴」，合照里有女生你会直接问「这位是谁呀」。你讨厌猜来猜去，也不喜欢把话在心里放凉，说完就等一个同样坦率的回应，等不到就再问一遍。',
+      '你的直率不是没心眼，而是你觉得真诚比技巧更省事。你把话讲清楚了，对方也不必猜；就算结果不如意，你也宁愿要一个明白，不要一个模糊，更不要一个悬着的以后。你不怕被拒绝，你怕的是两个人在沉默里各自猜了一整年，最后谁都没说。把话讲明白，是你给关系的尊重。',
+      '敢直球的人，运气都不会太差，至少不会把遗憾留给自己。'
+    ],
+    match:'和「Lv.17 标点侦探」是一剂良药，你一句话能省他三场开庭；和「Lv.1 沉默守护型」需要磨合，一个说得太多，一个什么都不说。',
+    scene:'同款场景：「我不高兴，我们聊聊好吗？」'
+  },
+  F3:{ lv:13, name:'仪式感成瘾', emoji:'🎂', persona:'纪念日、小纸条，一样不能少',
+    kw:['仪式感','用心','记日子'],
+    insight:[
+      '他随口说想吃的店你记着，第一次约会的天气你记着，连他哪天说过一句好听的，你都存在备忘录里。到了纪念日，你会提前一周准备，蛋糕、照片墙、手写卡片，一样都不能少，还怕漏了什么。',
+      '你不是爱折腾，你是相信认真会被记住。你把平凡的日子切出一个个小小的节点，让感情有被反复提起的理由，也让两个人在漫长的生活里，总能找到心动的证据，找到当初为什么在一起。你把每一个平常的日子都过成了有名字的日子，让他知道这一年里哪些时刻属于你们。这份心意，很贵。',
+      '你给的日子里全是心意，被记得的人才算真的被爱过。'
+    ],
+    match:'和「Lv.6 边界清晰型」在一起，你的仪式感会被珍惜而不是被嫌多；和「Lv.3 字面派」最需要沟通，他可能真的看不懂你的用心。',
+    scene:'同款场景：纪念日前一周，你的购物车里已经全是他的东西。'
+  }
+};
+
+/* ============ 角色图案配置（扁平几何 + 柔光渐变 + 圆角描边） ============ */
+var ART = {
+  A1:{bg1:'#FFF1F5',bg2:'#FFE2EC',c1:'#FFC8D7',c2:'#FFA9C0',line:'#F38FA9',ac:'#FF7A9C',prop:'clock',label:'举着小闹钟的粉色团子'},
+  A2:{bg1:'#FFEFF4',bg2:'#FFDDE8',c1:'#FFB3C6',c2:'#FF93AE',line:'#EF7C99',ac:'#FF6A8C',prop:'heart',label:'抱着大爱心的团子'},
+  A3:{bg1:'#FFEDF2',bg2:'#FFD9E4',c1:'#FFA2BA',c2:'#FF83A1',line:'#E86F8E',ac:'#FF5C85',prop:'balloon',label:'牵着一串气球的团子'},
+  B1:{bg1:'#F7F2FF',bg2:'#EEE7FF',c1:'#CDBCF2',c2:'#BA9FEA',line:'#A68BDD',ac:'#9E7BD6',prop:'chat',label:'举着对话气泡的紫色团子'},
+  B2:{bg1:'#F4EEFF',bg2:'#E9E1FF',c1:'#BFAAEE',c2:'#AA8DE2',line:'#9679D4',ac:'#8A63C8',prop:'magnifier',label:'拿着放大镜的紫色团子'},
+  B3:{bg1:'#F1EBFF',bg2:'#E4DAFF',c1:'#B096E8',c2:'#9878DC',line:'#8567CC',ac:'#7A52C0',prop:'detective',label:'戴着侦探帽的紫色团子'},
+  C1:{bg1:'#FFF5EF',bg2:'#FFE8DD',c1:'#FFCBAD',c2:'#FFB891',line:'#F0A078',ac:'#FF9268',prop:'pot',label:'守着小砂锅的珊瑚色团子'},
+  C2:{bg1:'#FFF2EC',bg2:'#FFE1D6',c1:'#FFBB9C',c2:'#FFA47D',line:'#ED8B66',ac:'#FF7A50',prop:'rocket',label:'踩着小火箭的珊瑚色团子'},
+  C3:{bg1:'#FFEFE8',bg2:'#FFDCCF',c1:'#FFAA8A',c2:'#FF9268',line:'#E37A52',ac:'#FF6842',prop:'ring',label:'托着戒指的珊瑚色团子'},
+  D1:{bg1:'#F2F8FF',bg2:'#E6F1FF',c1:'#B1CFEE',c2:'#93BEE4',line:'#7CA6D2',ac:'#6690CE',prop:'cup',label:'捧着热饮的蓝色团子'},
+  D2:{bg1:'#EFF6FF',bg2:'#E1EDFF',c1:'#A2C4E8',c2:'#85AFDC',line:'#6E99C8',ac:'#5C86BC',prop:'pillow',label:'抱着抱枕的蓝色团子'},
+  D3:{bg1:'#ECF3FF',bg2:'#DCE9FF',c1:'#93B8E0',c2:'#76A0D2',line:'#638CC0',ac:'#527CB2',prop:'flag',label:'举着小白旗的蓝色团子'},
+  E1:{bg1:'#EFFBF6',bg2:'#E1F7EE',c1:'#AFE2CC',c2:'#93D4B8',line:'#79BE9F',ac:'#63B694',prop:'shield',label:'举着小盾牌的薄荷团子'},
+  E2:{bg1:'#ECF9F2',bg2:'#DCF3E8',c1:'#9DD8BE',c2:'#80C8A9',line:'#6AB292',ac:'#58A886',prop:'balance',label:'守着天平的薄荷团子'},
+  E3:{bg1:'#E9F7F0',bg2:'#D8EFE4',c1:'#8BCEAE',c2:'#6DBE9C',line:'#5CA689',ac:'#4E9C7E',prop:'plant',label:'抱着小盆栽的薄荷团子'},
+  F1:{bg1:'#FFFBF0',bg2:'#FFF2DA',c1:'#FFDBA6',c2:'#FFC97F',line:'#F2B564',ac:'#FFAE4F',prop:'letter',label:'递出信封的蜜橙团子'},
+  F2:{bg1:'#FFF9EC',bg2:'#FFEFD4',c1:'#FFD08A',c2:'#FFBC66',line:'#EFAB4E',ac:'#FFA53C',prop:'megaphone',label:'拿着小喇叭的蜜橙团子'},
+  F3:{bg1:'#FFF7E8',bg2:'#FFEBCD',c1:'#FFC67A',c2:'#FFB055',line:'#E69C41',ac:'#FF9A2E',prop:'cake',label:'捧着小蛋糕的蜜橙团子'}
+};
+
+var PROPS = {
+  clock:'<circle cx="161" cy="139" r="17" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M161 139 L161 127" stroke="LINE" stroke-width="3" stroke-linecap="round"/><path d="M161 139 L171 144" stroke="LINE" stroke-width="3" stroke-linecap="round"/><circle cx="161" cy="139" r="2.6" fill="LINE"/>',
+  heart:'<path d="M158 158 C132 140 132 120 148 118 C155 117 158 124 158 128 C158 124 161 117 168 118 C184 120 184 140 158 158 Z" fill="AC" opacity="0.95"/><ellipse cx="148" cy="130" rx="6" ry="4" fill="#fff" opacity="0.55" transform="rotate(-18 148 130)"/>',
+  balloon:'<circle cx="152" cy="86" r="12" fill="AC" opacity="0.9"/><circle cx="172" cy="72" r="10" fill="AC" opacity="0.7"/><circle cx="186" cy="94" r="9" fill="AC" opacity="0.55"/><path d="M152 98 Q146 120 152 142" stroke="LINE" stroke-width="2" fill="none" opacity="0.7"/><path d="M172 82 Q164 104 158 132" stroke="LINE" stroke-width="2" fill="none" opacity="0.6"/><path d="M186 103 Q176 120 166 136" stroke="LINE" stroke-width="2" fill="none" opacity="0.5"/>',
+  chat:'<rect x="134" y="118" width="54" height="34" rx="12" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M146 152 l-4 9 l13 -5" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><circle cx="150" cy="135" r="3" fill="LINE"/><circle cx="161" cy="135" r="3" fill="LINE"/><circle cx="172" cy="135" r="3" fill="LINE"/>',
+  magnifier:'<circle cx="152" cy="132" r="15" fill="#fff" stroke="LINE" stroke-width="4"/><path d="M163 143 L180 160" stroke="LINE" stroke-width="5" stroke-linecap="round"/><path d="M146 126 q6 -6 12 -2" stroke="AC" stroke-width="2.4" fill="none" opacity=".7"/>',
+  detective:'<ellipse cx="100" cy="46" rx="34" ry="9" fill="AC"/><path d="M74 46 q26 -22 52 0" fill="AC"/><circle cx="152" cy="140" r="14" fill="#fff" stroke="LINE" stroke-width="4"/><path d="M162 150 L178 166" stroke="LINE" stroke-width="5" stroke-linecap="round"/>',
+  pot:'<rect x="128" y="118" width="58" height="30" rx="9" fill="#fff" stroke="LINE" stroke-width="3"/><rect x="124" y="111" width="66" height="9" rx="4.5" fill="AC" opacity=".85"/><path d="M150 148 q-6 -8 0 -14 q6 6 0 14" fill="AC" opacity=".8"/><path d="M164 148 q-6 -8 0 -14 q6 6 0 14" fill="AC" opacity=".55"/>',
+  rocket:'<path d="M158 156 L168 106 L178 156 Z" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><circle cx="168" cy="132" r="5" fill="AC" opacity=".85"/><path d="M158 156 l-8 2 l3 -12" fill="AC" opacity=".7"/><path d="M178 156 l8 2 l-3 -12" fill="AC" opacity=".7"/><path d="M164 158 q4 10 8 0" fill="AC" opacity=".5"/>',
+  ring:'<circle cx="158" cy="138" r="15" fill="none" stroke="LINE" stroke-width="4"/><path d="M158 110 L167 121 L158 132 L149 121 Z" fill="#CFE6FF" stroke="LINE" stroke-width="2.5" stroke-linejoin="round"/>',
+  cup:'<path d="M136 122 h42 v26 q0 10 -10 10 h-22 q-10 0 -10 -10 z" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M178 128 q14 4 0 16" fill="none" stroke="LINE" stroke-width="3"/><path d="M148 114 q-4 -8 2 -13" stroke="AC" stroke-width="2.4" fill="none" opacity=".75"/><path d="M160 114 q-4 -8 2 -13" stroke="AC" stroke-width="2.4" fill="none" opacity=".55"/>',
+  pillow:'<rect x="130" y="120" width="56" height="34" rx="14" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M142 137 q8 -6 14 0 q6 6 14 0" stroke="LINE" stroke-width="2.4" fill="none" opacity=".7"/>',
+  flag:'<path d="M172 96 L172 158" stroke="LINE" stroke-width="3.5" stroke-linecap="round"/><path d="M172 98 L130 110 L172 122 Z" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><circle cx="172" cy="96" r="3.5" fill="AC"/>',
+  shield:'<path d="M158 108 L176 116 L176 138 Q158 158 140 138 L140 116 Z" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><circle cx="158" cy="128" r="5" fill="AC" opacity=".8"/>',
+  balance:'<path d="M158 100 L158 154" stroke="LINE" stroke-width="3"/><path d="M136 154 h44" stroke="LINE" stroke-width="3" stroke-linecap="round"/><path d="M140 112 h36" stroke="LINE" stroke-width="3"/><path d="M140 112 q-10 12 0 0" fill="none"/><path d="M132 112 q8 14 16 0" fill="none" stroke="AC" stroke-width="2.6"/><path d="M168 112 q8 14 16 0" fill="none" stroke="AC" stroke-width="2.6"/><circle cx="158" cy="100" r="4" fill="AC"/>',
+  plant:'<path d="M136 132 h34 l-5 24 h-24 z" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><ellipse cx="146" cy="120" rx="11" ry="6" fill="AC" opacity=".85" transform="rotate(-24 146 120)"/><ellipse cx="162" cy="118" rx="11" ry="6" fill="AC" opacity=".65" transform="rotate(24 162 118)"/><path d="M154 132 L154 108" stroke="LINE" stroke-width="2.6" stroke-linecap="round"/>',
+  letter:'<rect x="130" y="118" width="56" height="36" rx="5" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M130 122 L158 142 L186 122" fill="none" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><circle cx="158" cy="142" r="4" fill="AC" opacity=".8"/>',
+  megaphone:'<path d="M132 130 L170 114 L170 148 L132 140 Z" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/><path d="M170 114 q12 18 0 34" fill="none" stroke="AC" stroke-width="3"/><path d="M136 140 l0 12 q4 4 8 0 l0 -12" fill="#fff" stroke="LINE" stroke-width="3" stroke-linejoin="round"/>',
+  cake:'<rect x="128" y="126" width="60" height="30" rx="8" fill="#fff" stroke="LINE" stroke-width="3"/><path d="M128 138 q15 8 30 0 q15 -8 30 0" fill="none" stroke="AC" stroke-width="2.6"/><path d="M158 126 L158 110" stroke="LINE" stroke-width="2.6"/><path d="M158 104 q-4 6 0 8 q4 -2 0 -8" fill="AC"/><circle cx="140" cy="148" r="3" fill="AC" opacity=".7"/><circle cx="158" cy="150" r="3" fill="AC" opacity=".55"/><circle cx="174" cy="147" r="3" fill="AC" opacity=".4"/>'
+};
+
+function floatShapes(ac){
+  return '<circle cx="38" cy="44" r="5" fill="AC" opacity="0.28"/>'
+    + '<circle cx="168" cy="176" r="4" fill="AC" opacity="0.22"/>'
+    + '<path d="M40 158 q-8 -9 0 -4 q8 5 0 4z" fill="#fff" stroke="AC" stroke-width="2" opacity="0.45"/>'
+    + '<circle cx="26" cy="112" r="3" fill="#fff" opacity="0.6"/>'
+    .split('AC').join(ac);
+}
+
+function artFor(code){
+  var M = ART[code];
+  if(!M) return '<div style="font-size:64px" class="emoji">💗</div>';
+  var g1 = '<linearGradient id="bg' + code + 'bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + M.bg1 + '"/><stop offset="1" stop-color="' + M.bg2 + '"/></linearGradient>';
+  var g2 = '<linearGradient id="bd' + code + 'bd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + M.c1 + '"/><stop offset="1" stop-color="' + M.c2 + '"/></linearGradient>';
+  var prop = (PROPS[M.prop] || '').split('LINE').join(M.line).split('AC').join(M.ac);
+  return '<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="' + M.label + '">'
+    + '<defs>' + g1 + g2 + '</defs>'
+    + '<rect x="0" y="0" width="200" height="200" rx="26" fill="url(#bg' + code + 'bg)"/>'
+    + floatShapes(M.ac)
+    + '<ellipse cx="100" cy="158" rx="52" ry="10" fill="' + M.c2 + '" opacity="0.2"/>'
+    + '<circle cx="74" cy="56" r="12" fill="' + M.c2 + '" stroke="' + M.line + '" stroke-width="3"/>'
+    + '<circle cx="126" cy="56" r="12" fill="' + M.c2 + '" stroke="' + M.line + '" stroke-width="3"/>'
+    + '<rect x="68" y="110" width="64" height="46" rx="22" fill="url(#bd' + code + 'bd)" stroke="' + M.line + '" stroke-width="3"/>'
+    + '<circle cx="100" cy="92" r="45" fill="url(#bd' + code + 'bd)" stroke="' + M.line + '" stroke-width="3"/>'
+    + '<ellipse cx="72" cy="104" rx="8" ry="5" fill="' + M.ac + '" opacity="0.32"/>'
+    + '<ellipse cx="128" cy="104" rx="8" ry="5" fill="' + M.ac + '" opacity="0.32"/>'
+    + '<ellipse cx="84" cy="91" rx="5" ry="6.4" fill="#5B4650"/>'
+    + '<ellipse cx="116" cy="91" rx="5" ry="6.4" fill="#5B4650"/>'
+    + '<circle cx="82.4" cy="88.6" r="1.9" fill="#fff" opacity="0.9"/>'
+    + '<circle cx="114.4" cy="88.6" r="1.9" fill="#fff" opacity="0.9"/>'
+    + '<path d="M94 106 q6 7 12 0" fill="none" stroke="' + M.line + '" stroke-width="2.6" stroke-linecap="round"/>'
+    + '<path d="M64 92 q-10 6 -4 16" fill="none" stroke="' + M.ac + '" stroke-width="0" />'
+    + prop
+    + '</svg>';
+}
+
+function coverArt(){
+  return '<svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet" role="img" aria-label="恋爱脑等级封面图案">'
+    + '<defs>'
+    + '<linearGradient id="cvBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF2F6"/><stop offset="1" stop-color="#F2F1FF"/></linearGradient>'
+    + '<linearGradient id="cvA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC2D4"/><stop offset="1" stop-color="#FF9FB8"/></linearGradient>'
+    + '<linearGradient id="cvB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFCBB0"/><stop offset="1" stop-color="#FFA47D"/></linearGradient>'
+    + '<linearGradient id="cvC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9E0CB"/><stop offset="1" stop-color="#84CDB2"/></linearGradient>'
+    + '</defs>'
+    + '<rect x="0" y="0" width="300" height="400" rx="30" fill="url(#cvBg)"/>'
+    + '<circle cx="42" cy="60" r="7" fill="#FFB7C9" opacity="0.35"/>'
+    + '<circle cx="262" cy="86" r="6" fill="#FFB7C9" opacity="0.3"/>'
+    + '<circle cx="250" cy="330" r="8" fill="#C3B6EE" opacity="0.28"/>'
+    + '<circle cx="36" cy="300" r="5" fill="#FFB7C9" opacity="0.35"/>'
+    + '<path d="M150 46 C136 30 118 42 126 56 C132 66 150 74 150 74 C150 74 168 66 174 56 C182 42 164 30 150 46 Z" fill="#FF8FAB" opacity="0.9"/>'
+    + '<path d="M64 84 C56 74 44 80 50 90 C54 96 64 100 64 100 C64 100 74 96 78 90 C84 80 72 74 64 84 Z" fill="#FFB7C9" opacity="0.75"/>'
+    + '<path d="M240 140 C232 130 220 136 226 146 C230 152 240 156 240 156 C240 156 250 152 254 146 C260 136 248 130 240 140 Z" fill="#C3B6EE" opacity="0.75"/>'
+    /* 中间角色 */
+    + '<ellipse cx="150" cy="300" rx="54" ry="11" fill="#FF9FB8" opacity="0.18"/>'
+    + '<circle cx="124" cy="182" r="13" fill="#FFA9C0" stroke="#F38FA9" stroke-width="3.4"/>'
+    + '<circle cx="176" cy="182" r="13" fill="#FFA9C0" stroke="#F38FA9" stroke-width="3.4"/>'
+    + '<rect x="118" y="234" width="64" height="46" rx="23" fill="url(#cvA)" stroke="#F38FA9" stroke-width="3.4"/>'
+    + '<circle cx="150" cy="212" r="46" fill="url(#cvA)" stroke="#F38FA9" stroke-width="3.4"/>'
+    + '<ellipse cx="122" cy="226" rx="8" ry="5" fill="#FF6F94" opacity="0.3"/>'
+    + '<ellipse cx="178" cy="226" rx="8" ry="5" fill="#FF6F94" opacity="0.3"/>'
+    + '<ellipse cx="134" cy="210" rx="5" ry="6.6" fill="#5B4650"/>'
+    + '<ellipse cx="166" cy="210" rx="5" ry="6.6" fill="#5B4650"/>'
+    + '<circle cx="132.4" cy="207.6" r="2" fill="#fff"/>'
+    + '<circle cx="164.4" cy="207.6" r="2" fill="#fff"/>'
+    + '<path d="M144 226 q6 7 12 0" fill="none" stroke="#F38FA9" stroke-width="2.8" stroke-linecap="round"/>'
+    /* 左侧小角色 */
+    + '<ellipse cx="66" cy="286" rx="30" ry="7" fill="#FFA47D" opacity="0.16"/>'
+    + '<circle cx="50" cy="240" r="9" fill="#FFB891" stroke="#F0A078" stroke-width="2.6"/>'
+    + '<circle cx="82" cy="240" r="9" fill="#FFB891" stroke="#F0A078" stroke-width="2.6"/>'
+    + '<rect x="52" y="272" width="44" height="32" rx="16" fill="url(#cvB)" stroke="#F0A078" stroke-width="2.6"/>'
+    + '<circle cx="66" cy="258" r="31" fill="url(#cvB)" stroke="#F0A078" stroke-width="2.6"/>'
+    + '<ellipse cx="55" cy="258" rx="4.2" ry="5" fill="#5B4650"/>'
+    + '<ellipse cx="77" cy="258" rx="4.2" ry="5" fill="#5B4650"/>'
+    + '<path d="M62 268 q4 5 8 0" fill="none" stroke="#F0A078" stroke-width="2.4"/>'
+    /* 右侧小角色 */
+    + '<ellipse cx="234" cy="292" rx="30" ry="7" fill="#84CDB2" opacity="0.18"/>'
+    + '<circle cx="218" cy="246" r="9" fill="#93D4B8" stroke="#79BE9F" stroke-width="2.6"/>'
+    + '<circle cx="250" cy="246" r="9" fill="#93D4B8" stroke="#79BE9F" stroke-width="2.6"/>'
+    + '<rect x="220" y="278" width="44" height="32" rx="16" fill="url(#cvC)" stroke="#79BE9F" stroke-width="2.6"/>'
+    + '<circle cx="234" cy="264" r="31" fill="url(#cvC)" stroke="#79BE9F" stroke-width="2.6"/>'
+    + '<ellipse cx="223" cy="264" rx="4.2" ry="5" fill="#5B4650"/>'
+    + '<ellipse cx="245" cy="264" rx="4.2" ry="5" fill="#5B4650"/>'
+    + '<path d="M230 274 q4 5 8 0" fill="none" stroke="#79BE9F" stroke-width="2.4"/>'
+    /* 等级刻度 */
+    + '<rect x="62" y="330" width="176" height="10" rx="5" fill="#F6E6EC"/>'
+    + '<rect x="62" y="330" width="132" height="10" rx="5" fill="#FF9FB8" opacity="0.9"/>'
+    + '<circle cx="194" cy="335" r="7" fill="#FF5C85"/>'
+    + '<circle cx="80" cy="335" r="4" fill="#FFF" opacity="0.85"/>'
+    + '<circle cx="112" cy="335" r="4" fill="#FFF" opacity="0.85"/>'
+    + '<circle cx="144" cy="335" r="4" fill="#FFF" opacity="0.85"/>'
+    + '</svg>';
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['gate','home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.remove('show');
+  });
+  var el = document.getElementById(id);
+  el.classList.add('show');
+  el.parentNode && window.scrollTo({top:0,behavior:'smooth'});
+}
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.classList.remove('on'); }, 1600);
+}
+
+/* ============ 口令门控 ============ */
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.remove('show');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+/* ============ 答题 ============ */
+var cur = 0, answers = [];
+
+function renderQ(){
+  var q = QUESTIONS[cur];
+  document.getElementById('qIndex').textContent = (cur+1) + ' / ' + QUESTIONS.length;
+  var pct = Math.round(cur / QUESTIONS.length * 100);
+  document.getElementById('qPct').textContent = pct + '%';
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('qTitle').textContent = q.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach(function(op, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'option' + (answers[cur] === i ? ' sel' : '');
+    b.innerHTML = '<span class="ltr">' + op.key + '</span><span class="ot">' + op.text + '</span>';
+    b.onclick = function(){ pick(i); };
+    box.appendChild(b);
+  });
+  document.getElementById('backWrap').style.display = cur > 0 ? 'block' : 'none';
+}
+
+function pick(i){
+  answers[cur] = i;
+  var opts = document.getElementById('options').children;
+  for(var k=0;k<opts.length;k++){ opts[k].classList.toggle('sel', k===i); }
+  setTimeout(function(){
+    if(cur < QUESTIONS.length - 1){ cur++; renderQ(); }
+    else { finish(); }
+  }, 260);
+}
+
+function back(){
+  if(cur > 0){ cur--; renderQ(); }
+}
+
+/* ============ 维度分布 ============ */
+function dimCounts(ans){
+  var c = { A:0, B:0, C:0, D:0, E:0, F:0 };
+  ans.forEach(function(ch,i){
+    var code = QUESTIONS[i].options[ch].code;
+    c[code.charAt(0)]++;
+  });
+  return c;
+}
+
+/* ============ 结果页 ============ */
+var lastResult = null;
+
+function finish(){
+  var r = resolve(answers);
+  lastResult = r;
+  var code = r.code;
+  var R = RESULTS[code];
+  var dim = DIMS[code.charAt(0)];
+  document.getElementById('artBox').innerHTML = artFor(code);
+  document.getElementById('rLevel').textContent = 'Lv.' + R.lv;
+  document.getElementById('rDim').textContent = '维度 · ' + dim;
+  document.getElementById('rName').textContent = R.name;
+  document.getElementById('rPersona').textContent = R.persona;
+  document.getElementById('rKw').innerHTML = R.kw.map(function(k){ return '<span class="kw">' + k + '</span>'; }).join('');
+  document.getElementById('rInsight').innerHTML =
+      '<div class="isec"><div class="ih emoji">👀 一个画面</div><p>' + R.insight[0] + '</p></div>'
+    + '<div class="isec"><div class="ih emoji">🌱 这是这样的你</div><p>' + R.insight[1] + '</p></div>'
+    + '<div class="isec quote"><div class="ih emoji">✨ 一句话送给你</div><p>' + R.insight[2] + '</p></div>';
+  document.getElementById('rMatch').innerHTML = '<b>适配关系</b>：' + R.match;
+  document.getElementById('rScene').textContent = R.scene;
+
+  var dc = dimCounts(answers);
+  var mx = 0;
+  Object.keys(dc).forEach(function(k){ if(dc[k] > mx) mx = dc[k]; });
+  var html = '<div class="dh">六个侧面的浓度（你选中的选项落在哪一侧）</div>';
+  Object.keys(DIMS).forEach(function(k){
+    var v = dc[k];
+    var w = mx ? Math.round(v / mx * 100) : 0;
+    var minW = v > 0 ? 12 : 2;
+    html += '<div class="drow"><span class="dn">' + DIMS[k] + '</span><span class="dtrack"><span class="dfill" style="width:' + Math.max(w, minW) + '%"></span></span><span class="dv">' + v + '</span></div>';
+  });
+  document.getElementById('rBars').innerHTML = html;
+  show('result');
+}
+
+/* ============ 海报 ============ */
+function wrapText(c, text, x, y, maxW, lineH, align){
+  c.textAlign = align || 'left';
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var ch = text.charAt(i);
+    if(c.measureText(line + ch).width > maxW && line.length > 0){
+      c.fillText(line, x, y);
+      line = ch;
+      y += lineH;
+    }else{
+      line += ch;
+    }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function lineCount(c, text, maxW){
+  var line = '', n = 0;
+  for(var i=0;i<text.length;i++){
+    var ch = text.charAt(i);
+    if(c.measureText(line + ch).width > maxW && line.length > 0){
+      n++; line = ch;
+    }else{
+      line += ch;
+    }
+  }
+  if(line) n++;
+  return n;
+}
+
+function roundRect(c, x, y, w, h, r){
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.arcTo(x+w, y, x+w, y+h, r);
+  c.arcTo(x+w, y+h, x, y+h, r);
+  c.arcTo(x, y+h, x, y, r);
+  c.arcTo(x, y, x+w, y, r);
+  c.closePath();
+}
+
+function buildPoster(){
+  var W = 750, H = 1500, PAD = 54;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var R = RESULTS[lastResult.code];
+  var dim = DIMS[lastResult.code.charAt(0)];
+  var CW = W - PAD * 2;
+  var FS = '-apple-system,"PingFang SC","Microsoft YaHei",sans-serif';
+  var EMO = '"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif';
+
+  var g = c.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#FFF0F5');
+  g.addColorStop(0.55, '#FFF7F0');
+  g.addColorStop(1, '#F2F5FF');
+  c.fillStyle = g;
+  c.fillRect(0, 0, W, H);
+
+  c.textAlign = 'center';
+  c.fillStyle = '#B08A98';
+  c.font = '600 24px ' + FS;
+  c.fillText('我 的 恋 爱 脑 等 级', W / 2, 72);
+
+  c.fillStyle = '#FF5C85';
+  c.font = '800 66px ' + FS;
+  c.fillText('Lv.' + R.lv, W / 2, 146);
+
+  var barW = 420, barX = (W - barW) / 2;
+  c.fillStyle = '#F5E4EA';
+  roundRect(c, barX, 172, barW, 10, 5); c.fill();
+  var g2 = c.createLinearGradient(barX, 0, barX + barW, 0);
+  g2.addColorStop(0, '#FFC2D4'); g2.addColorStop(1, '#FF5C85');
+  c.fillStyle = g2;
+  roundRect(c, barX, 172, Math.max(10, Math.round(barW * R.lv / 18)), 10, 5); c.fill();
+
+  c.fillStyle = '#4A3B45';
+  c.font = '800 42px ' + FS;
+  c.fillText(R.name, W / 2, 240);
+
+  c.font = '500 20px ' + FS;
+  var dt = '维度 · ' + dim;
+  var dW = c.measureText(dt).width + 40;
+  c.fillStyle = '#FDF1F5';
+  roundRect(c, (W - dW) / 2, 260, dW, 36, 18); c.fill();
+  c.fillStyle = '#93697A';
+  c.fillText(dt, W / 2, 285);
+
+  c.fillStyle = '#7C6974';
+  c.font = '400 23px ' + FS;
+  var y = wrapText(c, R.persona, W / 2, 342, CW - 40, 34, 'center');
+
+  var pillY = y + 6;
+  c.font = '600 19px ' + FS;
+  var pW = [];
+  var total = 0;
+  R.kw.forEach(function(k){ var w = c.measureText(k).width + 32; pW.push(w); total += w; });
+  total += 14 * (R.kw.length - 1);
+  var px = (W - total) / 2;
+  R.kw.forEach(function(k, i){
+    c.fillStyle = '#FFE4EC';
+    roundRect(c, px, pillY, pW[i], 36, 18); c.fill();
+    c.fillStyle = '#FF5C85';
+    c.fillText(k, px + pW[i] / 2, pillY + 25);
+    px += pW[i] + 14;
+  });
+  y = pillY + 36 + 30;
+
+  var heads = ['👀 一个画面', '🌱 这是这样的你', '✨ 一句话送给你'];
+  for(var i = 0; i < 3; i++){
+    var txt = R.insight[i];
+    var isQ = (i === 2);
+    var fs = isQ ? 25 : 23;
+    var lh = isQ ? 40 : 36;
+    c.font = (isQ ? '700 ' : '400 ') + fs + 'px ' + FS;
+    var innerW = isQ ? CW - 60 : CW - 56;
+    var n = lineCount(c, txt, innerW);
+    var cardH = 34 + n * lh + 24;
+    c.fillStyle = isQ ? '#FFF3F6' : '#FFFBF9';
+    roundRect(c, PAD, y, CW, cardH, 20); c.fill();
+    c.strokeStyle = isQ ? '#FFD5E0' : '#F5E7EC';
+    c.lineWidth = 1.5; c.stroke();
+
+    c.textAlign = 'left';
+    c.fillStyle = '#FF5C85';
+    c.font = '700 20px ' + EMO;
+    c.fillText(heads[i], PAD + 24, y + 26);
+
+    c.fillStyle = isQ ? '#C9385F' : '#4A3B45';
+    c.font = (isQ ? '700 ' : '400 ') + fs + 'px ' + FS;
+    wrapText(c, txt, isQ ? W / 2 : PAD + 28, y + 34 + lh - 10, innerW, lh, isQ ? 'center' : 'left');
+    y += cardH + 16;
+  }
+
+  c.textAlign = 'left';
+  c.fillStyle = '#A8929C';
+  c.font = '500 18px ' + FS;
+  c.fillText('六个侧面的浓度', PAD, y + 6);
+  y += 26;
+  var dc = dimCounts(answers);
+  var mx = 0;
+  Object.keys(dc).forEach(function(k){ if(dc[k] > mx) mx = dc[k]; });
+  Object.keys(DIMS).forEach(function(k){
+    c.fillStyle = '#7C6974';
+    c.font = '400 18px ' + FS;
+    c.textAlign = 'left';
+    c.fillText(DIMS[k], PAD, y + 13);
+    var tX = PAD + 126, tW = CW - 126 - 40;
+    c.fillStyle = '#F8EDF1';
+    roundRect(c, tX, y + 1, tW, 11, 5.5); c.fill();
+    var wv = mx ? Math.round(tW * dc[k] / mx) : 0;
+    c.fillStyle = '#FF8AA8';
+    roundRect(c, tX, y + 1, Math.max(wv, dc[k] > 0 ? 10 : 3), 11, 5.5); c.fill();
+    c.fillStyle = '#A8929C';
+    c.textAlign = 'right';
+    c.fillText(String(dc[k]), W - PAD, y + 13);
+    y += 25;
+  });
+
+  y += 12;
+  c.font = '400 19px ' + FS;
+  var mlines = lineCount(c, R.match, CW - 56);
+  var mH = 34 + mlines * 26 + 16;
+  c.fillStyle = '#F7FBFF';
+  roundRect(c, PAD, y, CW, mH, 20); c.fill();
+  c.strokeStyle = '#E5EEF8'; c.lineWidth = 1.5; c.stroke();
+  c.textAlign = 'left';
+  c.fillStyle = '#4A7FB5';
+  c.font = '600 18px ' + FS;
+  c.fillText('适 配 关 系', PAD + 24, y + 26);
+  c.fillStyle = '#5A6E80';
+  c.font = '400 19px ' + FS;
+  wrapText(c, R.match, PAD + 24, y + 54, CW - 56, 26, 'left');
+  y += mH + 24;
+
+  var gy = Math.min(y + 18, H - 88);
+  c.textAlign = 'center';
+  c.fillStyle = '#FF5C85';
+  c.font = '600 21px ' + FS;
+  c.fillText('@ 那个你想到的人，一起测测谁更上头', W / 2, gy);
+
+  c.fillStyle = '#B7A6AE';
+  c.font = '400 16px ' + FS;
+  c.fillText('本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，', W / 2, H - 46);
+  c.fillText('不构成任何心理诊断或情感建议。', W / 2, H - 22);
+
+  var url = cv.toDataURL('image/png');
+  document.getElementById('posterImg').src = url;
+  document.getElementById('posterDownload').href = url;
+  document.getElementById('posterModal').classList.add('show');
+}
+
+/* ============ 初始化 ============ */
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+document.getElementById('startBtn').addEventListener('click', function(){
+  cur = 0; answers = [];
+  renderQ();
+  show('quiz');
+});
+document.getElementById('backBtn').addEventListener('click', back);
+document.getElementById('posterBtn').addEventListener('click', function(){
+  try{ buildPoster(); }catch(err){ toast('海报生成失败，请截图保存结果页'); }
+});
+document.getElementById('againBtn').addEventListener('click', function(){
+  cur = 0; answers = []; renderQ(); show('quiz');
+});
+document.getElementById('pmClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+document.getElementById('posterModal').addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('show');
+});
+document.getElementById('coverBox').innerHTML = coverArt();
+</script>
+</body>
+</html>
