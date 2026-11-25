@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>你是哪种打工人 · 趣味测试</title>
+<style>
+  :root{
+    --bg:#101014; --bg2:#17171E; --card:#1E1E27; --card2:#26262F;
+    --ink:#F5F4EC; --ink-2:#BCBAAF; --ink-3:#82817A; --line:#34343F;
+    --accent:#FFD21F; --accent-deep:#E8B800; --cyan:#22D3EE; --green:#4ADE80; --rose:#FF4D6D;
+    --shadow-sm:0 4px 18px rgba(0,0,0,.35);
+    --shadow:0 12px 40px rgba(0,0,0,.5);
+    --emoji:"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#101014,#17171E 60%,#101014);color:var(--ink);min-height:100vh}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 20px 48px}
+  .view{display:none}
+  .view.show{display:block;animation:fadeUp .5s ease both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes shake{0%,100%{transform:none}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .shake{animation:shake .4s ease}
+
+  /* 口令门控 */
+  #gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:rgba(16,16,20,.96);backdrop-filter:blur(8px)}
+  #gate.hide{display:none}
+  .gate-card{background:var(--card);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:38px 30px 32px;width:100%;max-width:400px;text-align:center}
+  .gate-lock{font-size:46px;margin-bottom:8px;font-family:var(--emoji)}
+  .gate-card h2{font-size:21px;margin:0 0 8px}
+  .gsub{font-size:13.5px;color:var(--ink-2);line-height:1.6;margin:0 0 22px}
+  #passInput{width:100%;text-align:center;font-size:22px;letter-spacing:10px;font-weight:800;
+    padding:14px 12px 14px 24px;border:2px solid var(--line);border-radius:14px;
+    color:var(--ink);font-family:inherit;outline:none;background:var(--bg2)}
+  #passInput:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(255,210,31,.12)}
+  .gate-msg{height:20px;font-size:12.5px;color:var(--rose);margin:6px 0 12px;opacity:0;transition:opacity .2s}
+  .gate-msg.on{opacity:1}
+  .gate-foot{font-size:11px;color:var(--ink-3);margin:18px 0 0}
+
+  /* 通用组件 */
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:800;
+    color:#141414;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+    box-shadow:var(--shadow-sm);cursor:pointer;font-family:inherit;margin-top:12px}
+  .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent);box-shadow:none}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-sm);
+    padding:20px;margin-bottom:16px}
+  h1{font-size:28px;line-height:1.3;margin:6px 0 14px}
+  h1 .hl{color:var(--accent)}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--accent);
+    background:rgba(255,210,31,.12);padding:4px 11px;border-radius:999px}
+  .progress-track{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:14px 0}
+  .bar-fill{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-deep));transition:width .8s ease}
+  .option{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px solid var(--line);
+    border-radius:14px;margin-bottom:10px;cursor:pointer;background:var(--card2);transition:.18s}
+  .option:hover{transform:translateY(-2px);border-color:var(--accent)}
+  .option.on{border-color:var(--accent);background:rgba(255,210,31,.1)}
+  .opt-key{flex:0 0 28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;background:var(--bg2);color:var(--accent);border:1px solid var(--line)}
+  .option.on .opt-key{background:var(--accent);color:#141414;border-color:var(--accent)}
+  .type-emoji{font-size:56px;line-height:1;margin-bottom:8px;font-family:var(--emoji)}
+  .kw{display:inline-block;font-size:12px;color:var(--accent);background:rgba(255,210,31,.12);
+    padding:4px 11px;border-radius:999px;margin:0 6px 6px 0}
+  .roast{margin:14px 0;padding:13px 15px;border-left:3px solid var(--rose);background:rgba(255,77,109,.1);
+    border-radius:0 12px 12px 0;font-size:15px;font-weight:700;color:#FFD9DF;line-height:1.6}
+  .insight-p{margin:12px 0;font-size:14px;line-height:1.75;color:var(--ink-2)}
+  .insight-p .lab{font-family:var(--emoji);margin-right:4px}
+  .gold{color:var(--accent);font-weight:800;font-size:15.5px}
+  .disclaimer{font-size:11px;color:var(--ink-3);line-height:1.6;text-align:center;margin-top:24px}
+  .watermark{font-size:12px;color:var(--ink-3);text-align:center;margin-top:10px;letter-spacing:.5px}
+  .art{width:100%;height:auto;border-radius:16px;margin-bottom:10px}
+
+  /* 海报弹层 */
+  #posterModal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.75);
+    align-items:center;justify-content:center;padding:20px}
+  #posterModal.show{display:flex}
+  .poster-box{background:var(--card);border-radius:20px;padding:16px;max-width:400px;width:100%;text-align:center}
+  #posterImg{width:100%;border-radius:12px;display:block}
+  #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(245,244,236,.95);color:#141414;padding:10px 20px;border-radius:99px;font-size:13px;
+    opacity:0;pointer-events:none;transition:.3s;z-index:10000}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 视图1：口令门控 -->
+  <div id="gate">
+    <div class="gate-card" id="gateCard">
+      <div class="gate-lock">🔑</div>
+      <h2>输入口令开启测试</h2>
+      <p class="gsub">口令请向测试发起人索取～</p>
+      <input id="passInput" type="password" inputmode="numeric" maxlength="4"
+             autocomplete="off" placeholder="请输入 4 位口令">
+      <div class="gate-msg" id="gateMsg">口令不对，再试一次～</div>
+      <button class="btn" id="verifyBtn">进入测试 →</button>
+      <p class="gate-foot">🔒 纯本地运行，无需联网、不收集任何信息</p>
+    </div>
+  </div>
+
+  <!-- 视图2：首页 -->
+  <section id="home" class="view">
+    <span class="eyebrow">✨ 趣味职场测试</span>
+    <h1>你是哪种<br><span class="hl">打工人</span>原型？</h1>
+    <p class="gsub">12 道日常小题，扒出你藏在工位下的生存方式。摸鱼大师、卷王永动机、情绪绝缘体、边界守门员……看看哪一句扎心说中了你。</p>
+    <button class="btn" id="startBtn">开始测试 →</button>
+    <p class="watermark">小红书 @26145486029</p>
+  </section>
+
+  <!-- 视图3：答题页 -->
+  <section id="quiz" class="view">
+    <div class="progress-track"><div class="bar-fill" id="progressFill"></div></div>
+    <p id="qIndex" class="gsub">第 1 / 12 题</p>
+    <div class="card">
+      <h2 id="qTitle" style="margin-top:0;font-size:19px;line-height:1.5">题干</h2>
+      <div id="options"><!-- 选项由 JS 渲染 --></div>
+    </div>
+    <button class="btn ghost" id="backBtn">← 上一题</button>
+  </section>
+
+  <!-- 视图4：结果页 -->
+  <section id="result" class="view">
+    <div class="card" id="resultContent">
+      <div id="rArt"></div>
+      <h2 id="rName" style="margin:0 0 6px">结果类型</h2>
+      <p class="gsub" id="rPersona">一句话人设</p>
+      <div id="rKeywords"></div>
+      <div class="roast" id="rRoast"></div>
+      <div id="rInsight"></div>
+    </div>
+    <button class="btn" id="posterBtn">🖼️ 生成我的结果海报</button>
+    <button class="btn ghost" id="againBtn">🔄 再测一次</button>
+    <p class="disclaimer">本测试为趣味娱乐内容，结果由算法生成，仅供娱乐参考，不构成任何心理诊断或情感建议。</p>
+    <p class="watermark">小红书 @26145486029</p>
+  </section>
+
+</div>
+
+<!-- 海报预览弹层 -->
+<div id="posterModal">
+  <div class="poster-box">
+    <img id="posterImg" alt="结果海报">
+    <a class="btn" id="posterDownload" href="#" download="我的打工人海报.png">⬇️ 保存图片</a>
+    <button class="btn ghost" id="posterClose">关闭</button>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ============ 口令门控 ============ */
+var PASSCODE = "6291"; // 4 位数字口令，可自行修改此处
+var WATERMARK = "小红书 @26145486029";
+
+function verify(){
+  var inp = document.getElementById('passInput');
+  var msg = document.getElementById('gateMsg');
+  var card = document.getElementById('gateCard');
+  if(inp.value.trim() === PASSCODE){
+    document.getElementById('gate').classList.add('hide');
+    show('home');
+  }else{
+    msg.classList.add('on');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    inp.value = ''; inp.focus();
+  }
+}
+document.getElementById('verifyBtn').addEventListener('click', verify);
+document.getElementById('passInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'').slice(0,4);
+});
+document.getElementById('passInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') verify();
+});
+
+/* ============ 数据区 ============ */
+var DIMS = { A:'松弛冲浪', B:'硬核自驱', C:'情绪自保', D:'清醒边界' };
+
+var QUESTIONS = [
+  { title:'周一早上刚到工位，你通常是哪种状态？', options:[
+    {key:'A', code:'A1'}, {key:'B', code:'B1'}, {key:'C', code:'C1'}, {key:'D', code:'D1'}
+  ]},
+  { title:'小组项目分工，你更愿意？', options:[
+    {key:'A', code:'A2'}, {key:'B', code:'B2'}, {key:'C', code:'C2'}, {key:'D', code:'D2'}
+  ]},
+  { title:'领导临时要一份材料，你会？', options:[
+    {key:'A', code:'A3'}, {key:'B', code:'B3'}, {key:'C', code:'C3'}, {key:'D', code:'D3'}
+  ]},
+  { title:'同事在群里吐槽工作氛围，你会？', options:[
+    {key:'A', code:'A1'}, {key:'B', code:'B1'}, {key:'C', code:'C1'}, {key:'D', code:'D1'}
+  ]},
+  { title:'午休一小时，你一般怎么过？', options:[
+    {key:'A', code:'A2'}, {key:'B', code:'B2'}, {key:'C', code:'C2'}, {key:'D', code:'D2'}
+  ]},
+  { title:'被当众批评后，你的反应是？', options:[
+    {key:'A', code:'A3'}, {key:'B', code:'B3'}, {key:'C', code:'C3'}, {key:'D', code:'D3'}
+  ]},
+  { title:'部门聚餐能推就推吗？', options:[
+    {key:'A', code:'A1'}, {key:'B', code:'B1'}, {key:'C', code:'C1'}, {key:'D', code:'D1'}
+  ]},
+  { title:'一份工作做到瓶颈，你倾向？', options:[
+    {key:'A', code:'A2'}, {key:'B', code:'B2'}, {key:'C', code:'C2'}, {key:'D', code:'D2'}
+  ]},
+  { title:'开会讨论方案，你的常态是？', options:[
+    {key:'A', code:'A3'}, {key:'B', code:'B3'}, {key:'C', code:'C3'}, {key:'D', code:'D3'}
+  ]},
+  { title:'发工资那天，你最先做什么？', options:[
+    {key:'A', code:'A1'}, {key:'B', code:'B1'}, {key:'C', code:'C1'}, {key:'D', code:'D1'}
+  ]},
+  { title:'同事把活推给你帮忙，你会？', options:[
+    {key:'A', code:'A2'}, {key:'B', code:'B2'}, {key:'C', code:'C2'}, {key:'D', code:'D2'}
+  ]},
+  { title:'下班路上，你脑子里在想什么？', options:[
+    {key:'A', code:'A3'}, {key:'B', code:'B3'}, {key:'C', code:'C3'}, {key:'D', code:'D3'}
+  ]}
+];
+
+var RESULTS = {
+  A1:{ emoji:'🐟', name:'工位摸鱼大师', persona:'表面端坐敲键盘，实则邮件里冲浪',
+    kw:['表面镇定','雷达式摸鱼','情绪稳定'],
+    roast:'工资没涨，摸鱼技术倒是练到了硕士水平。',
+    insight:[
+      '开会时你盯着屏幕，鼠标却在另一页从容切换；领导一回头，你恰好抬头皱眉，像在认真思考。别人找你对接，你永远先回一句“好的我看下”，然后不慌不忙拖到最后一刻才动笔，deadline 前反而效率惊人。哪怕页面切来切去，真到要交东西的时候，你也从没掉过链子。',
+      '你反应快、观察力强，懂得把力气花在刀刃上，从不跟无意义的消耗硬碰硬。你看似散漫，其实心里门儿清，知道哪些事值得出力、哪些只是热闹，是团队里最会给自己留余地的人。你懂得保护自己的精力，不被表面的忙碌裹挟。',
+      '摸鱼不是懈怠，是你在嘈杂里给自己留的一口气。'
+    ],
+    match:'@那个跟你一起在工位上对视一眼就懂的同事' },
+  A2:{ emoji:'🎭', name:'表情包社交官', persona:'靠梗和表情包接住所有场面',
+    kw:['接梗王','场面兜底','嘴上热闹'],
+    roast:'群里最会接梗的是你，私聊里最想消失的也是你。',
+    insight:[
+      '群里冷场的时候，是你甩出一个表情包把气氛盘活；同事吐槽，你第一个接话逗笑全场，谁尴尬了你都能顺手递个台阶。可热闹散场之后，你很少主动找谁聊天，那些没说出口的情绪，大多留给了自己慢慢消化。明明自己也有情绪要消化，却总先顾着把场子暖起来。',
+      '你共情力强、情商在线，习惯用轻松和幽默照顾身边人的感受。你随和有趣，谁都觉得你好相处，只是很少有人问过你今天累不累，你也习惯了把状态调到让别人舒服的那一档。你把别人的舒适放在前面，慢慢忽略了自己也需要被照顾。',
+      '你负责照亮气氛，也值得有人来接住你的情绪。'
+    ],
+    match:'@那个每次冷场都靠你救场的搭子' },
+  A3:{ emoji:'🚶', name:'准点下班侠', persona:'到点拎包，绝不留恋工位',
+    kw:['到点就走','边界利落','不卷气氛'],
+    roast:'公司的灯你从不负责关，老板的锅你也从不主动背。',
+    insight:[
+      '五点五十九分你已经收拾好包，六点整准点起身，跟同事道别干脆利落。聚餐能推就推，下班之后工作群的消息基本不回，第二天又照常精神饱满地出现在工位上，从不在加班氛围里勉强自己作陪。到点离开这件事，你做得理直气壮，从不觉得亏欠谁。',
+      '你时间观清晰、行动力强，懂得把工作和生活清清楚楚分开。你不讨好、不内耗，牢牢守住自己的节奏，不被所谓的加班文化绑架，这份不随大流的笃定，在很多环境里都很稀缺。你清楚工作只是生活的一部分，不肯把全部时间拱手让人。',
+      '到点下班不是不负责任，是你对自己生活的负责。'
+    ],
+    match:'@那个每天跟你一起卡点出门的同伴' },
+  B1:{ emoji:'⚙️', name:'方案永动机', persona:'改到第八版还能笑着再来一版',
+    kw:['耐改','高产','默默扛事'],
+    roast:'你加班的样子很燃，可工资条一点都不燃。',
+    insight:[
+      '方案改到第八版，你还能平静地点开下一版；周末被临时叫回去，你叹口气还是把活接了。交付前你反复核对每一处细节，生怕哪一环出问题，别人眼里最靠谱、最顶用的那个人，往往一直是你。别人推不动的硬骨头，最后往往还是落到你手里。',
+      '你责任心重、韧性强，对事情有自己的标准和要求，不想交出去的东西掉链子。你踏实肯干、扛得住压力，习惯用结果说话，只是那些熬夜和反复打磨的辛苦，常常被你藏在了别人看不见的地方。你习惯了扛事，也习惯了不喊累，很少主动把委屈说出口。',
+      '你的认真终会被看见，也请先看见自己的付出。'
+    ],
+    match:'@那个跟你一起默默扛方案的战友' },
+  B2:{ emoji:'🎯', name:'饭局话事人', persona:'会议室里永远知道该接谁的话',
+    kw:['会来事','懂分寸','场面通透'],
+    roast:'左右逢源练得炉火纯青，夜里回家谁也不想联系。',
+    insight:[
+      '饭局上谁被冷落，你第一时间把话题递过去；领导话里有话，你一听就懂并且稳稳接住。跨部门沟通你从不硬碰硬，总能给双方找到台阶下，人情关系被你维护得妥妥帖帖，场面永远不至于冷掉。谁和谁之间有了芥蒂，你也总能在中间打个圆场。',
+      '你洞察力敏锐、社交成熟，懂得在规则和人情之间把事办成。你情商高、会协调，是团队里的润滑剂，这份长袖善舞的背后，是你长期察言观色、反复练习才练出来的本事。你把场面看得通透，知道什么时候该说什么话、站什么位置。',
+      '照顾全场的你，也别忘了给自己留个位置。'
+    ],
+    match:'@那个跟你一起周旋各种场合的队友' },
+  B3:{ emoji:'📚', name:'午休考证狂魔', persona:'午休刷网课，排队都在背知识点',
+    kw:['持续充电','目标感强','闲不住'],
+    roast:'证书攒了一抽屉，升职名单上还是没有你。',
+    insight:[
+      '午休别人在刷手机，你戴着耳机听网课；排队等咖啡的间隙，还在背知识点打卡。下班回家你也不忘刷几道题，逢证书考试就报名，收藏夹里塞满学习资料，手机推送大半跟提升技能有关，闲不住也不肯停。你的计划表里永远排着下一个要拿下的证书或技能。',
+      '你上进心足、自律性强，相信多一门本事就多一条退路。你对未来有规划、不愿意躺平，愿意为长期价值投入时间，愿意今天吃点苦换以后的从容，这份持续学习的劲头，在三分钟热度的环境里很难得。你相信手里的本事不会背叛自己，愿意为这种踏实长期投入。',
+      '你攒下的每一张证书，都是留给自己的底气。'
+    ],
+    match:'@那个跟你一起泡图书馆考证的朋友' },
+  C1:{ emoji:'🧋', name:'情绪绝缘体', persona:'被骂完转头就点一杯奶茶',
+    kw:['不往心里去','自愈快','钝感力'],
+    roast:'领导的话你左耳进右耳出，花呗账单倒是记得一清二楚。',
+    insight:[
+      '被领导当着人说了两句，你表面点头应下，转身就去楼下买了杯奶茶；同事间的小摩擦，过一晚基本就忘光。很少见你纠结内耗，烦心事好像到你这儿就自动反弹回去，你不太让别人的态度，决定自己当天的心情。转头一杯冰饮下肚，刚才那点不快就跟着散了大半。',
+      '你钝感力强、自我修复快，不被别人的情绪牵着走。你松弛、豁达，懂得及时翻篇，把注意力放回自己的小日子上，主动保护自己不被负面评价困住，这种不往心里去的能力，其实是很厉害的生存智慧。你不跟负面情绪缠斗，懂得给自己找个出口喘口气。',
+      '不听闲言碎语，只过自己的小日子，挺好。'
+    ],
+    match:'@那个被骂完还能陪你去买奶茶的人' },
+  C2:{ emoji:'🪴', name:'工位绿植人', persona:'不争不抢，按时把自己浇好水',
+    kw:['低存在感','自给自足','安静生长'],
+    roast:'你把自己养得像盆绿植，只要别被挪动就行。',
+    insight:[
+      '评优争功你从不往前凑，分工时默默接下自己那份；工位收拾得干净，桌上的绿植养得旺盛，到点吃饭、下班走人，日子过得平静有规律，很少有大起大落，也不太参与办公室里的明争暗斗。不抢话、不露头，在热闹的办公室里保持着自己的节奏。',
+      '你平和内敛、不慕喧嚣，专注把自己手头的事做好。你稳定、可靠，在自己的节奏里慢慢生长，不跟别人攀比升迁快慢，也不为了抢镜头改变自己，这种安静扎根的力量，看着慢，其实很稳。你不羡慕别人的高光，也不怀疑自己的选择，安稳就是你的答案。',
+      '不必开花给人看，你按自己的季节生长就好。'
+    ],
+    match:'@那个工位比你还安静的工位邻居' },
+  C3:{ emoji:'📝', name:'会议旁听生', persona:'开会只负责点头和记笔记',
+    kw:['随大流','少表态','安全第一'],
+    roast:'会上一句反对意见没提，会后一点好处也没分到。',
+    insight:[
+      '开会时你坐角落，笔记记得工整，领导问意见，你先笑一笑说“我都可以”。群里投票你很少发声，有分歧先观望，等大多数人定了方向再跟上，尽量不站队、不领头，也不把自己推到容易被记住的位置上。尽量让自己显得随和无害，不成为任何人的对立面。',
+      '你谨慎温和、不爱冲突，习惯先观察清楚再行动。你不惹事、不得罪人，凡事追求稳妥，在复杂人际里选择先自保，是种低调的自保方式；只是长期少表态，也容易让别人忽略你的想法和价值。你把安全放在第一位，宁可少出风头，也不愿卷入纷争。',
+      '偶尔说出自己的想法，世界不会塌，机会反而可能看见你。'
+    ],
+    match:'@那个开会总跟你一起坐角落的伙伴' },
+  D1:{ emoji:'🛡️', name:'边界守门员', persona:'分内事做完，绝不额外揽活',
+    kw:['拒绝利落','分内清楚','不背锅'],
+    roast:'拒绝别人的时候很爽，交社保的时候很慌。',
+    insight:[
+      '不属于自己的活递过来，你笑着说“这块不归我对接”；加班请求能挡就挡，聊天记录也留得清清楚楚。帮忙可以，越界不行，你把职责范围划得明明白白，不会因为怕得罪人，就把别人的责任一点点揽到自己身上。该我的我接住，不该我的我不背，界限清清楚楚。',
+      '你原则感强、清醒独立，懂得保护自己的时间和精力。你不讨好、不心软，边界感清晰，在一个容易被甩锅、被透支的环境里，这份清醒是非常必要的铠甲，让你不至于在忙碌里弄丢自己。你不靠讨好换取好感，更看重自己的精力和底线不被侵犯。',
+      '先守住自己，再谈乐于助人，顺序别反。'
+    ],
+    match:'@那个跟你一样敢说“不归我”的硬气同事' },
+  D2:{ emoji:'🛒', name:'副业操盘手', persona:'白天打工，晚上经营自己的小生意',
+    kw:['双线作战','有私心','长期布局'],
+    roast:'主业只是现金流，你的人生早有别的主线。',
+    insight:[
+      '上班把本职做完，下班打开另一个后台打理小店或账号；工资到账先存一部分进自己的计划，通勤路上都在琢磨下一步怎么推进。别人以为你只是个普通打工人，其实你早就给自己留好了另一条路，心里始终有盘棋。上班是保底，下班后的那条线才是你真正上心的方向。',
+      '你目标明确、有商业头脑，不甘于只靠一份工资吃饭。你主动给自己铺路、提前抗风险，把打工当成阶段性的现金流，而不是人生的全部，这种为自己长期布局的意识，是很多人想都没想过的。你不为单一身份所困，始终在给自己攒更多选择和退路。',
+      '上班是为了生活，生活才是你的主业。'
+    ],
+    match:'@那个跟你一起琢磨副业的同路人' },
+  D3:{ emoji:'🔍', name:'复盘明白人', persona:'下班路上把今天的局复盘三遍',
+    kw:['想得深','看得透','容易累'],
+    roast:'道理你全懂，所以你比谁都累。',
+    insight:[
+      '回到家你还在回想白天哪句话说岔了、哪个表情不妥；一件事在脑子里反复过几遍，总结得失和人情。别人一句无心的话，你能分析出三层含义，夜里躺下了还在想，白天的局面像电影一样一遍遍回放，停不下来。一句话、一个眼神，你都要在心里掂量几遍分量。',
+      '你心思细腻、悟性高，善于观察和总结，很多事一眼就能看透本质。你成熟清醒，只是想得太多、替别人考虑得太周全，情绪和精力常常在反复琢磨里被消耗，你比谁都明白道理，也因此比谁都累。你看得太明白，所以很难像别人那样稀里糊涂地轻松。',
+      '看透之后记得放过自己，想明白不等于要一直惦记。'
+    ],
+    match:'@那个晚上还陪你复盘白天局的朋友' }
+};
+
+/* ============ 计分逻辑 ============ */
+function resolve(answers){
+  var s = {};
+  answers.forEach(function(ch,i){ var code=QUESTIONS[i].options[ch].code; s[code]=(s[code]||0)+1; });
+  var mx = Math.max.apply(null, Object.keys(s).map(function(k){return s[k];}));
+  var tied = Object.keys(s).filter(function(k){return s[k]===mx;});
+  var code;
+  if(tied.length===1){ code = tied[0]; }
+  else{
+    var last = QUESTIONS[QUESTIONS.length-1].options[answers[QUESTIONS.length-1]].code;
+    var first = QUESTIONS[0].options[answers[0]].code;
+    if(tied.indexOf(last)>=0) code = last;
+    else if(tied.indexOf(first)>=0) code = first;
+    else code = tied.sort()[0];
+  }
+  return { code:code, scores:s };
+}
+
+/* ============ 视图切换 ============ */
+function show(id){
+  ['home','quiz','result'].forEach(function(v){
+    document.getElementById(v).classList.toggle('show', v === id);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============ SVG 图案 ============ */
+var DIM_COLOR = { A:'#FFD21F', B:'#22D3EE', C:'#4ADE80', D:'#FF4D6D' };
+function artFor(code){
+  var dim = code.charAt(0);
+  var col = DIM_COLOR[dim];
+  var gid = 'g'+code;
+  var prop = {
+    A1:'<path d="M70 100 q18 -18 36 0 q-18 18 -36 0 Z" fill="'+col+'"/><circle cx="100" cy="100" r="3" fill="#101014"/><path d="M106 100 l14 -8 v16 Z" fill="'+col+'"/>',
+    A2:'<rect x="66" y="84" width="68" height="44" rx="14" fill="none" stroke="'+col+'" stroke-width="5"/><circle cx="86" cy="106" r="4" fill="'+col+'"/><circle cx="100" cy="106" r="4" fill="'+col+'"/><circle cx="114" cy="106" r="4" fill="'+col+'"/>',
+    A3:'<circle cx="100" cy="100" r="26" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M100 100 L100 84 M100 100 L112 106" stroke="'+col+'" stroke-width="5" stroke-linecap="round"/>',
+    B1:'<circle cx="100" cy="100" r="20" fill="none" stroke="'+col+'" stroke-width="6"/><circle cx="100" cy="100" r="7" fill="'+col+'"/><path d="M100 72 v10 M100 118 v10 M72 100 h10 M118 100 h10" stroke="'+col+'" stroke-width="6" stroke-linecap="round"/>',
+    B2:'<rect x="60" y="86" width="44" height="32" rx="10" fill="none" stroke="'+col+'" stroke-width="5"/><rect x="96" y="100" width="44" height="32" rx="10" fill="none" stroke="'+col+'" stroke-width="5"/>',
+    B3:'<rect x="72" y="78" width="56" height="50" rx="8" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M100 78 v50" stroke="'+col+'" stroke-width="5"/><path d="M80 92 h12 M80 104 h12" stroke="'+col+'" stroke-width="4" stroke-linecap="round"/>',
+    C1:'<path d="M82 88 h36 l-4 40 a6 6 0 0 1 -6 5 h-16 a6 6 0 0 1 -6 -5 Z" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M104 88 L112 72" stroke="'+col+'" stroke-width="5" stroke-linecap="round"/>',
+    C2:'<path d="M80 110 h40 l-5 22 h-30 Z" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M100 110 q0 -22 -16 -26 q2 18 16 26 Z" fill="'+col+'"/><path d="M100 110 q0 -22 16 -26 q-2 18 -16 26 Z" fill="'+col+'"/>',
+    C3:'<rect x="74" y="80" width="52" height="52" rx="8" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M84 96 h32 M84 108 h22" stroke="'+col+'" stroke-width="4" stroke-linecap="round"/>',
+    D1:'<path d="M100 76 l26 10 v20 c0 16 -12 26 -26 32 c-14 -6 -26 -16 -26 -32 v-20 Z" fill="none" stroke="'+col+'" stroke-width="5" stroke-linejoin="round"/>',
+    D2:'<path d="M78 92 h44 l-4 40 h-36 Z" fill="none" stroke="'+col+'" stroke-width="5"/><path d="M88 92 v-8 a12 12 0 0 1 24 0 v8" fill="none" stroke="'+col+'" stroke-width="5"/>',
+    D3:'<circle cx="94" cy="94" r="18" fill="none" stroke="'+col+'" stroke-width="6"/><path d="M107 107 l16 16" stroke="'+col+'" stroke-width="7" stroke-linecap="round"/>'
+  }[code];
+  return '<svg class="art" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img">'
+    + '<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="1" y2="1">'
+    + '<stop offset="0" stop-color="'+col+'" stop-opacity=".22"/><stop offset="1" stop-color="'+col+'" stop-opacity=".06"/>'
+    + '</linearGradient></defs>'
+    + '<rect x="20" y="20" width="160" height="160" rx="36" fill="url(#'+gid+')"/>'
+    + '<circle cx="56" cy="58" r="5" fill="'+col+'" opacity=".5"/><circle cx="150" cy="70" r="4" fill="'+col+'" opacity=".4"/><circle cx="146" cy="146" r="5" fill="'+col+'" opacity=".4"/>'
+    + prop + '</svg>';
+}
+
+/* ============ 答题流程 ============ */
+var answers = [];
+var q = 0;
+
+function renderQuestion(){
+  var data = QUESTIONS[q];
+  document.getElementById('qIndex').textContent = '第 ' + (q+1) + ' / ' + QUESTIONS.length + ' 题';
+  document.getElementById('progressFill').style.width = ((q)/QUESTIONS.length*100) + '%';
+  document.getElementById('qTitle').textContent = data.title;
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+  data.options.forEach(function(opt, i){
+    var div = document.createElement('div');
+    div.className = 'option' + (answers[q]===i ? ' on' : '');
+    div.innerHTML = '<span class="opt-key">'+opt.key+'</span><span>'+escapeHtml(QUESTION_OPT_TEXT[q][i])+'</span>';
+    div.addEventListener('click', function(){ choose(i); });
+    box.appendChild(div);
+  });
+}
+// 每题选项原文（按 QUESTIONS 顺序，避免映射歧义）
+var QUESTION_OPT_TEXT = [
+  ['先打开工位页面摸一圈，正事稍后再说','立刻列好今天待办，按优先级排满','慢悠悠泡杯咖啡，天塌下来也先稳住','只接自己职责内的活，多余的不揽'],
+  ['负责活跃气氛，衔接大家情绪','协调各方关系，把人和事拧到一起','安安静静做自己分到的那块','顺带盘算这件事对自己有没有积累'],
+  ['把手头收尾，到点就走不留守','先查缺补漏，顺便更新自己的资料清单','照要求做，做完不多想也不邀功','先确认交付范围和截止时间，再动手'],
+  ['潜水围观，顺手存下新梗','主动把事接下来，想着怎么尽快摆平','看完就忘，不跟着纠结情绪','不跟着站队，私下保持距离'],
+  ['跟周围人插科打诨，把午聊聊热闹','留意谁和谁走得近，攒点人脉信息','吃完歇会儿，日子照旧不折腾','琢磨自己的小生意或账号下一步'],
+  ['表面应声，下班照常准点走人','把问题记进错题本，顺便补一门相关技能','先不表态，等风声过去再说','理清是谁的责任，复盘自己哪步可改进'],
+  ['能溜就溜，回去自在冲浪','留下来把场面撑住，招呼好每个人','去不去都行，烦心事上桌就放下','无效社交能推就推，不陪坐冷板凳'],
+  ['用段子和自嘲化解焦虑，先开心再说','找相关同事疏通关系，绕开卡点','不挣扎，先按现状慢慢做着','借机评估这份工作还值不值得继续'],
+  ['盼着快点散会，绝不主动留下来加班','听会顺便对照自己的学习清单补缺口','少说话多记录，等大家定方向','散会就复盘谁的话有分量、谁在观望'],
+  ['先刷会儿购物车犒劳摸鱼的自己','规划下个月怎么把工作资源用到实处','该吃吃该喝喝，烦心事不带上床','先算清社保公积金和各项扣除'],
+  ['一边吐槽一边还是帮着搭把手','顺势换个人情，方便以后开口','默默接下自己能做的部分，不声张','评估这事能不能变成自己的资源'],
+  ['想晚上去哪放松，工作留在公司','明天要补的技能、要考的证，还在脑子里过','谁会上提了什么意见，先记心里不急着说','把白天的对话和局面再复盘一遍']
+];
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+
+function choose(i){
+  answers[q] = i;
+  if(q < QUESTIONS.length-1){ q++; renderQuestion(); }
+  else{ finish(); }
+}
+document.getElementById('backBtn').addEventListener('click', function(){
+  if(q > 0){ q--; renderQuestion(); }
+});
+
+function finish(){
+  var r = resolve(answers);
+  var R = RESULTS[r.code];
+  var dim = DIMS[r.code.charAt(0)];
+  document.getElementById('rArt').innerHTML = artFor(r.code);
+  document.getElementById('rName').textContent = dim + ' · ' + R.name;
+  document.getElementById('rPersona').textContent = R.persona;
+  document.getElementById('rKeywords').innerHTML = R.kw.map(function(k){ return '<span class="kw">'+k+'</span>'; }).join('');
+  document.getElementById('rRoast').textContent = '扎心一句：' + R.roast;
+  var ins = document.getElementById('rInsight');
+  ins.innerHTML = '';
+  var labs = ['👀','🌱','✨'];
+  R.insight.forEach(function(line, idx){
+    var p = document.createElement('p');
+    p.className = 'insight-p' + (idx===2 ? ' gold' : '');
+    p.innerHTML = '<span class="lab">'+labs[idx]+'</span>' + escapeHtml(line);
+    ins.appendChild(p);
+  });
+  currentCode = r.code;
+  window.lastResultCode = r.code;
+  show('result');
+}
+
+var currentCode = null;
+
+/* ============ 海报生成 ============ */
+function wrapText(c, text, x, y, maxW, lineH){
+  var line = '';
+  for(var i=0;i<text.length;i++){
+    var test = line + text[i];
+    if(c.measureText(test).width > maxW && line){
+      c.fillText(line, x, y); y += lineH; line = text[i];
+    }else{ line = test; }
+  }
+  if(line){ c.fillText(line, x, y); y += lineH; }
+  return y;
+}
+
+function drawPoster(code){
+  var R = RESULTS[code];
+  var dim = DIMS[code.charAt(0)];
+  var col = DIM_COLOR[code.charAt(0)];
+  var W = 750, H = 1500;
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var c = cv.getContext('2d');
+  var PAD = 54, CW = W - PAD*2;
+
+  // 背景
+  var g = c.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#17171E'); g.addColorStop(1,'#101014');
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+  // 顶部色条
+  c.fillStyle = col; c.fillRect(0,0,W,14);
+
+  var y = 70;
+  c.textAlign = 'center';
+  c.fillStyle = '#BCBAAF'; c.font = '26px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('我的打工人原型', W/2, y); y += 70;
+
+  // emoji
+  c.font = '104px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  c.fillText(R.emoji, W/2, y+40); y += 110;
+
+  // 维度胶囊
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  var dimTxt = dim;
+  var dw = c.measureText(dimTxt).width + 44;
+  c.fillStyle = col; c.globalAlpha = .16;
+  roundRect(c, W/2-dw/2, y-28, dw, 44, 22); c.fill(); c.globalAlpha = 1;
+  c.fillStyle = col; c.fillText(dimTxt, W/2, y+2); y += 70;
+
+  // 类型名
+  c.fillStyle = '#F5F4EC'; c.font = 'bold 46px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(R.name, W/2, y); y += 46;
+
+  // 人设
+  c.fillStyle = '#BCBAAF'; c.font = '25px "PingFang SC","Microsoft YaHei",sans-serif';
+  y = wrapText(c, R.persona, W/2, y, CW, 34); y += 18;
+
+  // 关键词胶囊
+  c.font = '23px "PingFang SC","Microsoft YaHei",sans-serif';
+  var kws = R.kw; var kx = W/2;
+  var widths = kws.map(function(k){ return c.measureText(k).width + 36; });
+  var total = widths.reduce(function(a,b){return a+b;},0) + (kws.length-1)*16;
+  var startX = W/2 - total/2;
+  kws.forEach(function(k,i){
+    var w = widths[i];
+    c.fillStyle = 'rgba(255,210,31,.12)';
+    roundRect(c, startX, y-26, w, 40, 20); c.fill();
+    c.fillStyle = '#FFD21F';
+    c.fillText(k, startX + w/2, y+2);
+    startX += w + 16;
+  });
+  y += 60;
+
+  // 扎心短句卡
+  c.textAlign = 'left';
+  c.fillStyle = 'rgba(255,77,109,.12)';
+  roundRect(c, PAD, y, CW, 116, 18); c.fill();
+  c.fillStyle = '#FF4D6D'; c.fillRect(PAD, y, 6, 116);
+  c.fillStyle = '#FFD9DF'; c.font = 'bold 27px "PingFang SC","Microsoft YaHei",sans-serif';
+  y = wrapText(c, '扎心一句：' + R.roast, PAD+30, y+48, CW-56, 38);
+  y += 30;
+
+  // 三段解读
+  c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  var labs = ['👀 一个画面','🌱 这是这样的你','✨ 一句话送给你'];
+  R.insight.forEach(function(line, idx){
+    c.fillStyle = col; c.font = 'bold 25px "PingFang SC","Microsoft YaHei",sans-serif';
+    c.fillText(labs[idx], PAD, y); y += 36;
+    c.fillStyle = idx===2 ? '#FFD21F' : '#BCBAAF';
+    c.font = (idx===2 ? 'bold ' : '') + '24px "PingFang SC","Microsoft YaHei",sans-serif';
+    y = wrapText(c, line, PAD, y, CW, 36);
+    y += 18;
+  });
+
+  // @引导
+  y += 10;
+  c.textAlign = 'center';
+  c.fillStyle = '#82817A'; c.font = '23px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(R.match + '，一起来测测', W/2, y);
+
+  // 水印
+  c.fillStyle = '#82817A'; c.font = '24px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText(WATERMARK, W/2, H-70);
+
+  // 免责声明
+  c.fillStyle = '#6B6A64'; c.font = '18px "PingFang SC","Microsoft YaHei",sans-serif';
+  c.fillText('本测试为趣味娱乐内容，仅供娱乐参考，不构成心理诊断或情感建议。', W/2, H-38);
+
+  var dataURL = cv.toDataURL('image/png');
+  return dataURL;
+}
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+
+document.getElementById('posterBtn').addEventListener('click', function(){
+  if(!currentCode) return;
+  var url = drawPoster(currentCode);
+  document.getElementById('posterImg').src = url;
+  document.getElementById('posterDownload').href = url;
+  document.getElementById('posterModal').classList.add('show');
+});
+document.getElementById('posterClose').addEventListener('click', function(){
+  document.getElementById('posterModal').classList.remove('show');
+});
+
+document.getElementById('startBtn').addEventListener('click', function(){ answers=[]; q=0; renderQuestion(); show('quiz'); });
+document.getElementById('againBtn').addEventListener('click', function(){ answers=[]; q=0; show('home'); });
+
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 1800);
+}
+</script>
+</body>
+</html>
